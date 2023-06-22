@@ -2,7 +2,7 @@
 import PrimaryButton from "@/app/componeents/buttons/PrimaryButton";
 import { Card, Select, SelectItem, TextInput, Title, } from "@tremor/react";
 import { useState } from "react";
-import { FormSubmitHandler, SubmitHandler, useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 
 type Inputs = {
     id: string,

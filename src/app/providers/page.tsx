@@ -1,4 +1,7 @@
-import { Card, Table, TableBody, TableCell, TableHead, TableRow, Title, Text } from "@tremor/react";
+"use client"
+import { Card, Table, TableBody, TableCell, TableHead, TableRow, Title, Text, TextInput } from "@tremor/react";
+import { SearchIcon } from "@heroicons/react/outline"
+import { useEffect, useState } from "react";
 
 const data = [
     {
@@ -19,18 +22,36 @@ const data = [
 ]
 
 export default function Providers() {
+    const [search, setSearch] = useState<string>('');
+    const [providers, setProviders] = useState<any[]>(data);
+
+    useEffect(() => {
+        const filtered = data.filter(provider => provider.name.toLocaleLowerCase().includes(search))
+        setProviders(filtered);
+    }, [search])
+
     return (
-        <div className="flex flex-col w-full py-5">
-            <div className="flex justify-between">
+        <div className="flex flex-col w-full items-center py-5 gap-4">
+            <div className="flex justify-center w-full">
                 <Title>Proveedores</Title>
                 <a href="/providers/create"
-                 className="rounded-md px-4 py-2 bg-[#22c55e] text-white">Agregar
+                    className="rounded-md px-4 py-2 bg-[#22c55e] text-white">Agregar
                 </a>
             </div>
 
-            <div className="flex flex-col items-center w-full h-fit">
-                <Card className="w-4/6">
-                <Title>Lista de proveedores</Title>
+            <div className="flex flex-col gap-3 h-fit">
+                <div className="">
+                    <TextInput className="w-[240px]"
+                        icon={SearchIcon}
+                        placeholder="Buscar"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+
+
+                </div>
+                <Card className="w-[800px]">
+                    <Title>Lista de proveedores</Title>
                     <Table>
                         <TableHead>
                             <TableRow>
@@ -42,7 +63,7 @@ export default function Providers() {
                         </TableHead>
                         <TableBody>
                             {
-                                data.map((provider, index) =>
+                                providers.map((provider, index) =>
                                     <TableRow key={index}>
                                         <TableCell>{provider.name}</TableCell>
                                         <TableCell>{provider.phone}</TableCell>

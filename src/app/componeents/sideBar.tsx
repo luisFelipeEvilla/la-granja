@@ -15,7 +15,7 @@ export default function SideBar() {
                         links.map((link, index) =>
                             <li key={index}>
                                 <a href={link.href} 
-                                    className="flex gap-2 items-center px-3 my-4 text-sm ">
+                                    className="flex gap-2 items-center px-3 my-4 text-base ">
                                     {<link.icon className="fill-gray-100" />}
                                     {link.label}
                                 </a>

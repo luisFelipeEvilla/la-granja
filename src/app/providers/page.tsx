@@ -1,32 +1,16 @@
 "use client"
-import { Card, Table, TableBody, TableCell, TableHead, TableRow, Title, Text, TextInput, Metric } from "@tremor/react";
+import { Card, Table, TableBody, TableCell, TableHead, TableRow, Title, Text, TextInput, Metric, BarChart } from "@tremor/react";
 import { SearchIcon } from "@heroicons/react/outline"
 import { useEffect, useState } from "react";
-
-const data = [
-    {
-        name: 'Proveedor 1',
-        phone: '1234567890',
-        email: 'provedor@gmail.com',
-    },
-    {
-        name: 'Proveedor 2',
-        phone: '1234567890',
-        email: 'proveedor@gmail.com',
-    },
-    {
-        name: 'Proveedor 3',
-        phone: '1234567890',
-        email: 'proveedor@gmail.com',
-    }
-]
+import { providersData } from "../data/providers";
+import { milkData } from "../data/milk";
 
 export default function Providers() {
     const [search, setSearch] = useState<string>('');
-    const [providers, setProviders] = useState<any[]>(data);
+    const [providers, setProviders] = useState<any[]>(providersData);
 
     useEffect(() => {
-        const filtered = data.filter(provider => provider.name.toLocaleLowerCase().includes(search))
+        const filtered = providersData.filter(provider => provider.name.toLocaleLowerCase().includes(search))
         setProviders(filtered);
     }, [search])
 
@@ -88,8 +72,19 @@ export default function Providers() {
                             </TableBody>
                         </Table>
                     </Card>
-
                 </div>
+            </section>
+
+            <section className="flex justify-center"> 
+                <Card className="max-w-[800px]">
+                    <Title>Litros de Leche por proveedor</Title>
+                    <BarChart
+                        data={milkData}
+                        index="providerId"
+                        categories={["Litros de Leche"]}
+                        colors={["blue"]}
+                    />
+                </Card>
             </section>
         </div>
     )

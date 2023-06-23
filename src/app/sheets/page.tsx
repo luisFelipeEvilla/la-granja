@@ -1,18 +1,23 @@
 "use client";
-import { Card, Table, TableBody, TableCell, TableHead, TableRow, TextInput, Title } from "@tremor/react";
+import { Card, DateRangePicker, DateRangePickerValue, Table, TableBody, TableCell, TableHead, TableRow, TextInput, Title } from "@tremor/react";
 import { providersData } from "../data/providers";
 import PrimaryButton from "../componeents/buttons/PrimaryButton";
 import { useEffect, useState } from "react";
+import { es } from "date-fns/locale";
 
 export default function Sheet() {
     const [providers, setProviders] = useState<any[]>(providersData);
     const [sheet, setSheet] = useState<any[]>([]);
+    const [date, setDate] = useState<DateRangePickerValue>({
+        from: new Date(),
+        to: new Date(),
+      });
+    
 
     useEffect(() => {
         const aux = providers.map((provider, index) => {
             return { id: provider.id, liters: 0}
         })
-
         setSheet(aux);
     }, [])
 
@@ -25,14 +30,21 @@ export default function Sheet() {
             }
             return provider;
         })
-
-        console.log(newSheet)
         setSheet(newSheet);    
     }
 
     return (
-        <div className="w-full h-screen flex items-center justify-center">
-            <form>
+        <div className="w-full h-screen flex flex-col gap-2 items-center justify-center">
+            <div>
+                <DateRangePicker
+                    locale={es}
+                    enableSelect={false}
+                    value={date}
+                    onValueChange={setDate}
+                    selectPlaceholder="Seleccionar fecha"
+                />
+            </div>
+            <form >
                 <Card className="w-[600px]">
                     <Title>Planilla de recolección</Title>
 
@@ -49,10 +61,12 @@ export default function Sheet() {
                                 providers.map((provider, index) =>
                                     <TableRow key={index}>
                                         <TableCell>{provider.name}</TableCell>
+                                        <TableCell>
                                         <TextInput 
                                             onChange={(e) => handleLitersChange(e, provider.id)}
                                             placeholder="Litros de leche"
-                                            className="w-[100px] mt-2" />
+                                            className="w-[100px]" />
+                                        </TableCell>
                                     </TableRow>
                                 )
                             }

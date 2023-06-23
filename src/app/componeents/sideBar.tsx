@@ -1,8 +1,12 @@
 import { MdAddBusiness } from "react-icons/md";
+import { BiSpreadsheet } from "react-icons/bi";
 
 export default function SideBar() {
 
-    const links = [{ label: 'Provedores', href: '/providers', icon: MdAddBusiness }]
+    const links = [
+        { label: 'Provedores', href: '/providers', icon: MdAddBusiness },
+        { label: 'Planillas', href: '/sheets', icon: BiSpreadsheet }
+    ]
 
     return (
         <div className="w-[250px] bg-slate-900 h-screen py-8 text-gray-100">

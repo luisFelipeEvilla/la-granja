@@ -4,20 +4,32 @@ import { SearchIcon } from "@heroicons/react/outline"
 import { useEffect, useState } from "react";
 import { milkData } from "../data/milk";
 import { Provider } from "@prisma/client";
+import { ProviderWithProducts } from "@/types/Provider";
 
 export default function Providers() {
     const [search, setSearch] = useState<string>('');
     const [providers, setProviders] = useState<Provider[]>([]);
     const [filteredProviders, setFilteredProviders] = useState<Provider[]>([]);
+    const [products, setProducts] = useState<any[]>([]);
 
     useEffect(() => {
         fetch('http://localhost:3000/api/providers')
         .then(async (res) => {
             const data = await res.json();
             setProviders(data);
-            setFilteredProviders(data);
+            
+            const aux = data.map((provider: ProviderWithProducts) => {
+                const cantidad = provider.products.reduce((acc, product) => acc + product.quantity, 0);
+                return { provider: `${provider.firstName} ${provider.lastName}`, "Cantidad": cantidad}
+            });
+
+            setProducts(aux);
         })
     }, [])
+
+    useEffect(() => {
+        setFilteredProviders(providers);
+    }, [providers])
 
     useEffect(() => {
         const filtered = providers.filter(provider =>  `${provider.firstName} ${provider.lastName}`.toLocaleLowerCase().includes(search))
@@ -42,7 +54,9 @@ export default function Providers() {
 
                 <Card className="w-fit" decoration="top" decorationColor="green">
                     <Text>Litros de leche Recogidos</Text>
-                    <Metric>200 lts</Metric>
+                    <Metric>{
+                        products.reduce((acc, product) => acc + product.Cantidad, 0)
+                    }</Metric>
                 </Card>
             </div>
 
@@ -89,9 +103,9 @@ export default function Providers() {
                 <Card className="max-w-[800px]">
                     <Title>Litros de Leche por proveedor</Title>
                     <BarChart
-                        data={milkData}
-                        index="providerId"
-                        categories={["Litros de Leche"]}
+                        data={products}
+                        index="provider"
+                        categories={["Cantidad"]}
                         colors={["blue"]}
                     />
                 </Card>

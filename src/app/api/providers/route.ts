@@ -5,7 +5,9 @@ const prisma = new PrismaClient();
 
 export async function GET() {
     try {
-        const providers = await prisma.provider.findMany();
+        const providers = await prisma.provider.findMany(
+            { include: { products: true }}
+        );
         
         return NextResponse.json(providers)
     } catch (error: any) {

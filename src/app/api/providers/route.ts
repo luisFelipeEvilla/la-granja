@@ -12,7 +12,6 @@ export async function GET() {
         console.error(error.message);
         return new Response(error.message, { status: 500 })
     }
-
 };
 
 export async function POST(req: any, res: any) {

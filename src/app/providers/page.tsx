@@ -2,20 +2,20 @@
 import { Card, Table, TableBody, TableCell, TableHead, TableRow, Title, Text, TextInput, Metric, BarChart } from "@tremor/react";
 import { SearchIcon } from "@heroicons/react/outline"
 import { useEffect, useState } from "react";
-import { providersData } from "../data/providers";
 import { milkData } from "../data/milk";
-import { providers } from "@prisma/client";
+import { Providers } from "@prisma/client";
 
 export default function Providers() {
     const [search, setSearch] = useState<string>('');
-    const [providers, setProviders] = useState<providers[]>([]);
-    const [filteredProviders, setFilteredProviders] = useState<providers[]>([]);
+    const [providers, setProviders] = useState<Providers[]>([]);
+    const [filteredProviders, setFilteredProviders] = useState<Providers[]>([]);
 
     useEffect(() => {
         fetch('http://localhost:3000/api/providers')
         .then(async (res) => {
             const data = await res.json();
             setProviders(data);
+            setFilteredProviders(data);
         })
     }, [])
 

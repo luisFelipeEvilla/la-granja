@@ -12,10 +12,9 @@ enum idType {
   TI
   CE
   NIT
-	@@map("id_type")
 }
 
-model providers {
+model Providers {
   id         String @id @default(auto()) @map("_id") @db.ObjectId
   firstName String
   lastName  String
@@ -24,4 +23,13 @@ model providers {
   idNum    Int
   phone      Int
   createdAt DateTime @default(now())
+  products      Product[]
+}
+
+model Product {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  providerId String @db.ObjectId
+  provider   Providers @relation(fields: [providerId], references: [id])
+  liters     Int
+  createdAt  DateTime @default(now())
 }

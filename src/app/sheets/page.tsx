@@ -33,6 +33,10 @@ export default function Sheet() {
         setSheet(newSheet);    
     }
 
+    const handleSubmit = (e: any) => {
+        e.preventDefault();        
+    }
+
     return (
         <div className="w-full h-screen flex flex-col gap-2 items-center justify-center">
             <div>
@@ -44,7 +48,7 @@ export default function Sheet() {
                     selectPlaceholder="Seleccionar fecha"
                 />
             </div>
-            <form >
+            <form onSubmit={handleSubmit}>
                 <Card className="w-[600px]">
                     <Title>Planilla de recolección</Title>
 

@@ -5,19 +5,34 @@ import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 type Inputs = {
-    id: string,
+    idNum: string | number,
     idType: string,
     firstName: string,
     lastName: string,
     email: string,
-    phone: string
+    phone: string | number
 }
 export default function CreateProvider() {
     const { register, handleSubmit, formState: { errors }} = useForm<Inputs>()
     const [idType, setIdType] = useState<string>('');
 
-    const onSubmit: SubmitHandler<Inputs> = (data) => {
-        console.log(data);
+    const onSubmit: SubmitHandler<Inputs> = async (data) => {
+        const body = {
+            ...data,
+            idType: idType
+        };
+
+        body.idNum = parseInt(body.idNum as string);
+        body.phone = parseInt(body.phone as string);
+
+        const res = await fetch('/api/providers', {
+            method: 'POST',
+            body: JSON.stringify(body),
+        });
+
+        const json = await res.json();
+
+        console.log(json);
     }
 
     return (
@@ -47,10 +62,10 @@ export default function CreateProvider() {
                         <SelectItem value="NIT">NIT</SelectItem>
                     </Select>
                     <TextInput 
-                        {...register('id', { required: true})}  
-                        error={errors.id != undefined}
-                        errorMessage={errors.id ? "Este campo es requerido" : ''}
-                        placeholder="Número de identificación" 
+                        {...register('idNum', { required: true})}  
+                        error={errors.idNum != undefined}
+                        errorMessage={errors.idNum ? "Este campo es requerido" : ''}
+                        placeholder="Número de identificación"
                     />
 
                 </Card>

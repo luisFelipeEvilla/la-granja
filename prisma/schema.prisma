@@ -14,7 +14,7 @@ enum idType {
   NIT
 }
 
-model Providers {
+model Provider {
   id         String @id @default(auto()) @map("_id") @db.ObjectId
   firstName String
   lastName  String
@@ -29,7 +29,7 @@ model Providers {
 model Product {
   id         String @id @default(auto()) @map("_id") @db.ObjectId
   providerId String @db.ObjectId
-  provider   Providers @relation(fields: [providerId], references: [id])
-  liters     Int
+  provider   Provider @relation(fields: [providerId], references: [id])
+  quantity     Int
   createdAt  DateTime @default(now())
 }

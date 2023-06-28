@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export async function GET() {
     try {
-        const providers = await prisma.providers.findMany();
+        const providers = await prisma.provider.findMany();
         
         return NextResponse.json(providers)
     } catch (error: any) {
@@ -18,7 +18,7 @@ export async function POST(req: any, res: any) {
     const { ...provider }  = await req.json();
 
     try {
-        const newProvider = await prisma.providers.create({
+        const newProvider = await prisma.provider.create({
             data: { ...provider }
         });
     

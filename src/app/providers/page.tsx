@@ -3,12 +3,12 @@ import { Card, Table, TableBody, TableCell, TableHead, TableRow, Title, Text, Te
 import { SearchIcon } from "@heroicons/react/outline"
 import { useEffect, useState } from "react";
 import { milkData } from "../data/milk";
-import { Providers } from "@prisma/client";
+import { Provider } from "@prisma/client";
 
 export default function Providers() {
     const [search, setSearch] = useState<string>('');
-    const [providers, setProviders] = useState<Providers[]>([]);
-    const [filteredProviders, setFilteredProviders] = useState<Providers[]>([]);
+    const [providers, setProviders] = useState<Provider[]>([]);
+    const [filteredProviders, setFilteredProviders] = useState<Provider[]>([]);
 
     useEffect(() => {
         fetch('http://localhost:3000/api/providers')

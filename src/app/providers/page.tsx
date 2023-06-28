@@ -4,14 +4,24 @@ import { SearchIcon } from "@heroicons/react/outline"
 import { useEffect, useState } from "react";
 import { providersData } from "../data/providers";
 import { milkData } from "../data/milk";
+import { providers } from "@prisma/client";
 
 export default function Providers() {
     const [search, setSearch] = useState<string>('');
-    const [providers, setProviders] = useState<any[]>(providersData);
+    const [providers, setProviders] = useState<providers[]>([]);
+    const [filteredProviders, setFilteredProviders] = useState<providers[]>([]);
 
     useEffect(() => {
-        const filtered = providersData.filter(provider => provider.name.toLocaleLowerCase().includes(search))
-        setProviders(filtered);
+        fetch('http://localhost:3000/api/providers')
+        .then(async (res) => {
+            const data = await res.json();
+            setProviders(data);
+        })
+    }, [])
+
+    useEffect(() => {
+        const filtered = providers.filter(provider =>  `${provider.firstName} ${provider.lastName}`.toLocaleLowerCase().includes(search))
+        setFilteredProviders(filtered);
     }, [search])
 
     return (
@@ -60,9 +70,9 @@ export default function Providers() {
                             </TableHead>
                             <TableBody>
                                 {
-                                    providers.map((provider, index) =>
+                                    filteredProviders.map((provider, index) =>
                                         <TableRow key={index}>
-                                            <TableCell>{provider.name}</TableCell>
+                                            <TableCell>{provider.firstName} {provider.lastName}</TableCell>
                                             <TableCell>{provider.phone}</TableCell>
                                             <TableCell>{provider.email}</TableCell>
                                             <TableCell>Editar</TableCell>

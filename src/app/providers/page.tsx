@@ -12,7 +12,7 @@ export default function Providers() {
     const [products, setProducts] = useState<any[]>([]);
 
     useEffect(() => {
-        fetch('http://localhost:3000/api/providers')
+        fetch('/api/providers')
         .then(async (res) => {
             const data = await res.json();
             setProviders(data);

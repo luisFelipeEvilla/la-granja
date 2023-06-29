@@ -17,7 +17,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="flex">
         <SideBar />
-        <div className='w-full max-h-screen overflow-y-auto'>
+        <div className='w-full max-h-screen overflow-y-scroll'>
           {children}
         </div>
       </body>

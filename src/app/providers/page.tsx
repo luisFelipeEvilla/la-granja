@@ -24,7 +24,7 @@ export default function Providers() {
 
             setProducts(aux);
         })
-    }, [])
+    })
 
     useEffect(() => {
         setFilteredProviders(providers);

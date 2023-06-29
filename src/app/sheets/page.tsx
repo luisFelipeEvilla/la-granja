@@ -1,6 +1,5 @@
 "use client";
 import { Card, DateRangePicker, DateRangePickerValue, Table, TableBody, TableCell, TableHead, TableRow, TextInput, Title } from "@tremor/react";
-import { providersData } from "../data/providers";
 import PrimaryButton from "../componeents/buttons/PrimaryButton";
 import { useEffect, useState } from "react";
 import { es } from "date-fns/locale";

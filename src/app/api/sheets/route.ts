@@ -1,7 +1,6 @@
+import prisma from "@/db/client";
 import { PrismaClient, Product } from "@prisma/client";
 import { NextResponse } from "next/server";
-
-const prisma = new PrismaClient();
 
 export async function POST(req: any) {
     const { ...sheet }  = await req.json();

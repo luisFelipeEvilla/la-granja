@@ -4,6 +4,7 @@ import { SearchIcon } from "@heroicons/react/outline"
 import { useEffect, useState } from "react";
 import { Provider } from "@prisma/client";
 import { ProviderWithProducts } from "@/types/Provider";
+import Link from "next/link";
 
 export default function Providers() {
     const [search, setSearch] = useState<string>('');
@@ -84,7 +85,14 @@ export default function Providers() {
                                             <TableCell>{provider.firstName} {provider.lastName}</TableCell>
                                             <TableCell>{provider.phone}</TableCell>
                                             <TableCell>{provider.email}</TableCell>
-                                            <TableCell>Editar</TableCell>
+                                            <TableCell>
+                                                <Link
+                                                    href={`/providers/${provider.id}`}
+                                                    className="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                                                >
+                                                    Editar
+                                                </Link>
+                                            </TableCell>
                                         </TableRow>
                                     )
                                 }

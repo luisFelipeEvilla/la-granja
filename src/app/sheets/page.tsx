@@ -2,16 +2,13 @@
 import { Card, DateRangePicker, DateRangePickerValue, Table, TableBody, TableCell, TableHead, TableRow, TextInput, Title } from "@tremor/react";
 import PrimaryButton from "../componeents/buttons/PrimaryButton";
 import { useEffect, useState } from "react";
-import { es } from "date-fns/locale";
 import { Product, Provider } from "@prisma/client";
+import { ProductWithProvider } from "@/types/Product";
 
 export default function Sheet() {
     const [providers, setProviders] = useState<Provider[]>([]);
-    const [sheet, setSheet] = useState<Product[]>([]);
-    const [date, setDate] = useState<DateRangePickerValue>({
-        from: new Date(),
-        to: new Date(),
-    });
+    const [sheet, setSheet] = useState<ProductWithProvider[]>([]);
+    const [date, setDate] = useState<Date>(new Date());
 
 
     useEffect(() => {
@@ -19,13 +16,35 @@ export default function Sheet() {
             .then(async (res) => {
                 const data = await res.json();
                 setProviders(data);
-
+                
                 const aux = data.map((provider: Provider) => {
                     return { providerId: provider.id, quantity: 0 }
                 })
                 setSheet(aux);
             })
-    })
+    }, [])
+
+    useEffect(() => {
+        fetchSheet();
+    }, [date, providers])
+
+    const fetchSheet = async () => {
+        const res = await fetch(`/api/sheets?date=${date.toISOString().split('T')[0]}`);
+
+        const products = await res.json();
+
+        // update sheet with products
+        const newSheet = sheet.map((product) => {
+            const newProduct = products.find((p: Product) => p.providerId === product.providerId);
+            return newProduct ? newProduct : { ...product, quantity: 0};
+        });
+
+        setSheet(newSheet);
+    }
+
+    const handleDateChange = async (e: any) => {
+        setDate(new Date(e.target.value));
+    }
 
     const handleQuantityChange = (e: any, id: string) => {
         const quantity = parseInt(e.target.value);
@@ -41,7 +60,7 @@ export default function Sheet() {
         const res = await fetch('/api/sheets', {
             method: 'POST',
             body: JSON.stringify({
-                date: date.from,
+                date: date,
                 products: sheet
             })
         })
@@ -52,12 +71,11 @@ export default function Sheet() {
     return (
         <div className="w-full h-screen flex flex-col gap-2 items-center justify-center">
             <div>
-                <DateRangePicker
-                    locale={es}
-                    enableSelect={false}
-                    value={date}
-                    onValueChange={setDate}
-                    selectPlaceholder="Seleccionar fecha"
+                <input
+                    type="date"
+                    value={date.toISOString().split('T')[0]}
+                    onChange={handleDateChange}
+                    placeholder="Selecciona una fecha"
                 />
             </div>
             <form onSubmit={handleSubmit}>
@@ -74,17 +92,22 @@ export default function Sheet() {
 
                         <TableBody>
                             {
-                                providers.map((provider, index) =>
-                                    <TableRow key={index}>
-                                        <TableCell>{provider.firstName} {provider.lastName}</TableCell>
-                                        <TableCell>
-                                            <TextInput
-                                                onChange={(e) => handleQuantityChange(e, provider.id)}
-                                                placeholder="Litros de leche"
-                                                className="w-[100px]" />
-                                        </TableCell>
-                                    </TableRow>
-                                )
+                                sheet.map((product, index) => {
+                                    const provider = providers.find((provider) => provider.id === product.providerId);
+                                    return (
+                                        <TableRow key={index}>
+                                            <TableCell>{provider?.firstName} {provider?.lastName}</TableCell>
+                                            <TableCell>
+                                                <TextInput
+                                                    onChange={(e) => handleQuantityChange(e, provider?.id as string)}
+                                                    placeholder="Litros de leche"
+                                                    className="w-[100px]"
+                                                    value={sheet.find((product) => product.providerId === provider?.id)?.quantity.toString()}
+                                                />
+                                            </TableCell>
+                                        </TableRow>
+                                    )
+                                })
                             }
                         </TableBody>
                     </Table>

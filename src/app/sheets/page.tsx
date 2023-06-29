@@ -36,7 +36,7 @@ export default function Sheet() {
         // update sheet with products
         const newSheet = sheet.map((product) => {
             const newProduct = products.find((p: Product) => p.providerId === product.providerId);
-            return newProduct ? newProduct : { ...product, quantity: 0};
+            return newProduct ? { ...product, quantity: newProduct.quantity } :  { ...product, quantity: 0};
         });
 
         setSheet(newSheet);
@@ -47,7 +47,7 @@ export default function Sheet() {
     }
 
     const handleQuantityChange = (e: any, id: string) => {
-        const quantity = parseInt(e.target.value);
+        const quantity = parseInt(e.target.value || '0');
 
         const newSheet = sheet.map((product) => product.providerId === id ? { ...product, quantity } : product)
 
@@ -57,10 +57,13 @@ export default function Sheet() {
     const handleSubmit = async (e: any) => {
         e.preventDefault();
 
+        //  remove time zone from date
+        const aux = date.toISOString().split('T')[0];
+        
         const res = await fetch('/api/sheets', {
             method: 'POST',
             body: JSON.stringify({
-                date: date,
+                date: new Date(aux),
                 products: sheet
             })
         })

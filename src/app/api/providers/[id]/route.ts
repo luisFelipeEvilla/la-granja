@@ -26,3 +26,22 @@ export async function GET(req: Request, { params }: any) {
         })
     }
 }
+
+export async function PATCH(req: Request, { params }: any) {    
+    const { ...provider } = await req.json();
+    const { id } = params;
+
+    try {
+        const updatedProvider = await prisma.provider.update({
+            where: {
+                id
+            },
+            data: { ...provider }
+        });
+
+        return NextResponse.json({});
+    }   catch (error: any) {
+        console.error(error.message);
+        return new Response(error.message, { status: 500 })
+    }
+}

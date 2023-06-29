@@ -30,19 +30,19 @@ export default function CreateProvider({ params }: any) {
     const onSubmit: SubmitHandler<Inputs> = async (data) => {
         const body = {
             ...data,
-            idType: idType
+            idType: idType || provider?.idType
         };
 
         body.idNum = parseInt(body.idNum as string);
         body.phone = parseInt(body.phone as string);
 
-        const res = await fetch('/api/providers', {
-            method: 'POST',
+        const res = await fetch(`/api/providers/${params.id}`, {
+            method: 'PATCH',
             body: JSON.stringify(body),
         });
 
         const json = await res.json();
-
+        
         window.location.href = '/providers';
     }
 

@@ -1,3 +1,4 @@
+import { Toaster } from 'react-hot-toast'
 import SideBar from './componeents/sideBar'
 import './globals.css'
 
@@ -16,6 +17,7 @@ export default function RootLayout({
       <body className="flex">
         <SideBar />
         <div className='w-full max-h-screen overflow-y-scroll'>
+          <Toaster />
           {children}
         </div>
       </body>

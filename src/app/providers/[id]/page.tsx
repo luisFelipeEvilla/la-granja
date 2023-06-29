@@ -4,6 +4,7 @@ import { Provider } from "@prisma/client";
 import { Card, Select, SelectItem, TextInput, Title, } from "@tremor/react";
 import { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { toast } from "react-hot-toast";
 
 type Inputs = {
     idNum: string | number,
@@ -43,6 +44,7 @@ export default function CreateProvider({ params }: any) {
 
         const json = await res.json();
         
+        toast.success('Proveedor actualizado correctamente');
         window.location.href = '/providers';
     }
 

@@ -1,5 +1,6 @@
 import { MdAddBusiness } from "react-icons/md";
 import { BiSpreadsheet } from "react-icons/bi";
+import Image from 'next/image'
 
 export default function SideBar() {
 
@@ -11,9 +12,13 @@ export default function SideBar() {
     return (
         <div className="w-[250px] bg-slate-900 h-screen py-8 text-gray-100">
             <div className="flex justify-center">
-                <img className="rounded-full h-[120px] w-[120px] " src="/logo.png" alt="logo" />
+                <Image  
+                    className="rounded-full object-cover" 
+                    width={120} height={120}
+                    src={'/images/logo.jpg'} alt="logo" 
+                    />
             </div>
-            <div className="">
+            <div className="mt-10">
                 <ul>
                     {
                         links.map((link, index) =>

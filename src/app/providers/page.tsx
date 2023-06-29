@@ -27,13 +27,9 @@ export default function Providers() {
     })
 
     useEffect(() => {
-        setFilteredProviders(providers);
-    }, [providers])
-
-    useEffect(() => {
         const filtered = providers.filter(provider =>  `${provider.firstName} ${provider.lastName}`.toLocaleLowerCase().includes(search))
         setFilteredProviders(filtered);
-    }, [search])
+    }, [search, providers])
 
     return (
         <div className="flex flex-col w-full py-5 gap-4">

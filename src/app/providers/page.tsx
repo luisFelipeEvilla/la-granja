@@ -2,7 +2,6 @@
 import { Card, Table, TableBody, TableCell, TableHead, TableRow, Title, Text, TextInput, Metric, BarChart } from "@tremor/react";
 import { SearchIcon } from "@heroicons/react/outline"
 import { useEffect, useState } from "react";
-import { milkData } from "../data/milk";
 import { Provider } from "@prisma/client";
 import { ProviderWithProducts } from "@/types/Provider";
 

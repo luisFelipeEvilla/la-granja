@@ -16,7 +16,7 @@ export default function Sheet() {
     
 
     useEffect(() => {
-        fetch('http://localhost:3000/api/providers')
+        fetch('/api/providers')
             .then( async (res) => {
                 const data = await res.json();
                 setProviders(data);
@@ -39,7 +39,7 @@ export default function Sheet() {
     const handleSubmit = async (e: any) => {
         e.preventDefault();        
 
-        const res = await fetch('http://localhost:3000/api/sheets', {
+        const res = await fetch('/api/sheets', {
             method: 'POST',
             body: JSON.stringify({
                 date: date.from,

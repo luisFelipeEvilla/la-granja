@@ -1,10 +1,12 @@
 import { MdAddBusiness } from "react-icons/md";
-import { BiSpreadsheet } from "react-icons/bi";
+import { BiSpreadsheet, BiHome } from "react-icons/bi";
 import Image from 'next/image'
+import { HomeIcon } from "@heroicons/react/outline";
 
 export default function SideBar() {
 
     const links = [
+        { label: 'Inicio', href: '/', icon: BiHome },
         { label: 'Provedores', href: '/providers', icon: MdAddBusiness },
         { label: 'Planillas', href: '/sheets', icon: BiSpreadsheet }
     ]
@@ -13,8 +15,9 @@ export default function SideBar() {
         <div className="w-[250px] bg-slate-900 h-screen py-8 text-gray-100">
             <div className="flex justify-center">
                 <Image  
-                    className="rounded-full object-cover" 
-                    width={120} height={120}
+                    className="rounded-full object-cover w-auto"
+                    width={120}
+                    height={150}
                     src={'/images/logo.jpg'} alt="logo" 
                     />
             </div>

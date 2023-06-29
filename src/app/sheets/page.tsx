@@ -11,32 +11,32 @@ export default function Sheet() {
     const [date, setDate] = useState<DateRangePickerValue>({
         from: new Date(),
         to: new Date(),
-      });
-    
+    });
+
 
     useEffect(() => {
         fetch('/api/providers')
-            .then( async (res) => {
+            .then(async (res) => {
                 const data = await res.json();
                 setProviders(data);
 
                 const aux = data.map((provider: Provider) => {
-                    return { providerId: provider.id, quantity: 0}
+                    return { providerId: provider.id, quantity: 0 }
                 })
                 setSheet(aux);
             })
-    }, [])
+    })
 
     const handleQuantityChange = (e: any, id: string) => {
-        const quantity =  parseInt(e.target.value);
+        const quantity = parseInt(e.target.value);
 
-        const newSheet = sheet.map((product) =>  product.providerId === id ? { ...product, quantity } :  product)
+        const newSheet = sheet.map((product) => product.providerId === id ? { ...product, quantity } : product)
 
-        setSheet(newSheet);    
+        setSheet(newSheet);
     }
 
     const handleSubmit = async (e: any) => {
-        e.preventDefault();        
+        e.preventDefault();
 
         const res = await fetch('/api/sheets', {
             method: 'POST',
@@ -78,10 +78,10 @@ export default function Sheet() {
                                     <TableRow key={index}>
                                         <TableCell>{provider.firstName} {provider.lastName}</TableCell>
                                         <TableCell>
-                                        <TextInput 
-                                            onChange={(e) => handleQuantityChange(e, provider.id)}
-                                            placeholder="Litros de leche"
-                                            className="w-[100px]" />
+                                            <TextInput
+                                                onChange={(e) => handleQuantityChange(e, provider.id)}
+                                                placeholder="Litros de leche"
+                                                className="w-[100px]" />
                                         </TableCell>
                                     </TableRow>
                                 )

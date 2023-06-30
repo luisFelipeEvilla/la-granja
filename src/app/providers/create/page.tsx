@@ -37,8 +37,8 @@ export default function CreateProvider() {
 
     return (
         <div className="flex h-full w-full items-center py-14">
-            <form onSubmit={handleSubmit(onSubmit)} className="flex items-center w-full flex-col gap-6">
-                <Card className="flex flex-col gap-2 w-[600px]">
+            <form onSubmit={handleSubmit(onSubmit)} className="grid col-span-1 justify-center gap-6 w-full ">
+                <Card className="grid col-span-1 gap-2 w-[600px]">
                     <Title>Información Básica</Title>
                     <TextInput 
                         {...register('firstName', { required: true})}

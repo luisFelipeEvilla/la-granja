@@ -42,23 +42,16 @@ export default function Providers() {
                 </a>
             </div>
 
-            <div className="flex gap-8 justify-end mx-32">
-                <Card className="w-fit" decoration="top" decorationColor="green">
+            <div className="flex justify-end mx-32">
+                <Card className="mr-8 w-fit" decoration="top" decorationColor="green">
                     <Text>Proveedores activos</Text>
                     <Metric>{providers.length}</Metric>
-                </Card>
-
-                <Card className="w-fit" decoration="top" decorationColor="green">
-                    <Text>Litros de leche Recogidos</Text>
-                    <Metric>{
-                        products.reduce((acc, product) => acc + product.Cantidad, 0)
-                    }</Metric>
                 </Card>
             </div>
 
             <section className="flex w-full justify-center h-fit">
-                <div className="flex flex-col gap-3 w-fit">
-                    <div className="">
+                <div className="flex flex-col w-fit">
+                    <div className="mb-3">
                         <TextInput className="w-[240px]"
                             icon={SearchIcon}
                             placeholder="Buscar"
@@ -100,18 +93,6 @@ export default function Providers() {
                         </Table>
                     </Card>
                 </div>
-            </section>
-
-            <section className="flex justify-center"> 
-                <Card className="max-w-[800px]">
-                    <Title>Litros de Leche por proveedor</Title>
-                    <BarChart
-                        data={products}
-                        index="provider"
-                        categories={["Cantidad"]}
-                        colors={["blue"]}
-                    />
-                </Card>
             </section>
         </div>
     )

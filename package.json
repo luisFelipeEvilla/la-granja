@@ -12,6 +12,7 @@
   "dependencies": {
     "@heroicons/react": "^1.0.6",
     "@prisma/client": "^4.16.1",
+    "@react-pdf/renderer": "^3.1.12",
     "@tremor/react": "^3.2.3",
     "@types/node": "20.3.1",
     "@types/react": "18.2.13",

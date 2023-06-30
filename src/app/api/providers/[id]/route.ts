@@ -1,13 +1,28 @@
 import prisma from "@/db/client";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: Request, { params }: any) {
+export async function GET(req: NextRequest, { params }: any) {
     const { id } = params;
+    const startDate = req.nextUrl.searchParams.get('startDate') 
+    const endDate = req.nextUrl.searchParams.get('endDate')
+
+    const today = new Date();
+    const todayMinus30 = new Date();
+    todayMinus30.setDate(todayMinus30.getDate() - 30);
 
     try {
         const provider = await prisma.provider.findUnique({
             where: {
-                id
+                id,
+            }, include: {
+                products: {
+                    where: {
+                        createdAt: {
+                            gte: startDate ? new Date(startDate) : todayMinus30,
+                            lte: endDate ? new Date(endDate) : today
+                        }
+                    }
+                }
             }
         })
 

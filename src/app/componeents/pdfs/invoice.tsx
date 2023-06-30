@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
     header: { display: 'flex', flexDirection: 'row', justifyContent: "space-between",  alignItems: 'center', marginBottom: 20 },
     title: { fontSize: 24, textAlign: 'center', marginRight: 50 },
     date: { fontSize: 12, textAlign: 'right', marginRight: 20 },
-    fieldLabel: { fontSize: 13, fontWeight: 700 },
+    fieldLabel: { fontSize: 13, fontWeight: 700, marginBottom: 4 },
     fieldValue: { fontSize: 12, marginBottom: 10 },
     divider: { border: '1px solid gray', marginBottom: 10 },
     table: {
@@ -70,14 +70,19 @@ export default function PDFView(props: Props) {
         return getPrice(total);
     }
 
+    const getIdNumber = (idNum: number) => {
+        //return with millar point separator
+        return new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(idNum);
+    }
+
     const getDate = (dateString: Date) => {
         const date = new Date(dateString);
-        return `${date.toLocaleDateString()}`;
+        return `${date.toISOString().split('T')[0].split('-').reverse().join('/')}`
     }
 
     return (
         <PDFViewer style={{ height: '100%', width: '100%' }}>
-            <Document>
+            <Document title={`Liquidación ${props.provider.firstName} ${props.provider.lastName}`}>
                 <Page style={styles.body}>
                     <View style={styles.header}>
                         <Image style={styles.logo} src={'/images/logo.jpg'}/>
@@ -97,20 +102,20 @@ export default function PDFView(props: Props) {
                             </View>
 
                             <View>
-                                <Text style={styles.fieldLabel}>Número de identificación</Text>
-                                <Text style={styles.fieldValue}>{props.provider.idNum}</Text>
+                                <Text style={styles.fieldLabel}>Número de Identificación</Text>
+                                <Text style={styles.fieldValue}>{getIdNumber(props.provider.idNum)}</Text>
                             </View>
                         </View>
 
 
-                        <View style={{ marginLeft: 50}}>
+                        <View style={{ marginLeft: 70}}>
                             <View>
-                                <Text style={styles.fieldLabel}>Número de telefono</Text>
-                                <Text style={styles.fieldValue}>{props.provider.phone}</Text>
+                                <Text style={styles.fieldLabel}>Número Telefónico</Text>
+                                <Text style={styles.fieldValue}>(+57) {props.provider.phone}</Text>
                             </View>
 
                             <View>
-                                <Text style={styles.fieldLabel}>Correo electronico</Text>
+                                <Text style={styles.fieldLabel}>Correo Electrónico</Text>
                                 <Text style={styles.fieldValue}>{props.provider.email}</Text>
                             </View>
                         </View>
@@ -121,7 +126,7 @@ export default function PDFView(props: Props) {
                     <View style={styles.table}>
                         <View style={styles.tableRow}>
                             <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Producto</Text>
-                            <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Fecha de ingreso</Text>
+                            <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Fecha de Ingreso</Text>
                             <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Precio</Text>
                             <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Cantidad</Text>
                             <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Total</Text>

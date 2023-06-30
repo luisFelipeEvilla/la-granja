@@ -72,8 +72,8 @@ export default function Sheet() {
     }
 
     return (
-        <div className="w-full h-screen flex flex-col gap-2 items-center justify-center">
-            <div>
+        <div className="w-full h-screen flex flex-col items-center justify-center">
+            <div className="mb-4 rounded-md bg-white border shadow-sm cursor-pointer px-3 py-1 focus:outline-none ring-0">
                 <input
                     type="date"
                     value={date.toISOString().split('T')[0]}

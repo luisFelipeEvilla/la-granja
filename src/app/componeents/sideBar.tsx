@@ -27,9 +27,9 @@ export default function SideBar() {
                         links.map((link, index) =>
                             <li key={index} className="flex items-center px-4 py-2 text-center border-t-[1px] border-slate-400 hover:bg-slate-800">
                                 <a href={link.href} 
-                                    className="flex gap-2">
+                                    className="flex">
                                     {<link.icon className="fill-gray-100 text-2xl" />}
-                                    {link.label}
+                                    <p className="ml-2">{link.label}</p>
                                 </a>
                             </li>
                         )

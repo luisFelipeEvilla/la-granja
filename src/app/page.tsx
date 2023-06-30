@@ -31,9 +31,9 @@ export default function Providers() {
     }, [search, providers])
 
     return (
-        <div className="flex flex-col w-full py-5 gap-4">
-            <div className="flex gap-8 justify-end mx-32">
-                <Card className="w-fit" decoration="top" decorationColor="green">
+        <div className="grid col-span-1 w-full py-5 gap-4">
+            <div className="flex justify-end mx-32">
+                <Card className="mr-4 w-fit" decoration="top" decorationColor="green">
                     <Text>Proveedores activos</Text>
                     <Metric>{providers.length}</Metric>
                 </Card>

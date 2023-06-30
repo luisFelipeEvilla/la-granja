@@ -1,5 +1,5 @@
 "use client";
-import { Card, DateRangePicker, DateRangePickerValue, Table, TableBody, TableCell, TableHead, TableRow, TextInput, Title } from "@tremor/react";
+import { Card, Metric, Table, TableBody, TableCell, TableHead, TableRow, TextInput, Text, Title } from "@tremor/react";
 import PrimaryButton from "../componeents/buttons/PrimaryButton";
 import { useEffect, useState } from "react";
 import { Product, Provider } from "@prisma/client";
@@ -9,6 +9,7 @@ export default function Sheet() {
     const [providers, setProviders] = useState<Provider[]>([]);
     const [sheet, setSheet] = useState<ProductWithProvider[]>([]);
     const [date, setDate] = useState<Date>(new Date());
+    const [total, setTotal] = useState<number>(0);
 
 
     useEffect(() => {
@@ -16,7 +17,7 @@ export default function Sheet() {
             .then(async (res) => {
                 const data = await res.json();
                 setProviders(data);
-                
+
                 const aux = data.map((provider: Provider) => {
                     return { providerId: provider.id, quantity: 0 }
                 })
@@ -28,6 +29,14 @@ export default function Sheet() {
         fetchSheet();
     }, [date, providers])
 
+    useEffect(() => {
+        console.log('hola');
+        
+        const total = sheet.reduce((acc, product) => acc + product.quantity, 0);
+
+        setTotal(total);
+    }, [sheet])
+
     const fetchSheet = async () => {
         const res = await fetch(`/api/sheets?date=${date.toISOString().split('T')[0]}`);
 
@@ -36,9 +45,8 @@ export default function Sheet() {
         // update sheet with products
         const newSheet = sheet.map((product) => {
             const newProduct = products.find((p: Product) => p.providerId === product.providerId);
-            return newProduct ? { ...product, quantity: newProduct.quantity } :  { ...product, quantity: 0};
+            return newProduct ? { ...product, quantity: newProduct.quantity } : { ...product, quantity: 0 };
         });
-
         setSheet(newSheet);
     }
 
@@ -59,7 +67,7 @@ export default function Sheet() {
 
         //  remove time zone from date
         const aux = date.toISOString().split('T')[0];
-        
+
         const res = await fetch('/api/sheets', {
             method: 'POST',
             body: JSON.stringify({
@@ -114,6 +122,10 @@ export default function Sheet() {
                             }
                         </TableBody>
                     </Table>
+
+                    <div className="flex items-center">
+                        <Text>Total: <span className="font-bold">{total}</span></Text>
+                    </div>
                 </Card>
 
                 <div className="w-full flex mt-6 justify-center">

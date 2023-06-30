@@ -10,7 +10,7 @@ const InvoicePDF = dynamic(() => import("../../componeents/pdfs/invoice"), {
 export default function InvoicesPdf({ searchParams }: any) {
     const [provider, setProvider] = useState<ProviderWithProducts>({} as ProviderWithProducts);
     const [loading, setLoading] = useState(true);
-    const { provider: providerId, startDate, endDate, price } = searchParams;
+    const { providerId, startDate, endDate, price } = searchParams;
 
     useEffect(() => {
 

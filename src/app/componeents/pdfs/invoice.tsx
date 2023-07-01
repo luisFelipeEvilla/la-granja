@@ -136,8 +136,8 @@ export default function PDFView(props: Props) {
                         <View style={styles.tableRow}>
                             <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Producto</Text>
                             <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Fecha de Ingreso</Text>
-                            <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Precio</Text>
                             <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Cantidad</Text>
+                            <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Precio</Text>
                             <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Total</Text>
                         </View>
 

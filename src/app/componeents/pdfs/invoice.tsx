@@ -61,13 +61,22 @@ export default function PDFView(props: Props) {
         return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(amount);
     }
 
-    const getTotal = () => {
+    const getTotalPrice = () => {
         let total = 0;
         props.provider.products.forEach(product => {
             total += props.price * product.quantity;
         });
 
         return getPrice(total);
+    }
+
+    const getTotal = () => {
+        let total = 0;
+        props.provider.products.forEach(product => {
+            total += product.quantity;
+        });
+
+        return total;
     }
 
     const getIdNumber = (idNum: number) => {
@@ -135,10 +144,10 @@ export default function PDFView(props: Props) {
                         {
                             props.provider.products.map((product, index) => (
                                 <View style={styles.tableRow} key={index}>
-                                    <Text style={styles.tableCell}>Litros de Leche</Text>
+                                    <Text style={styles.tableCell}>Leche entera(Lts)</Text>
                                     <Text style={styles.tableCell}>{ getDate(product.createdAt)}</Text>
-                                    <Text style={styles.tableCell}>{ getPrice(props.price) }</Text>
                                     <Text style={styles.tableCell}>{product.quantity}</Text>
+                                    <Text style={styles.tableCell}>{ getPrice(props.price) }</Text>
                                     <Text style={styles.tableCell}>{ getPrice(product.quantity * props.price)}</Text>
                                 </View>
                             ))
@@ -147,9 +156,9 @@ export default function PDFView(props: Props) {
                         <View style={styles.tableRow}>
                             <Text style={{ ...styles.tableCell }}>Total</Text>
                             <Text style={{ ...styles.tableCell }}></Text>
+                            <Text style={{ ...styles.tableCell }}>{ getTotal() }</Text>
                             <Text style={{ ...styles.tableCell }}></Text>
-                            <Text style={{ ...styles.tableCell }}></Text>
-                            <Text style={{ ...styles.tableCell }}>{getTotal()}</Text>
+                            <Text style={{ ...styles.tableCell }}>{getTotalPrice()}</Text>
                         </View>
                     </View>
 

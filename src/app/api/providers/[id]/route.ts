@@ -21,6 +21,9 @@ export async function GET(req: NextRequest, { params }: any) {
                             gte: startDate ? new Date(startDate) : todayMinus30,
                             lte: endDate ? new Date(endDate) : today
                         }
+                    },
+                    orderBy: {
+                        createdAt: 'asc'
                     }
                 }
             }

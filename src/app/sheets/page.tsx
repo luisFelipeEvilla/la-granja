@@ -4,6 +4,7 @@ import PrimaryButton from "../componeents/buttons/PrimaryButton";
 import { useEffect, useState } from "react";
 import { Product, Provider } from "@prisma/client";
 import { ProductWithProvider } from "@/types/Product";
+import { toast } from "react-hot-toast";
 
 export default function Sheet() {
     const [providers, setProviders] = useState<Provider[]>([]);
@@ -76,7 +77,7 @@ export default function Sheet() {
             })
         })
 
-        window.location.reload();
+        toast.success('Planilla guardada con éxito');
     }
 
     return (
@@ -87,6 +88,8 @@ export default function Sheet() {
                     value={date.toISOString().split('T')[0]}
                     onChange={handleDateChange}
                     placeholder="Selecciona una fecha"
+                    // set max date to today
+                    max={new Date().toISOString().split('T')[0]}
                 />
             </div>
             <form onSubmit={handleSubmit}>

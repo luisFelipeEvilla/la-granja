@@ -1,5 +1,5 @@
 "use client"
-import { Card, Table, TableBody, TableCell, TableHead, TableRow, Title, Text, TextInput, Metric, BarChart, Select, SelectItem, DateRangePicker, DateRangePickerValue } from "@tremor/react";
+import { Card, Table, TableBody, TableCell, TableHead, TableRow, Title, Text, TextInput, Metric, BarChart, Select, SelectItem, DateRangePicker, DateRangePickerValue, MultiSelectItem, MultiSelect } from "@tremor/react";
 import { useEffect, useState } from "react";
 import { Provider } from "@prisma/client";
 import { ProviderWithProducts } from "@/types/Provider";
@@ -7,7 +7,7 @@ import { es } from "date-fns/locale";
 
 export default function Providers() {
     const [search, setSearch] = useState<string>('');
-    const [providers, setProviders] = useState<Provider[]>([]);
+    const [providers, setProviders] = useState<ProviderWithProducts[]>([]);
     const [filteredProviders, setFilteredProviders] = useState<Provider[]>([]);
     const [products, setProducts] = useState<any[]>([]);
     const [dates, setDates] = useState<DateRangePickerValue>({
@@ -19,20 +19,28 @@ export default function Providers() {
         .then(async (res) => {
             const data = await res.json();
             setProviders(data);
-
-            const aux = data.map((provider: ProviderWithProducts) => {
-                const cantidad = provider.products.reduce((acc, product) => acc + product.quantity, 0);
-                return { provider: `${provider.firstName} ${provider.lastName}`, "Cantidad": cantidad}
-            });
-
-            setProducts(aux);
-        })
+        });
     }, [dates])
 
     useEffect(() => {
-        const filtered = providers.filter(provider =>  `${provider.firstName} ${provider.lastName}`.toLocaleLowerCase().includes(search))
+        handleFilterProvider(providers.map(provider => provider.id));
+        updateProducts(providers);
+    }, [providers])
+
+    const updateProducts = (providers: ProviderWithProducts[]) => {
+        const aux = providers.map((provider: ProviderWithProducts) => {
+            const cantidad = provider.products.reduce((acc, product) => acc + product.quantity, 0);
+            return { provider: `${provider.firstName} ${provider.lastName}`, "Cantidad": cantidad}
+        });
+
+        setProducts(aux);
+    }
+
+    const handleFilterProvider = (id: string[]) => {
+        const filtered = providers.filter(provider => id.includes(provider.id));
         setFilteredProviders(filtered);
-    }, [search, providers])
+        updateProducts(filtered);
+    }
 
     return (
         <div className="grid col-span-1 w-full py-5 gap-4">
@@ -44,16 +52,18 @@ export default function Providers() {
                     selectPlaceholder="Fechas"
                     className="max-w-[300px]"
                 />
-                <Select
+                <MultiSelect
                     placeholder="Seleccionar proveedor"
-                    className="max-w-[300px]"
+                    className="max-w-fit"
+                    value={filteredProviders.map(provider => provider.id)}
+                    onValueChange={e => handleFilterProvider(e)}
                 >
                     {
                         providers.map((provider) => (
-                            <SelectItem value={provider.id}>{provider.firstName} {provider.lastName}</SelectItem>
+                            <MultiSelectItem   value={provider.id} key={provider.id}>{provider.firstName} {provider.lastName}</MultiSelectItem>
                         ))
                     }
-                </Select>
+                </MultiSelect>
             </div>
             <div className="flex justify-end mx-32">
                 <Card className="mr-4 w-fit" decoration="top" decorationColor="green">

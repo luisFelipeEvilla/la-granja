@@ -15,7 +15,10 @@ export default function Providers() {
     });
 
     useEffect(() => {
-        fetch(`/api/providers?startDate=${dates.from?.toISOString()}&endDate=${dates.to?.toISOString()}`)
+        const startDate = dates.from?.toISOString().slice(0, 10);
+        const endDate = dates.to?.toISOString().slice(0, 10);
+
+        fetch(`/api/providers?startDate=${startDate}&endDate=${endDate}`)
             .then(async (res) => {
                 const data = await res.json();
                 setProviders(data);

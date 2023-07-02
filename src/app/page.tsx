@@ -15,7 +15,7 @@ export default function Providers() {
     });
 
     useEffect(() => {
-        fetch('/api/providers')
+        fetch(`/api/providers?startDate=${dates.from?.toISOString()}&endDate=${dates.to?.toISOString()}`)
         .then(async (res) => {
             const data = await res.json();
             setProviders(data);
@@ -27,7 +27,7 @@ export default function Providers() {
 
             setProducts(aux);
         })
-    })
+    }, [dates])
 
     useEffect(() => {
         const filtered = providers.filter(provider =>  `${provider.firstName} ${provider.lastName}`.toLocaleLowerCase().includes(search))

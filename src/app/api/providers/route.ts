@@ -1,10 +1,26 @@
 import prisma from "@/db/client";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(req: any) {
+    const startDate = req.nextUrl.searchParams.get('startDate') 
+    const endDate = req.nextUrl.searchParams.get('endDate')
+
+    const today = new Date();
+    const todayMinus30 = new Date();
+    todayMinus30.setDate(todayMinus30.getDate() - 30);
+
     try {
         const providers = await prisma.provider.findMany({
-             include: { products: true },
+             include: {
+                products: {
+                    where: {
+                        createdAt: {
+                            gte: startDate ? new Date(startDate) : todayMinus30,
+                            lte: endDate ? new Date(endDate) : today
+                        }
+                    }
+                }
+            },
              orderBy: [
                 {
                     firstName: 'asc'

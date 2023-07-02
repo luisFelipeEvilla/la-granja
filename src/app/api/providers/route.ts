@@ -6,8 +6,8 @@ export async function GET(req: any) {
     const endDate = req.nextUrl.searchParams.get('endDate')
 
     const today = new Date();
-    const todayMinus30 = new Date();
-    todayMinus30.setDate(todayMinus30.getDate() - 30);
+    const minDate = new Date();
+    minDate.setDate(minDate.getDate() - 1);
 
     try {
         const providers = await prisma.provider.findMany({
@@ -15,7 +15,7 @@ export async function GET(req: any) {
                 products: {
                     where: {
                         createdAt: {
-                            gte: startDate ? new Date(startDate) : todayMinus30,
+                            gte: startDate ? new Date(startDate) : minDate,
                             lte: endDate ? new Date(endDate) : today
                         }
                     }

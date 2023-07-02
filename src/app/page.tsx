@@ -6,13 +6,13 @@ import { ProviderWithProducts } from "@/types/Provider";
 import { es } from "date-fns/locale";
 
 export default function Providers() {
-    const [search, setSearch] = useState<string>('');
     const [providers, setProviders] = useState<ProviderWithProducts[]>([]);
     const [filteredProviders, setFilteredProviders] = useState<Provider[]>([]);
     const [products, setProducts] = useState<any[]>([]);
     const [dates, setDates] = useState<DateRangePickerValue>({
         from: new Date(), to: new Date()
     });
+    const [average, setAverage] = useState(0);
 
     useEffect(() => {
         const startDate = dates.from?.toISOString().slice(0, 10);
@@ -37,6 +37,12 @@ export default function Providers() {
         });
 
         setProducts(aux);
+
+        // @ts-ignore
+        const numberOfDays = (dates.to?.getTime() - dates.from?.getTime()) / (1000 * 3600 * 24) + 1;
+
+        const average = aux.reduce((acc, product) => acc + product.Cantidad, 0) / numberOfDays;
+        setAverage(average);
     }
 
     const handleFilterProvider = (id: string[]) => {
@@ -74,11 +80,16 @@ export default function Providers() {
                     <Metric>{filteredProviders.length}</Metric>
                 </Card>
 
-                <Card className="w-fit" decoration="top" decorationColor="green">
+                <Card className="w-fit mr-4" decoration="top" decorationColor="green">
                     <Text>Litros de leche Recogidos</Text>
                     <Metric>{
                         products.reduce((acc, product) => acc + product.Cantidad, 0)
                     }</Metric>
+                </Card>
+
+                <Card className="w-fit" decoration="top" decorationColor="green">
+                    <Text>Promedio de litros de leche recogidos</Text>
+                    <Metric>{average}</Metric>
                 </Card>
             </div>
 

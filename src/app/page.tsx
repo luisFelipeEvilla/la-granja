@@ -1,5 +1,5 @@
 "use client"
-import { Card, Table, TableBody, TableCell, TableHead, TableRow, Title, Text, TextInput, Metric, BarChart, Select, SelectItem, DateRangePicker, DateRangePickerValue, MultiSelectItem, MultiSelect, DonutChart } from "@tremor/react";
+import { Card, Table, TableBody, TableCell, TableHead, TableRow, Title, Text, TextInput, Metric, BarChart, Select, SelectItem, DateRangePicker, DateRangePickerValue, MultiSelectItem, MultiSelect, DonutChart, LineChart } from "@tremor/react";
 import { useEffect, useState } from "react";
 import { Provider } from "@prisma/client";
 import { ProviderWithProducts } from "@/types/Provider";
@@ -9,6 +9,7 @@ export default function Providers() {
     const [providers, setProviders] = useState<ProviderWithProducts[]>([]);
     const [filteredProviders, setFilteredProviders] = useState<Provider[]>([]);
     const [products, setProducts] = useState<any[]>([]);
+    const [productsByDate, setProductsByDate] = useState<any[]>([]);
     const [dates, setDates] = useState<DateRangePickerValue>({
         from: new Date(), to: new Date()
     });
@@ -43,6 +44,29 @@ export default function Providers() {
 
         const average = aux.reduce((acc, product) => acc + product.Cantidad, 0) / numberOfDays;
         setAverage(average);
+
+        const totalByDates = [];
+
+        for (let i = 0; i < numberOfDays; i++) {
+            // @ts-ignore
+            const date = new Date(dates.from?.getTime() + i * 1000 * 3600 * 24);
+            const dateString = date.toISOString().slice(0, 10);
+
+            const total = providers.map(provider => {
+                const product = provider.products.find(product => {
+                    const productDate = new Date(product.createdAt).toISOString().slice(0, 10);
+                    return productDate  === dateString
+                });
+                return product ? product.quantity : 0;
+           })
+
+           totalByDates.push({
+                "Fecha": dateString,
+                "Cantidad": total.reduce((acc, quantity) => acc + quantity, 0) 
+           })
+        }
+
+        setProductsByDate(totalByDates);
     }
 
     const handleFilterProvider = (id: string[]) => {
@@ -89,11 +113,11 @@ export default function Providers() {
 
                 <Card className="w-fit" decoration="top" decorationColor="green">
                     <Text>Promedio de litros de leche recogidos</Text>
-                    <Metric>{average}</Metric>
+                    <Metric>{new Intl.NumberFormat('es-co', { maximumFractionDigits: 0}).format(average)}</Metric>
                 </Card>
             </div>
 
-            <section className="flex justify-center ">
+            <section className="grid gap-4 justify-center ">
                 <div className="grid gap-4">
                     <Title>Litros de Leche por proveedor</Title>
                     <div  className="w-[800px] grid grid-flow-col gap-4">
@@ -116,8 +140,27 @@ export default function Providers() {
                             />
                         </Card>
                     </div>
-
                 </div>
+
+                <div className="grid gap-4">
+                    <Title>Litros de Leche por día</Title>
+                    <div  className="w-[800px] grid grid-flow-col gap-4">
+                        <Card className="">
+                            <LineChart
+                                className="w-[600px]"
+                                data={productsByDate}
+                                index="Fecha"
+                                categories={["Cantidad"]}
+                                colors={["blue"]}
+                            />
+                        </Card>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                
+           
             </section>
         </div>
     )

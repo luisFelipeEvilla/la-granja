@@ -3,8 +3,17 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
     try {
-        const providers = await prisma.provider.findMany(
-            { include: { products: true }}
+        const providers = await prisma.provider.findMany({
+             include: { products: true },
+             orderBy: [
+                {
+                    firstName: 'asc'
+                },
+                {
+                    lastName: 'asc'
+                }
+             ]
+            }
         );
         
         return NextResponse.json(providers)

@@ -81,7 +81,7 @@ export default function Sheet() {
     }
 
     return (
-        <div className="w-full h-screen flex flex-col items-center justify-center">
+        <div className="w-full h-screen flex flex-col items-center justify-center py-4">
             <div className="mb-4 rounded-md bg-white border shadow-sm cursor-pointer px-3 py-1 focus:outline-none ring-0">
                 <input
                     type="date"
@@ -96,7 +96,7 @@ export default function Sheet() {
                 <Card className="w-[600px]">
                     <Title>Planilla de recolección</Title>
 
-                    <Table>
+                    <Table className="max-h-[400px] overflow-y-scroll">
                         <TableHead>
                             <TableRow>
                                 <TableCell>Proveedor</TableCell>

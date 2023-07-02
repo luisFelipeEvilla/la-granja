@@ -1,5 +1,5 @@
 "use client"
-import { Card, Table, TableBody, TableCell, TableHead, TableRow, Title, Text, TextInput, Metric, BarChart, Select, SelectItem, DateRangePicker, DateRangePickerValue, MultiSelectItem, MultiSelect, DonutChart, LineChart } from "@tremor/react";
+import { Card, Title, Text, Metric, BarChart, DateRangePicker, DateRangePickerValue, MultiSelectItem, MultiSelect, DonutChart, LineChart } from "@tremor/react";
 import { useEffect, useState } from "react";
 import { Provider } from "@prisma/client";
 import { ProviderWithProducts } from "@/types/Provider";
@@ -44,8 +44,19 @@ export default function Providers() {
 
         const average = aux.reduce((acc, product) => acc + product.Cantidad, 0) / numberOfDays;
         setAverage(average);
+        getTotalProductsByDate(providers);
+    }
 
+    const handleFilterProvider = (id: string[]) => {
+        const filtered = providers.filter(provider => id.includes(provider.id));
+        setFilteredProviders(filtered);
+        updateProducts(filtered);
+    }
+
+    const getTotalProductsByDate = (providers: ProviderWithProducts[]) => {
         const totalByDates = [];
+        // @ts-ignore
+        const numberOfDays = (dates.to?.getTime() - dates.from?.getTime()) / (1000 * 3600 * 24) + 1;
 
         for (let i = 0; i < numberOfDays; i++) {
             // @ts-ignore
@@ -67,12 +78,6 @@ export default function Providers() {
         }
 
         setProductsByDate(totalByDates);
-    }
-
-    const handleFilterProvider = (id: string[]) => {
-        const filtered = providers.filter(provider => id.includes(provider.id));
-        setFilteredProviders(filtered);
-        updateProducts(filtered);
     }
 
     return (

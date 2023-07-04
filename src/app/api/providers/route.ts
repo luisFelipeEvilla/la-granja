@@ -1,5 +1,5 @@
 import prisma from "@/db/client";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function GET(req: any) {
     const startDate = req.nextUrl.searchParams.get('startDate') 

@@ -95,7 +95,7 @@ export default function PDFView(props: Props) {
                 <Page style={styles.body}>
                     <View style={styles.header}>
                         <Image style={styles.logo} src={'/images/logo.jpg'}/>
-                        <Text style={styles.title}> Lacteós La Granja </Text>
+                        <Text style={styles.title}> Lácteos La Granja </Text>
                         <View style={styles.date}>
                             <Text>{new Date().toLocaleDateString()}</Text>
                         </View>

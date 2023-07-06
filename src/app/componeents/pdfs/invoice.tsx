@@ -166,12 +166,11 @@ export default function PDFView(props: Props) {
     )
     return (
         <PDFDownloadLink 
-            className="bg-green"
+            // style={{ textDecoration: 'none', color: 'white', backgroundColor: 'green', padding: 10, borderRadius: 5}}
+            className="bg-blue-500 p-2 rounded-md text-white text-center"
             document={<MyDocument />} 
             fileName={`Liquidación ${props.provider.firstName} ${props.provider.lastName}.pdf`}
-        ><button className="bg-blue-500">
-            Descargar PDF
-        </button>
+        >Descargar
         </PDFDownloadLink>
     )
 }

@@ -3,7 +3,13 @@ import { Provider } from "@prisma/client";
 import { Card, DateRangePicker, DateRangePickerValue, Select, SelectItem, TextInput, Title } from "@tremor/react";
 import { es } from "date-fns/locale";
 import { useEffect, useState } from "react";
-import PrimaryButton from "../componeents/buttons/PrimaryButton";
+import { ProviderWithProducts } from "@/types/Provider";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import dynamic from "next/dynamic";
+
+const InvoicePDF = dynamic(() => import("../componeents/pdfs/invoice"), {
+    ssr: false
+});
 
 export default function Invoices() {
     const [providers, setProviders] = useState<Provider[]>([]);
@@ -13,6 +19,9 @@ export default function Invoices() {
     const [price, setPrice] = useState<number>(0);
     const [providerSelected, setProviderSelected] = useState<string | null>(null);
 
+    const [loadingInvoice, setLoadingInvoice] = useState(true);
+    const [providerWithProducts, setProviderWithProducts] = useState<ProviderWithProducts>();
+
     useEffect(() => {
         fetch('/api/providers')
             .then(async (res) => {
@@ -21,17 +30,24 @@ export default function Invoices() {
             })
     }, [])
 
-    const handleGenerateInvoice = (e: any) => {
+    const handleGenerateInvoice = async (e: any) => {
         e.preventDefault();
 
-        if (!providerSelected || !dates.from || !dates.to || !price) return alert('Todos los campos son requeridos');    
+        if (!providerSelected || !dates.from || !dates.to || !price) return alert('Todos los campos son requeridos');
 
         const startDate = new Date(dates.from).toISOString().split('T')[0];
         const endDate = new Date(dates.to).toISOString().split('T')[0];
 
-        const url = `/invoices/pdf/?providerId=${providerSelected}&startDate=${startDate}&endDate=${endDate}&price=${price}`;
+        // const url = `/invoices/pdf/?providerId=${providerSelected}&startDate=${startDate}&endDate=${endDate}&price=${price}`;
+        // window.location.href = url;
 
-        window.location.href = url;
+        const url = `/api/providers/${providerSelected}?startDate=${startDate}&endDate=${endDate}`;
+
+        const res = await fetch(url);
+
+        const data = await res.json();
+
+        setProviderWithProducts(data);
     }
 
     return (
@@ -60,9 +76,17 @@ export default function Invoices() {
 
                     <TextInput onChange={(e) => setPrice(parseInt(e.target.value) || 0)} placeholder="Precio" />
 
-                    <button  className="rounded-md px-4 py-2 bg-green-500 text-white hover:bg-green-600">
+                    <button className="rounded-md px-4 py-2 bg-green-500 text-white hover:bg-green-600">
                         Generar factura
                     </button>
+
+                    {
+                        providerWithProducts && 
+                            <InvoicePDF
+                                price={price} 
+                                provider={providerWithProducts} 
+                            />                     
+                    }
                 </form>
             </Card>
         </div>

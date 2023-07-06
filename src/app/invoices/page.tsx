@@ -4,7 +4,6 @@ import { Card, DateRangePicker, DateRangePickerValue, Select, SelectItem, TextIn
 import { es } from "date-fns/locale";
 import { useEffect, useState } from "react";
 import { ProviderWithProducts } from "@/types/Provider";
-import { PDFDownloadLink } from "@react-pdf/renderer";
 import dynamic from "next/dynamic";
 
 const InvoicePDF = dynamic(() => import("../componeents/pdfs/invoice"), {

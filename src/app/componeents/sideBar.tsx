@@ -3,6 +3,7 @@ import { MdAddBusiness } from "react-icons/md";
 import { BiSpreadsheet, BiHome } from "react-icons/bi";
 import Image from 'next/image'
 import { useState } from "react";
+import { LiaFileInvoiceDollarSolid} from "react-icons/lia";
 
 type Link = {
     label: string;
@@ -11,13 +12,13 @@ type Link = {
 }
 
 export default function SideBar() {
-    const [isOpen, setIsOpen] = useState(true);
+    const [isOpen, setIsOpen] = useState(false);
 
     const links = [
         { label: 'Inicio', href: '/', icon: BiHome },
         { label: 'Provedores', href: '/providers', icon: MdAddBusiness },
         { label: 'Planillas', href: '/sheets', icon: BiSpreadsheet },
-        { label: 'Facturación', href: '/invoices', icon: BiSpreadsheet }
+        { label: 'Facturación', href: '/invoices', icon: LiaFileInvoiceDollarSolid }
     ]
 
     const OpenMenuButton = () => {
@@ -55,7 +56,9 @@ export default function SideBar() {
 
             <OpenMenuButton />
 
-            <div className={`absolute top-0 left-0 w-full h-screen bg-black opacity-50
+            <div 
+                onClick={() => setIsOpen(false)}
+                className={`absolute top-0 left-0 w-full h-screen bg-black opacity-50
                 ${isOpen ? 'ease-in block' : 'ease-out hidden'} duration-3000
             `}></div>
 
@@ -73,7 +76,7 @@ export default function SideBar() {
                     />
                 </div>
                 <div className="mt-10">
-                    
+
                     <ul>
                         {
                             links.map((link, index) => <LinkButton key={index} link={link} />)

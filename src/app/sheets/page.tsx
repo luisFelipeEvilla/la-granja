@@ -81,7 +81,7 @@ export default function Sheet() {
     }
 
     return (
-        <div className="w-full h-screen flex flex-col items-center justify-center py-4">
+        <div className="flex flex-col items-center justify-center w-full h-screen ">
             <div className="mb-4 rounded-md bg-white border shadow-sm cursor-pointer px-3 py-1 focus:outline-none ring-0">
                 <input
                     type="date"
@@ -92,8 +92,9 @@ export default function Sheet() {
                     max={new Date().toISOString().split('T')[0]}
                 />
             </div>
+
             <form onSubmit={handleSubmit}>
-                <Card className="w-[600px]">
+                <Card className="w-[70%] m-auto overflow-x-scroll md:overflow-hidden md:w-[600px]">
                     <Title>Planilla de recolección</Title>
 
                     <Table className="max-h-[400px] overflow-y-scroll">

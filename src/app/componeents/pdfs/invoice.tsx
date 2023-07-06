@@ -1,6 +1,6 @@
 "use client";
 import { ProviderWithProducts } from "@/types/Provider";
-import { PDFViewer, Document, Page, Text, View, Image, StyleSheet, Font } from "@react-pdf/renderer"
+import { PDFViewer, Document, Page, Text, View, Image, StyleSheet, Font, PDFDownloadLink } from "@react-pdf/renderer"
 
 type Props = { provider: ProviderWithProducts, price: number }
 
@@ -12,7 +12,7 @@ Font.register({
 const styles = StyleSheet.create({
     body: { paddingHorizontal: 20, paddingVertical: 20 },
     logo: { width: 120, height: 60 },
-    header: { display: 'flex', flexDirection: 'row', justifyContent: "space-between",  alignItems: 'center', marginBottom: 20 },
+    header: { display: 'flex', flexDirection: 'row', justifyContent: "space-between", alignItems: 'center', marginBottom: 20 },
     title: { fontSize: 24, textAlign: 'center', marginRight: 50 },
     date: { fontSize: 12, textAlign: 'right', marginRight: 20 },
     fieldLabel: { fontSize: 13, fontWeight: 700, marginBottom: 4 },
@@ -88,83 +88,90 @@ export default function PDFView(props: Props) {
         const date = new Date(dateString);
         return `${date.toISOString().split('T')[0].split('-').reverse().join('/')}`
     }
-
-    return (
-        <PDFViewer style={{ height: '100%', width: '100%' }}>
-            <Document title={`Liquidación ${props.provider.firstName} ${props.provider.lastName}`}>
-                <Page style={styles.body}>
-                    <View style={styles.header}>
-                        <Image style={styles.logo} src={'/images/logo.jpg'}/>
-                        <Text style={styles.title}> Lácteos La Granja </Text>
-                        <View style={styles.date}>
-                            <Text>{new Date().toLocaleDateString()}</Text>
-                        </View>
+    const MyDocument = () => (
+        <Document title={`Liquidación ${props.provider.firstName} ${props.provider.lastName}`}>
+            <Page style={styles.body}>
+                <View style={styles.header}>
+                    <Image style={styles.logo} src={'/images/logo.jpg'} />
+                    <Text style={styles.title}> Lácteos La Granja </Text>
+                    <View style={styles.date}>
+                        <Text>{new Date().toLocaleDateString()}</Text>
                     </View>
+                </View>
 
-                    <View style={styles.divider}></View>
+                <View style={styles.divider}></View>
 
-                    <View style={{display: 'flex', flexDirection: 'row'}}>
+                <View style={{ display: 'flex', flexDirection: 'row' }}>
+                    <View>
                         <View>
-                            <View>
-                                <Text style={styles.fieldLabel}>Nombre</Text>
-                                <Text style={styles.fieldValue}>{props.provider.firstName} {props.provider.lastName}</Text>
-                            </View>
-
-                            <View>
-                                <Text style={styles.fieldLabel}>Número de Identificación</Text>
-                                <Text style={styles.fieldValue}>{getIdNumber(props.provider.idNum)}</Text>
-                            </View>
+                            <Text style={styles.fieldLabel}>Nombre</Text>
+                            <Text style={styles.fieldValue}>{props.provider.firstName} {props.provider.lastName}</Text>
                         </View>
 
-
-                        <View style={{ marginLeft: 70}}>
-                            <View>
-                                <Text style={styles.fieldLabel}>Número Telefónico</Text>
-                                <Text style={styles.fieldValue}>(+57) {props.provider.phone}</Text>
-                            </View>
-
-                            <View>
-                                <Text style={styles.fieldLabel}>Correo Electrónico</Text>
-                                <Text style={styles.fieldValue}>{props.provider.email}</Text>
-                            </View>
-                        </View>
-                    </View>
-
-                    <View style={styles.divider} />
-
-                    <View style={styles.table}>
-                        <View style={styles.tableRow}>
-                            <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Producto</Text>
-                            <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Fecha de Ingreso</Text>
-                            <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Cantidad</Text>
-                            <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Precio</Text>
-                            <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Total</Text>
-                        </View>
-
-                        {
-                            props.provider.products.map((product, index) => (
-                                <View style={styles.tableRow} key={index}>
-                                    <Text style={styles.tableCell}>Leche entera(Lts)</Text>
-                                    <Text style={styles.tableCell}>{ getDate(product.createdAt)}</Text>
-                                    <Text style={styles.tableCell}>{product.quantity}</Text>
-                                    <Text style={styles.tableCell}>{ getPrice(props.price) }</Text>
-                                    <Text style={styles.tableCell}>{ getPrice(product.quantity * props.price)}</Text>
-                                </View>
-                            ))
-                        }
-
-                        <View style={styles.tableRow}>
-                            <Text style={{ ...styles.tableCell }}>Total</Text>
-                            <Text style={{ ...styles.tableCell }}></Text>
-                            <Text style={{ ...styles.tableCell }}>{ getTotal() }</Text>
-                            <Text style={{ ...styles.tableCell }}></Text>
-                            <Text style={{ ...styles.tableCell }}>{getTotalPrice()}</Text>
+                        <View>
+                            <Text style={styles.fieldLabel}>Número de Identificación</Text>
+                            <Text style={styles.fieldValue}>{getIdNumber(props.provider.idNum)}</Text>
                         </View>
                     </View>
 
 
-                </Page>
-            </Document>
-        </PDFViewer>
+                    <View style={{ marginLeft: 70 }}>
+                        <View>
+                            <Text style={styles.fieldLabel}>Número Telefónico</Text>
+                            <Text style={styles.fieldValue}>(+57) {props.provider.phone}</Text>
+                        </View>
+
+                        <View>
+                            <Text style={styles.fieldLabel}>Correo Electrónico</Text>
+                            <Text style={styles.fieldValue}>{props.provider.email}</Text>
+                        </View>
+                    </View>
+                </View>
+
+                <View style={styles.divider} />
+
+                <View style={styles.table}>
+                    <View style={styles.tableRow}>
+                        <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Producto</Text>
+                        <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Fecha de Ingreso</Text>
+                        <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Cantidad</Text>
+                        <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Precio</Text>
+                        <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Total</Text>
+                    </View>
+
+                    {
+                        props.provider.products.map((product, index) => (
+                            <View style={styles.tableRow} key={index}>
+                                <Text style={styles.tableCell}>Leche entera(Lts)</Text>
+                                <Text style={styles.tableCell}>{getDate(product.createdAt)}</Text>
+                                <Text style={styles.tableCell}>{product.quantity}</Text>
+                                <Text style={styles.tableCell}>{getPrice(props.price)}</Text>
+                                <Text style={styles.tableCell}>{getPrice(product.quantity * props.price)}</Text>
+                            </View>
+                        ))
+                    }
+
+                    <View style={styles.tableRow}>
+                        <Text style={{ ...styles.tableCell }}>Total</Text>
+                        <Text style={{ ...styles.tableCell }}></Text>
+                        <Text style={{ ...styles.tableCell }}>{getTotal()}</Text>
+                        <Text style={{ ...styles.tableCell }}></Text>
+                        <Text style={{ ...styles.tableCell }}>{getTotalPrice()}</Text>
+                    </View>
+                </View>
+
+
+            </Page>
+        </Document>
+    )
+    return (
+        <PDFDownloadLink 
+            className="bg-green"
+            document={<MyDocument />} 
+            fileName={`Liquidación ${props.provider.firstName} ${props.provider.lastName}.pdf`}
+        ><button className="bg-blue-500">
+            Descargar PDF
+        </button>
+        </PDFDownloadLink>
     )
 }

@@ -35,10 +35,10 @@ export default function Invoices() {
     }
 
     return (
-        <div className="flex flex-col justify-center items-center h-full w-full py-5">
+        <div className="flex flex-col justify-center items-center h-screen w-full py-5">
             <Title className="text-center mb-3">Facturación</Title>
 
-            <Card className="w-[400px] h-fit mb-4 ">
+            <Card className="w-[400px] mb-4 ">
                 <form className="grid gap-3" onSubmit={handleGenerateInvoice}>
                     <Select placeholder="Seleccionar proveedor"
                         value={providerSelected ? providerSelected : undefined}

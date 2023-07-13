@@ -88,8 +88,6 @@ export default function Sheet() {
                     value={date.toISOString().split('T')[0]}
                     onChange={handleDateChange}
                     placeholder="Selecciona una fecha"
-                    // set max date to today
-                    max={new Date().toISOString().split('T')[0]}
                 />
             </div>
 

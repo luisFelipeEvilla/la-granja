@@ -17,9 +17,11 @@ export default function Sheet() {
         fetch('/api/providers')
             .then(async (res) => {
                 const data = await res.json();
-                setProviders(data);
+                
+                const activeProviders = data.filter((provider: Provider) => provider.active);
+                setProviders(activeProviders);
 
-                const aux = data.map((provider: Provider) => {
+                const aux = activeProviders.map((provider: Provider) => {
                     return { providerId: provider.id, quantity: 0 }
                 })
                 setSheet(aux);

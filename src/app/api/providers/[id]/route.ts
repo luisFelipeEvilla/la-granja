@@ -49,6 +49,7 @@ export async function PATCH(req: Request, { params }: any) {
     const { ...provider } = await req.json();
     const { id } = params;
 
+    console.log(provider);
     try {
         const updatedProvider = await prisma.provider.update({
             where: {

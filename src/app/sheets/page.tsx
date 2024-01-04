@@ -68,9 +68,12 @@ export default function Sheet() {
 
   const fetchSheet = async () => {
     try {
-      const MilkLogs = await axios.get(
-        `/api/sheets?date=${date.toISOString().split("T")[0]}`
-      );
+      const realDate = date.toISOString().split("T")[0];
+
+      const [MilkLogs, productsLogs] = await Promise.all([
+        axios.get(`/api/sheets?date=${realDate}`),
+        axios.get(`/api/productLog?date=${realDate}`)
+      ]);
   
       // update sheet with products
       const newSheet = milkSheet.map((product) => {
@@ -82,8 +85,22 @@ export default function Sheet() {
           : { ...product, quantity: 0 };
       });
       setMilkSheet(newSheet);
+
+
+      // update product sheet
+      const newProductSheet = productsSheet.map((product) => {
+        const newProduct = productsLogs.data.find(
+          (p: ProductLog) => p.productId === product.productId
+        );
+        return newProduct
+          ? { ...product, quantity: newProduct.quantity }
+          : { ...product, quantity: 0 };
+      });
+
+      setProductsSheet(newProductSheet);
     } catch (error) {
-      
+      console.error(error);
+      toast.error("Error al cargar la planilla");
     }
     
   };

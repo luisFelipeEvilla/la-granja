@@ -6,8 +6,15 @@ type createProductLogODT = {
     createdAt: Date;
 }
 
-export async function getProductLogs() {
-    const productLogs = await prisma.productLog.findMany({});
+export async function getProductLogs(gte: Date, lt: Date) {
+    const productLogs = await prisma.productLog.findMany({
+        where: {
+            createdAt: {
+                gte,
+                lt
+            }
+        }
+    });
 
     return productLogs;
 }

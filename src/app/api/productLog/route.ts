@@ -1,9 +1,17 @@
 import { createProductLogs, getProductLogs, updateProductLog } from "@/controllers/productLog";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(req: NextRequest, res: NextResponse) {
     try {
-        const productLogs = await getProductLogs();
+        const dateString = req.nextUrl.searchParams.get('date');
+
+        if (!dateString) return NextResponse.json({ status: 400, message: 'Date not provided' });
+
+        const date = new Date(dateString);
+        const afterDate = new Date(dateString);
+        afterDate.setDate(afterDate.getDate() + 1);
+        
+        const productLogs = await getProductLogs(date, afterDate);
 
         return NextResponse.json(productLogs);
     } catch (error) {

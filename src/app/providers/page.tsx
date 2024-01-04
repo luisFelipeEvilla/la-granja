@@ -95,7 +95,7 @@ export default function Providers() {
         </Card>
       </div>
 
-      <section className="flex w-full justify-center h-fit">
+      <section className="flex w-full justify-center h-fit px-10">
         <div className="flex flex-col w-fit">
           <div className="mb-3">
             <TextInput
@@ -107,7 +107,7 @@ export default function Providers() {
             />
           </div>
 
-          <Card className="w-[800px]">
+          <Card className="w-full">
             <Title>Lista de proveedores</Title>
             <Table>
               <TableHead>

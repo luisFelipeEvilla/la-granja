@@ -24,13 +24,35 @@ model Provider {
   phone      Int
   active  Boolean @default(true)
   createdAt DateTime @default(now())
-  products      Product[]
+  products      MilkRouteLog[]
 }
 
-model Product {
+model MilkRouteLog {
   id         String @id @default(auto()) @map("_id") @db.ObjectId
   providerId String @db.ObjectId
   provider   Provider @relation(fields: [providerId], references: [id])
+  quantity     Int
+  createdAt  DateTime @default(now())
+}
+
+enum unit {
+  Lts
+  Kg
+  Und
+}
+
+model Product {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  unit     unit
+  name       String
+  createdAt DateTime @default(now())
+  logs       ProductLog[]
+}
+
+model ProductLog {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  productId  String @db.ObjectId
+  product    Product @relation(fields: [productId], references: [id])
   quantity     Int
   createdAt  DateTime @default(now())
 }

@@ -18,7 +18,8 @@ export default function SideBar() {
         { label: 'Inicio', href: '/', icon: BiHome },
         { label: 'Provedores', href: '/providers', icon: MdAddBusiness },
         { label: 'Planillas', href: '/sheets', icon: BiSpreadsheet },
-        { label: 'Facturación', href: '/invoices', icon: LiaFileInvoiceDollarSolid }
+        { label: 'Facturación', href: '/invoices', icon: LiaFileInvoiceDollarSolid },
+        { label: 'Producción', href: '/production', icon: BiSpreadsheet }
     ]
 
     const OpenMenuButton = () => {

@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client"
 
-export type ProductWithProvider = Prisma.ProductGetPayload<{
+export type MilkRouteLogWithProvider = Prisma.MilkRouteLogGetPayload<{
     include: { provider: true }
 }>

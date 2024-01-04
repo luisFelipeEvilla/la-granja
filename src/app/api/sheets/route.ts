@@ -1,5 +1,5 @@
 import prisma from "@/db/client";
-import { Product } from "@prisma/client";
+import { MilkRouteLog } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest, { ...params }: any) {
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest, { ...params }: any) {
     afterDate.setDate(afterDate.getDate() + 1);
 
     try {
-        const products = await prisma.product.findMany({
+        const products = await prisma.milkRouteLog.findMany({
             where: {
                 createdAt: {
                     gte: date,
@@ -31,16 +31,16 @@ export async function GET(req: NextRequest, { ...params }: any) {
 export async function POST(req: any) {
     const { ...sheet } = await req.json();
 
-    const products = sheet.products.map((product: Product) => { return { ...product, createdAt: sheet.date } });
+    const products = sheet.products.map((product: MilkRouteLog) => { return { ...product, createdAt: sheet.date } });
     try {
         // first delete all products from the same day
-        const deletedProducts = await prisma.product.deleteMany({
+        const deletedProducts = await prisma.milkRouteLog.deleteMany({
             where: {
                 createdAt: sheet.date
             }
         });
 
-        const newProducts = await prisma.product.createMany({
+        const newProducts = await prisma.milkRouteLog.createMany({
             data: products
         });
 

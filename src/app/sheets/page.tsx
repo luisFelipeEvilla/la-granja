@@ -1,141 +1,254 @@
 "use client";
-import { Card, Metric, Table, TableBody, TableCell, TableHead, TableRow, TextInput, Text, Title } from "@tremor/react";
+import {
+  Card,
+  Metric,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TextInput,
+  Text,
+  Title,
+} from "@tremor/react";
 import PrimaryButton from "../componeents/buttons/PrimaryButton";
 import { useEffect, useState } from "react";
-import { Product, Provider } from "@prisma/client";
-import { ProductWithProvider } from "@/types/Product";
+import { MilkRouteLog, Product, ProductLog, Provider } from "@prisma/client";
+import { MilkRouteLogWithProvider } from "@/types/Product";
 import { toast } from "react-hot-toast";
+import axios from "axios";
 
 export default function Sheet() {
-    const [providers, setProviders] = useState<Provider[]>([]);
-    const [sheet, setSheet] = useState<ProductWithProvider[]>([]);
-    const [date, setDate] = useState<Date>(new Date());
-    const [total, setTotal] = useState<number>(0);
+  const [providers, setProviders] = useState<Provider[]>([]);
+  const [milkSheet, setMilkSheet] = useState<MilkRouteLogWithProvider[]>([]);
+  const [date, setDate] = useState<Date>(new Date());
+  const [total, setTotal] = useState<number>(0);
 
+  const [products, setProducts] = useState<Product[]>([]);
+  const [productsSheet, setProductsSheet] = useState<ProductLog[]>([]);
 
-    useEffect(() => {
-        fetch('/api/providers')
-            .then(async (res) => {
-                const data = await res.json();
-                
-                const activeProviders = data.filter((provider: Provider) => provider.active);
-                setProviders(activeProviders);
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-                const aux = activeProviders.map((provider: Provider) => {
-                    return { providerId: provider.id, quantity: 0 }
-                })
-                setSheet(aux);
-            })
-    }, [])
+  useEffect(() => {
+    fetchSheet();
+  }, [date, providers]);
 
-    useEffect(() => {
-        fetchSheet();
-    }, [date, providers])
+  async function fetchData() {
+    try {
+      // fetch providers data
+      const [providersRequest, products] = await Promise.all([
+        axios.get("/api/providers"),
+        axios.get("/api/products"),
+      ]);
 
-    useEffect(() => {
-        console.log('hola');
-        
-        const total = sheet.reduce((acc, product) => acc + product.quantity, 0);
+      const activeProviders = providersRequest.data.filter(
+        (provider: Provider) => provider.active
+      );
+      setProviders(activeProviders);
 
-        setTotal(total);
-    }, [sheet])
+      const aux = activeProviders.map((provider: Provider) => {
+        return { providerId: provider.id, quantity: 0 };
+      });
+      setMilkSheet(aux);
 
-    const fetchSheet = async () => {
-        const res = await fetch(`/api/sheets?date=${date.toISOString().split('T')[0]}`);
+      setProducts(products.data);
 
-        const products = await res.json();
+      const auxProducts = products.data.map((product: Product) => {
+        return { productId: product.id, quantity: 0 };
+      });      
 
-        // update sheet with products
-        const newSheet = sheet.map((product) => {
-            const newProduct = products.find((p: Product) => p.providerId === product.providerId);
-            return newProduct ? { ...product, quantity: newProduct.quantity } : { ...product, quantity: 0 };
-        });
-        setSheet(newSheet);
+      setProductsSheet(auxProducts);
+    } catch (error) {
+      console.error(error);
+      toast.error("Error al cargar los productos");
     }
+  }
 
-    const handleDateChange = async (e: any) => {
-        setDate(new Date(e.target.value));
+  const fetchSheet = async () => {
+    try {
+      const MilkLogs = await axios.get(
+        `/api/sheets?date=${date.toISOString().split("T")[0]}`
+      );
+  
+      // update sheet with products
+      const newSheet = milkSheet.map((product) => {
+        const newProduct = MilkLogs.data.find(
+          (p: MilkRouteLog) => p.providerId === product.providerId
+        );
+        return newProduct
+          ? { ...product, quantity: newProduct.quantity }
+          : { ...product, quantity: 0 };
+      });
+      setMilkSheet(newSheet);
+    } catch (error) {
+      
     }
+    
+  };
 
-    const handleQuantityChange = (e: any, id: string) => {
-        const quantity = parseInt(e.target.value || '0');
+  const handleDateChange = async (e: any) => {
+    setDate(new Date(e.target.value));
+  };
 
-        const newSheet = sheet.map((product) => product.providerId === id ? { ...product, quantity } : product)
+  const handleQuantityChange = (e: any, id: string) => {
+    const quantity = parseInt(e.target.value || "0");
 
-        setSheet(newSheet);
+    const newSheet = milkSheet.map((product) =>
+      product.providerId === id ? { ...product, quantity } : product
+    );
+
+    setMilkSheet(newSheet);
+  };
+
+  const handleProductQuantityChange = (e: any, id: string) => {
+    const quantity = parseInt(e.target.value || "0");
+
+    const newSheet = productsSheet.map((product) =>
+      product.productId === id ? { ...product, quantity } : product
+    );
+
+    setProductsSheet(newSheet);
+  }
+
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
+
+    //  remove time zone from date
+    const aux = date.toISOString().split("T")[0];
+
+    try {
+      // const milkSheetRequest = await axios.post("/api/sheets", {
+      //   date: new Date(aux),
+      //   products: milkSheet,
+      // });
+
+      const productsSheetRequest = await axios.post("/api/productLog", {
+        date: new Date(aux),
+        products: productsSheet,
+      });
+
+      console.log(productsSheetRequest.status)
+
+      toast.success("Planilla guardada con éxito");
+    } catch (error) {
+      console.error(error);
+      toast.error("Error al guardar la planilla");
     }
+  };
 
-    const handleSubmit = async (e: any) => {
-        e.preventDefault();
+  return (
+    <div className="flex flex-col items-center justify-center w-full h-screen ">
+      <div className="mb-4 rounded-md bg-white border shadow-sm cursor-pointer px-3 py-1 focus:outline-none ring-0">
+        <input
+          type="date"
+          value={date.toISOString().split("T")[0]}
+          onChange={handleDateChange}
+          placeholder="Selecciona una fecha"
+        />
+      </div>
 
-        //  remove time zone from date
-        const aux = date.toISOString().split('T')[0];
+      <form onSubmit={handleSubmit} className="flex flex-col gap-8">
+        <MilkLogTable />
+        <ProductionLogTable />
 
-        const res = await fetch('/api/sheets', {
-            method: 'POST',
-            body: JSON.stringify({
-                date: new Date(aux),
-                products: sheet
-            })
-        })
-
-        toast.success('Planilla guardada con éxito');
-    }
-
-    return (
-        <div className="flex flex-col items-center justify-center w-full h-screen ">
-            <div className="mb-4 rounded-md bg-white border shadow-sm cursor-pointer px-3 py-1 focus:outline-none ring-0">
-                <input
-                    type="date"
-                    value={date.toISOString().split('T')[0]}
-                    onChange={handleDateChange}
-                    placeholder="Selecciona una fecha"
-                />
-            </div>
-
-            <form onSubmit={handleSubmit}>
-                <Card className="w-[70%] m-auto overflow-x-scroll md:overflow-hidden md:w-[600px]">
-                    <Title>Planilla de recolección</Title>
-
-                    <Table className="max-h-[400px] overflow-y-scroll">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Proveedor</TableCell>
-                                <TableCell>Litros</TableCell>
-                            </TableRow>
-                        </TableHead>
-
-                        <TableBody>
-                            {
-                                sheet.map((product, index) => {
-                                    const provider = providers.find((provider) => provider.id === product.providerId);
-                                    return (
-                                        <TableRow key={index}>
-                                            <TableCell>{provider?.firstName} {provider?.lastName}</TableCell>
-                                            <TableCell>
-                                                <TextInput
-                                                    onChange={(e) => handleQuantityChange(e, provider?.id as string)}
-                                                    placeholder="Litros de leche"
-                                                    className="w-[100px]"
-                                                    value={sheet.find((product) => product.providerId === provider?.id)?.quantity.toString()}
-                                                />
-                                            </TableCell>
-                                        </TableRow>
-                                    )
-                                })
-                            }
-                        </TableBody>
-                    </Table>
-
-                    <div className="flex items-center">
-                        <Text>Total: <span className="font-bold">{total}</span></Text>
-                    </div>
-                </Card>
-
-                <div className="w-full flex mt-6 justify-center">
-                    <PrimaryButton text="Guardar"></PrimaryButton>
-                </div>
-            </form>
+        <div className="w-full flex mt-2 justify-center">
+          <PrimaryButton text="Guardar"></PrimaryButton>
         </div>
-    )
+      </form>
+    </div>
+  );
+
+  function MilkLogTable() {
+    return (
+      <Card className="w-[70%] m-auto overflow-x-scroll md:overflow-hidden md:w-[600px]">
+        <Title>Planilla de recolección</Title>
+
+        <Table className="max-h-[400px] overflow-y-scroll">
+          <TableHead>
+            <TableRow>
+              <TableCell>Proveedor</TableCell>
+              <TableCell>Litros</TableCell>
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {milkSheet.map((product, index) => {
+              const provider = providers.find(
+                (provider) => provider.id === product.providerId
+              );
+              return (
+                <TableRow key={index}>
+                  <TableCell>
+                    {provider?.firstName} {provider?.lastName}
+                  </TableCell>
+                  <TableCell>
+                    <TextInput
+                      onChange={(e) =>
+                        handleQuantityChange(e, provider?.id as string)
+                      }
+                      placeholder="Litros de leche"
+                      className="w-[100px]"
+                      value={milkSheet
+                        .find((product) => product.providerId === provider?.id)
+                        ?.quantity.toString()}
+                    />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+
+        <div className="flex items-center">
+          <Text>
+            Total:{" "}
+            <span className="font-bold">
+              {milkSheet.reduce((acc, product) => acc + product.quantity, 0)}
+            </span>
+          </Text>
+        </div>
+      </Card>
+    );
+  }
+
+  function ProductionLogTable() {
+    return (
+      <Card className="w-[70%] m-auto overflow-x-scroll md:overflow-hidden md:w-[600px]">
+        <Title>Producción del día</Title>
+
+        <Table className="max-h-[400px] overflow-y-scroll">
+          <TableHead>
+            <TableRow>
+              <TableCell>Producto</TableCell>
+              <TableCell>Producción</TableCell>
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {products.map((product) => {
+              return (
+                <TableRow>
+                  <TableCell>{product.name}</TableCell>
+                  <TableCell>
+                    <TextInput
+                      onChange={(e) =>
+                        handleProductQuantityChange(e, product.id as string)
+                      }
+                      placeholder={`Producido del día ${product.unit}`}
+                      className="w-[100px]"
+                      value={productsSheet
+                        .find((p) => p.productId === product.id)
+                        ?.quantity.toString()}
+                    />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </Card>
+    );
+  }
 }

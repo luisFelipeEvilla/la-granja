@@ -246,7 +246,7 @@ export default function Sheet() {
           <TableBody>
             {products.map((product) => {
               return (
-                <TableRow>
+                <TableRow key={product.id}>
                   <TableCell>{product.name}</TableCell>
                   <TableCell>
                     <TextInput

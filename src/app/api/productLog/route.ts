@@ -3,15 +3,17 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest, res: NextResponse) {
     try {
-        const dateString = req.nextUrl.searchParams.get('date');
-
-        if (!dateString) return NextResponse.json({ status: 400, message: 'Date not provided' });
-
-        const date = new Date(dateString);
-        const afterDate = new Date(dateString);
-        afterDate.setDate(afterDate.getDate() + 1);
+        let startDateString = req.nextUrl.searchParams.get('startDate')
+        let endDateString = req.nextUrl.searchParams.get('endDate')
         
-        const productLogs = await getProductLogs(date, afterDate);
+        if (!startDateString || !endDateString) return NextResponse.json({ error: 'startDate and endDate are required', status: 400 });
+
+        const startDate = new Date(startDateString);
+        const endDate = new Date(endDateString);
+
+        console.log(startDate, endDate);
+
+        const productLogs = await getProductLogs(startDate, endDate);
 
         return NextResponse.json(productLogs);
     } catch (error) {

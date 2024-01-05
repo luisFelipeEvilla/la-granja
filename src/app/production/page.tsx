@@ -6,7 +6,7 @@ import { MilkRouteLog, Product, Provider } from "@prisma/client";
 import { MilkRouteLogWithProvider } from "@/types/Product";
 import { toast } from "react-hot-toast";
 
-function ProductionPage() {
+export default function ProductionPage() {
     const [providers, setProviders] = useState<Provider[]>([]);
     const [sheet, setSheet] = useState<MilkRouteLogWithProvider[]>([]);
     const [date, setDate] = useState<Date>(new Date());

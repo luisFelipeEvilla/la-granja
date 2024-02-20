@@ -1,7 +1,8 @@
 "use client";
+import { AuthContext } from "@/contexts/AuthContext";
 import { Button, Input } from "@nextui-org/react";
 import axios from "axios";
-import { FormEvent, useState } from "react";
+import { FormEvent, useContext, useState } from "react";
 import toast from "react-hot-toast";
 
 export default function AuthPage() {
@@ -9,6 +10,7 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState({ user: false, password: false });
+  const { signin } = useContext(AuthContext);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -19,6 +21,8 @@ export default function AuthPage() {
         username,
         password,
       });
+
+      signin(res.data?.user);
     } catch (error: any) {
       const res = error.response;
 

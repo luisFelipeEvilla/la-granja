@@ -27,11 +27,5 @@ export async function POST(req: NextRequest, res: NextResponse) {
     
     const response = NextResponse.json({ user }, { status: 200 });
 
-    response.cookies.set("user", JSON.stringify(user), {
-      httpOnly: true,
-      maxAge: 60 * 60 * 24 * 30,
-      path: "/",
-    });
-    
     return response;
 }

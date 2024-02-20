@@ -17,9 +17,9 @@ export default function RootLayout({
       <body className="flex">
         <SideBar />
         <div className='w-full px-8 h-screen overflow-y-scroll'>
-          <Toaster />
           {children}
         </div>
+          <Toaster />
       </body>
     </html>
   )

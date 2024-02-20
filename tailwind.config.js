@@ -1,9 +1,12 @@
+import { nextui } from "@nextui-org/react";
+
 /** @type {import('tailwindcss').Config} */
 /* eslint-disable max-len */
 module.exports = {
   content: [
     "./src/**/*.{js,ts,jsx,tsx}",
     "./node_modules/@tremor/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}"
   ],
   theme: {
     transparent: "transparent",
@@ -96,5 +99,7 @@ module.exports = {
         /^(fill-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(?:50|100|200|300|400|500|600|700|800|900|950))$/,
     },
   ],
-  plugins: [require("@headlessui/tailwindcss")],
+  plugins: [
+    nextui(),
+    require("@headlessui/tailwindcss")],
 };

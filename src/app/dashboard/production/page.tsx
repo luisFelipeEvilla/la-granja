@@ -1,6 +1,6 @@
 "use client";
 import { Card, Metric, Table, TableBody, TableCell, TableHead, TableRow, TextInput, Text, Title } from "@tremor/react";
-import PrimaryButton from "../componeents/buttons/PrimaryButton";
+import PrimaryButton from "../../../components/buttons/PrimaryButton";
 import { useEffect, useState } from "react";
 import { MilkRouteLog, Product, Provider } from "@prisma/client";
 import { MilkRouteLogWithProvider } from "@/types/Product";

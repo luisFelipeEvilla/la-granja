@@ -1,5 +1,5 @@
 "use client";
-import PrimaryButton from "@/app/componeents/buttons/PrimaryButton";
+import PrimaryButton from "@/components/buttons/PrimaryButton";
 import { Provider } from "@prisma/client";
 import { Card, Select, SelectItem, TextInput, Title, } from "@tremor/react";
 import { useEffect, useState } from "react";

@@ -24,7 +24,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
   if (user.password !== password)
     return NextResponse.json({ error: "Invalid password" }, { status: 401 });
-    
+      
     const response = NextResponse.json({ user }, { status: 200 });
 
     return response;

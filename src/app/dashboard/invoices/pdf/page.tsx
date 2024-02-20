@@ -4,7 +4,7 @@ import { renderToFile, renderToStream } from "@react-pdf/renderer";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
-const InvoicePDF = dynamic(() => import("../../componeents/pdfs/invoice"), {
+const InvoicePDF = dynamic(() => import("../../../../components/pdfs/invoice"), {
     ssr: false
 });
 

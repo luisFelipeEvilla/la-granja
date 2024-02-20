@@ -1,7 +1,7 @@
 "use client";
 import { User } from "@prisma/client";
 import { createContext, useEffect, useState } from "react";
-import { parseCookies, setCookie } from "nookies";
+import { destroyCookie, parseCookies, setCookie } from "nookies";
 
 type AuthContextType = {
     user: User | null;  
@@ -21,11 +21,16 @@ export function AuthProvider({ children }: any) {
     useEffect(() => {
         const { user } = parseCookies();
 
-        if (!user) return;
-        setUser(JSON.parse(user));
+        if (user) return setUser(JSON.parse(user));
+    
+        if (window.location.pathname !== "/auth") {
+            window.location.href = "/auth";
+        }
+
     }, []);
 
     async function signin(user: User) {
+        console.log(user);
         setUser(user);
     
         setCookie(null, "user", JSON.stringify(user), {
@@ -36,6 +41,12 @@ export function AuthProvider({ children }: any) {
 
     async function signout() {
         setUser(null);
+
+        destroyCookie(null, "user", {
+            path: "/",
+        });
+
+        window.location.href = "/auth";
     }
 
     return (

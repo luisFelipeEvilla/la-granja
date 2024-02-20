@@ -1,5 +1,5 @@
 "use client";
-import PrimaryButton from "@/app/componeents/buttons/PrimaryButton";
+import PrimaryButton from "@/components/buttons/PrimaryButton";
 import { Card, Select, SelectItem, TextInput, Title, } from "@tremor/react";
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";

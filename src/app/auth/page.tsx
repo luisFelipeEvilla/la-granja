@@ -23,6 +23,7 @@ export default function AuthPage() {
       });
 
       signin(res.data?.user);
+      window.location.href = "/dashboard";
     } catch (error: any) {
       const res = error.response;
 

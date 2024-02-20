@@ -35,7 +35,6 @@ export default function Providers() {
 
         const productsLogs = await axios.get(`/api/productLog?startDate=${startDate}&endDate=${endDate}`);
 
-        console.log(productsLogs.data)
         const providers = milksLogs.data;
         const products = productsLogs.data;
 
@@ -49,7 +48,6 @@ export default function Providers() {
     }, [providers])
 
     useEffect(() => {
-        console.log(productsLogs)
         getTotalProductionByDate(productsLogs);
         getAverageByProduct(productsLogs);
     }, [productsLogs])

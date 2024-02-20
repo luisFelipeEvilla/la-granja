@@ -7,9 +7,11 @@ import SideBarBody from "./SideBarBody";
 
 import { cookies } from "next/headers";
 
-export default function SideBar() {
+export default function SideBar(req: any) {
   const cookieStore = cookies();
   const user = getUserFromCookies(cookieStore);
+  
+  const isAdmin = user?.role === "ADMIN";
 
   const AdminLinks = [
     { label: "Inicio", href: "/dashboard", icon: <BiHome className="fill-gray-100 text-2xl" /> },
@@ -28,6 +30,6 @@ export default function SideBar() {
   ]
 
   return (
-    <SideBarBody links={user?.role === "ADMIN" ? AdminLinks : userLinks} />
+    <SideBarBody links={isAdmin ? AdminLinks : userLinks} />
   )
 }

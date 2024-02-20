@@ -15,6 +15,7 @@ export const AuthContext = createContext<AuthContextType>({
     signout: async () => {},
     });
 
+    
 export function AuthProvider({ children }: any) {
     const [user, setUser] = useState<User | null>(null);
 

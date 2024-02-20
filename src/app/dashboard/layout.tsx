@@ -4,6 +4,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { NextUIProvider } from "@nextui-org/react";
 import "../globals.css";
 import Providers from "@/app/providers";
+import getUserFromCookies from "../utils/getUserFromCookies";
 
 export default function RootLayout({
   children,

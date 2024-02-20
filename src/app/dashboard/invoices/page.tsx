@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { ProviderWithProducts } from "@/types/Provider";
 import dynamic from "next/dynamic";
 
-const InvoicePDF = dynamic(() => import("../componeents/pdfs/invoice"), {
+const InvoicePDF = dynamic(() => import("../../../components/pdfs/invoice"), {
     ssr: false
 });
 

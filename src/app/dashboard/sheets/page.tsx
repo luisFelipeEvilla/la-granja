@@ -70,9 +70,9 @@ export default function Sheet() {
     try {
       const realDate = date.toISOString().split("T")[0];
 
-      const [MilkLogs, productsLogs] = await Promise.all([
+      const [MilkLogs] = await Promise.all([
         axios.get(`/api/sheets?date=${realDate}`),
-        axios.get(`/api/productLog?date=${realDate}`)
+        // axios.get(`/api/productLog?date=${realDate}`)
       ]);
   
       // update sheet with products
@@ -88,16 +88,16 @@ export default function Sheet() {
 
 
       // update product sheet
-      const newProductSheet = productsSheet.map((product) => {
-        const newProduct = productsLogs.data.find(
-          (p: ProductLog) => p.productId === product.productId
-        );
-        return newProduct
-          ? { ...product, quantity: newProduct.quantity }
-          : { ...product, quantity: 0 };
-      });
+      // const newProductSheet = productsSheet.map((product) => {
+      //   const newProduct = productsLogs.data.find(
+      //     (p: ProductLog) => p.productId === product.productId
+      //   );
+      //   return newProduct
+      //     ? { ...product, quantity: newProduct.quantity }
+      //     : { ...product, quantity: 0 };
+      // });
 
-      setProductsSheet(newProductSheet);
+      // setProductsSheet(newProductSheet);
     } catch (error) {
       console.error(error);
       toast.error("Error al cargar la planilla");
@@ -136,17 +136,17 @@ export default function Sheet() {
     const aux = date.toISOString().split("T")[0];
 
     try {
-      // const milkSheetRequest = await axios.post("/api/sheets", {
-      //   date: new Date(aux),
-      //   products: milkSheet,
-      // });
-
-      const productsSheetRequest = await axios.post("/api/productLog", {
+      const milkSheetRequest = await axios.post("/api/sheets", {
         date: new Date(aux),
-        products: productsSheet,
+        products: milkSheet,
       });
 
-      console.log(productsSheetRequest.status)
+      // const productsSheetRequest = await axios.post("/api/productLog", {
+      //   date: new Date(aux),
+      //   products: productsSheet,
+      // });
+
+      // console.log(productsSheetRequest.status)
 
       toast.success("Planilla guardada con éxito");
     } catch (error) {
@@ -168,7 +168,7 @@ export default function Sheet() {
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-8">
         <MilkLogTable />
-        <ProductionLogTable />
+        {/* <ProductionLogTable /> */}
 
         <div className="w-full flex mt-2 justify-center">
           <PrimaryButton text="Guardar"></PrimaryButton>

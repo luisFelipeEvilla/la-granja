@@ -1,4 +1,5 @@
 "use client";
+import PasswordInput from "@/components/inputs/password";
 import { AuthContext } from "@/contexts/AuthContext";
 import { Button, Input } from "@nextui-org/react";
 import axios from "axios";
@@ -29,14 +30,14 @@ export default function AuthPage() {
 
       if (res.status === 404) {
         toast.error("Usuario no encontrado");
-        return setError({ ...error, user: true});
+        return setError({ ...error, user: true });
       }
-        
+
       if (res.status === 401) {
         setError({ ...error, password: true });
         return toast.error("Contraseña incorrecta");
       }
-      
+
       toast.error("Error del servidor");
     } finally {
       setLoading(false);
@@ -69,13 +70,10 @@ export default function AuthPage() {
           errorMessage={error.user && "Usuario no encontrado"}
           required
         />
-        <Input
+        <PasswordInput
           value={password}
-          onValueChange={handlePasswordChange}
-          type="password"
-          placeholder="Contraseña"
-          errorMessage={error.password && "Contraseña incorrecta"}
-          required
+          onChange={handlePasswordChange}
+          error={error.password}
         />
         <Button
           isDisabled={loading}

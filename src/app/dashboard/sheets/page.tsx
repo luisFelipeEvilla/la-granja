@@ -12,11 +12,12 @@ import {
   Title,
 } from "@tremor/react";
 import PrimaryButton from "../../../components/buttons/PrimaryButton";
-import { useEffect, useState } from "react";
-import { MilkRouteLog, Product, ProductLog, Provider } from "@prisma/client";
+import { useContext, useEffect, useState } from "react";
+import { MilkRouteLog, Product, ProductLog, Provider, user_role } from "@prisma/client";
 import { MilkRouteLogWithProvider } from "@/types/Product";
 import { toast } from "react-hot-toast";
 import axios from "axios";
+import { AuthContext } from "@/contexts/AuthContext";
 
 export default function Sheet() {
   const [providers, setProviders] = useState<Provider[]>([]);
@@ -26,6 +27,8 @@ export default function Sheet() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [productsSheet, setProductsSheet] = useState<ProductLog[]>([]);
+
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
     fetchData();
@@ -163,6 +166,7 @@ export default function Sheet() {
           value={date.toISOString().split("T")[0]}
           onChange={handleDateChange}
           placeholder="Selecciona una fecha"
+          disabled={user?.role === user_role.USER}
         />
       </div>
 

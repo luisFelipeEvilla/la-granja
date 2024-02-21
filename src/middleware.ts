@@ -5,13 +5,15 @@ import { user_role } from "@prisma/client";
 
 export async function middleware(req: NextRequest) {
   const userCookie = cookies().get("user");
-
+  
   const isAuthPage = req.nextUrl.pathname === "/auth";
-
+  
   const sheetsURL = new URL("/dashboard/sheets", req.url);
   const authURL = new URL("/auth", req.url);
   const dashboardURL = new URL("/dashboard", req.url);
-
+  
+  if (req.nextUrl.pathname === "/") return NextResponse.redirect(dashboardURL);
+  
   if (isAuthPage) {
     if (userCookie) return NextResponse.redirect(dashboardURL);
 

@@ -20,6 +20,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  
   if (!userCookie) return NextResponse.redirect(authURL);
 
   const user = JSON.parse(userCookie.value);

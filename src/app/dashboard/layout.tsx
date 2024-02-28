@@ -17,7 +17,7 @@ export default function RootLayout({
         <AuthProvider>
           <SideBar />
           <Providers>
-            <div className="w-[100vw] px-8 h-screen overflow-y-scroll">
+            <div className="w-[100vw] px-8 min-h-screen overflow-auto">
               {children}
             </div>
           </Providers>

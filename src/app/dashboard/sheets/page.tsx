@@ -13,15 +13,22 @@ import {
 } from "@tremor/react";
 import PrimaryButton from "../../../components/buttons/PrimaryButton";
 import { useContext, useEffect, useState } from "react";
-import { MilkRouteLog, Product, ProductLog, Provider, user_role } from "@prisma/client";
+import {
+  MilkRouteLog,
+  Product,
+  ProductLog,
+  Provider,
+  user_role,
+} from "@prisma/client";
 import { MilkRouteLogWithProvider } from "@/types/Product";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import { AuthContext } from "@/contexts/AuthContext";
+import MilkSheetForm from "@/components/forms/MilkSheetForm";
+import { createMilkLogDto } from "@/dto/MilkLog/createMilkLog.dto";
 
 export default function Sheet() {
   const [providers, setProviders] = useState<Provider[]>([]);
-  const [milkSheet, setMilkSheet] = useState<MilkRouteLogWithProvider[]>([]);
   const [date, setDate] = useState<Date>(new Date());
   const [total, setTotal] = useState<number>(0);
 
@@ -30,39 +37,45 @@ export default function Sheet() {
 
   const { user } = useContext(AuthContext);
 
+  const [milkSheet, setMilkSheet] = useState<createMilkLogDto[]>([]);
+
   useEffect(() => {
     fetchData();
   }, []);
 
   useEffect(() => {
-    fetchSheet();
+    if (!date) return;
+    if (providers.length === 0) return;
+
+    // fetchSheet();
   }, [date, providers]);
 
   async function fetchData() {
     try {
       // fetch providers data
       const [providersRequest, products] = await Promise.all([
-        axios.get("/api/providers"),
+        axios.get("/api/providers", { params: { active: true } }),
         axios.get("/api/products"),
       ]);
 
-      const activeProviders = providersRequest.data.filter(
-        (provider: Provider) => provider.active
-      );
-      setProviders(activeProviders);
+      setProviders(providersRequest.data);
 
-      const aux = activeProviders.map((provider: Provider) => {
-        return { providerId: provider.id, quantity: 0 };
+      let newSheet: createMilkLogDto[] = [];
+
+      newSheet = providersRequest.data.map((provider: Provider) => {
+        return { provider: provider, quantity: 0 };
       });
-      setMilkSheet(aux);
 
-      setProducts(products.data);
 
-      const auxProducts = products.data.map((product: Product) => {
-        return { productId: product.id, quantity: 0 };
-      });      
+      setMilkSheet(newSheet);
 
-      setProductsSheet(auxProducts);
+      // setProducts(products.data);
+
+      // const auxProducts = products.data.map((product: Product) => {
+      //   return { productId: product.id, quantity: 0 };
+      // });
+
+      // setProductsSheet(auxProducts);
     } catch (error) {
       console.error(error);
       toast.error("Error al cargar los productos");
@@ -73,15 +86,14 @@ export default function Sheet() {
     try {
       const realDate = date.toISOString().split("T")[0];
 
-      const [MilkLogs] = await Promise.all([
+      const [logs] = await Promise.all([
         axios.get(`/api/sheets?date=${realDate}`),
-        // axios.get(`/api/productLog?date=${realDate}`)
       ]);
-  
+
       // update sheet with products
       const newSheet = milkSheet.map((product) => {
-        const newProduct = MilkLogs.data.find(
-          (p: MilkRouteLog) => p.providerId === product.providerId
+        const newProduct = logs.data.milkLogs.find(
+          (p: MilkRouteLog) => p.providerId === product.provider.id
         );
         return newProduct
           ? { ...product, quantity: newProduct.quantity }
@@ -89,10 +101,9 @@ export default function Sheet() {
       });
       setMilkSheet(newSheet);
 
-
       // update product sheet
       // const newProductSheet = productsSheet.map((product) => {
-      //   const newProduct = productsLogs.data.find(
+      //   const newProduct = logs.data.productLogs.find(
       //     (p: ProductLog) => p.productId === product.productId
       //   );
       //   return newProduct
@@ -105,7 +116,6 @@ export default function Sheet() {
       console.error(error);
       toast.error("Error al cargar la planilla");
     }
-    
   };
 
   const handleDateChange = async (e: any) => {
@@ -116,7 +126,7 @@ export default function Sheet() {
     const quantity = parseInt(e.target.value || "0");
 
     const newSheet = milkSheet.map((product) =>
-      product.providerId === id ? { ...product, quantity } : product
+      product.provider.id === id ? { ...product, quantity } : product
     );
 
     setMilkSheet(newSheet);
@@ -130,7 +140,7 @@ export default function Sheet() {
     );
 
     setProductsSheet(newSheet);
-  }
+  };
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -141,7 +151,7 @@ export default function Sheet() {
     try {
       const milkSheetRequest = await axios.post("/api/sheets", {
         date: new Date(aux),
-        products: milkSheet,
+        milk: milkSheet,
       });
 
       // const productsSheetRequest = await axios.post("/api/productLog", {
@@ -159,7 +169,7 @@ export default function Sheet() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-screen ">
+    <section className="flex flex-col items-center justify-center w-full gap-4 min-h-screen py-10 overflow-x-hidden ">
       <div className="mb-4 rounded-md bg-white border shadow-sm cursor-pointer px-3 py-1 focus:outline-none ring-0">
         <input
           type="date"
@@ -171,68 +181,15 @@ export default function Sheet() {
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-8">
-        <MilkLogTable />
+        <MilkSheetForm logs={milkSheet} />
         {/* <ProductionLogTable /> */}
 
         <div className="w-full flex mt-2 justify-center">
           <PrimaryButton text="Guardar"></PrimaryButton>
         </div>
       </form>
-    </div>
+    </section>
   );
-
-  function MilkLogTable() {
-    return (
-      <Card className="w-[70%] m-auto overflow-x-scroll md:overflow-hidden md:w-[600px]">
-        <Title>Planilla de recolección</Title>
-
-        <Table className="max-h-[400px] overflow-y-scroll">
-          <TableHead>
-            <TableRow>
-              <TableCell>Proveedor</TableCell>
-              <TableCell>Litros</TableCell>
-            </TableRow>
-          </TableHead>
-
-          <TableBody>
-            {milkSheet.map((product, index) => {
-              const provider = providers.find(
-                (provider) => provider.id === product.providerId
-              );
-              return (
-                <TableRow key={index}>
-                  <TableCell>
-                    {provider?.firstName} {provider?.lastName}
-                  </TableCell>
-                  <TableCell>
-                    <TextInput
-                      onChange={(e) =>
-                        handleQuantityChange(e, provider?.id as string)
-                      }
-                      placeholder="Litros de leche"
-                      className="w-[100px]"
-                      value={milkSheet
-                        .find((product) => product.providerId === provider?.id)
-                        ?.quantity.toString()}
-                    />
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-
-        <div className="flex items-center">
-          <Text>
-            Total:{" "}
-            <span className="font-bold">
-              {milkSheet.reduce((acc, product) => acc + product.quantity, 0)}
-            </span>
-          </Text>
-        </div>
-      </Card>
-    );
-  }
 
   function ProductionLogTable() {
     return (

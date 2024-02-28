@@ -6,7 +6,9 @@ export async function GET(req: NextRequest, res: NextResponse) {
         let startDateString = req.nextUrl.searchParams.get('startDate')
         let endDateString = req.nextUrl.searchParams.get('endDate')
         
-        if (!startDateString || !endDateString) return NextResponse.json({ error: 'startDate and endDate are required', status: 400 });
+        if (!startDateString || !endDateString) return NextResponse.json({ error: 'startDate and endDate are required'}, { 
+            status: 400
+        });
 
         const startDate = new Date(startDateString);
         const endDate = new Date(endDateString);

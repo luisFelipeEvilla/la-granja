@@ -1,3 +1,4 @@
+import { getProductLogs } from "@/controllers/productLog";
 import prisma from "@/db/client";
 import { MilkRouteLog } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
@@ -12,7 +13,7 @@ export async function GET(req: NextRequest, { ...params }: any) {
     afterDate.setDate(afterDate.getDate() + 1);
 
     try {
-        const products = await prisma.milkRouteLog.findMany({
+        const milkLogs = await prisma.milkRouteLog.findMany({
             where: {
                 createdAt: {
                     gte: date,
@@ -21,7 +22,11 @@ export async function GET(req: NextRequest, { ...params }: any) {
             }
         });
 
-        return NextResponse.json(products);
+        const productLogs = await getProductLogs(date, afterDate);
+
+        console.log(productLogs);
+
+        return NextResponse.json({milkLogs, productLogs});
     } catch (error) {
         console.log(error);
         return NextResponse.json({ status: 500, message: 'Server error' });
@@ -29,19 +34,19 @@ export async function GET(req: NextRequest, { ...params }: any) {
 }
 
 export async function POST(req: any) {
-    const { ...sheet } = await req.json();
+    const { date, milk, products } = await req.json();
 
-    const products = sheet.products.map((product: MilkRouteLog) => { return { ...product, createdAt: sheet.date } });
+    const milkLog = milk.map((product: MilkRouteLog) => { return { ...product, createdAt: date } });
     try {
         // first delete all products from the same day
         const deletedProducts = await prisma.milkRouteLog.deleteMany({
             where: {
-                createdAt: sheet.date
+                createdAt: date
             }
         });
 
         const newProducts = await prisma.milkRouteLog.createMany({
-            data: products
+            data: milkLog
         });
 
         return NextResponse.json(newProducts);

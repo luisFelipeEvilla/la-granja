@@ -101,6 +101,6 @@ module.exports = {
   ],
   darkMode: "class",
   plugins: [
-    nextui(),
-    require("@headlessui/tailwindcss")],
+    nextui()
+  ],
 };

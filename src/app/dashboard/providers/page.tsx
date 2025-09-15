@@ -81,7 +81,7 @@ export default function Providers() {
 
       <div className="flex justify-end w-full pr-10">
         <a
-          href="/providers/create"
+          href="/dashboard/providers/create"
           className="rounded-md px-4 py-2 bg-[#22c55e] text-white"
         >
           Agregar
@@ -141,7 +141,7 @@ export default function Providers() {
                     </TableCell>
                     <TableCell>
                       <Link
-                        href={`/providers/${provider.id}`}
+                        href={`/dashboard/providers/${provider.id}`}
                         className="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
                       >
                         Editar

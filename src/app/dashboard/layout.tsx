@@ -13,14 +13,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="flex">
+      <body className="min-h-screen bg-gray-50">
         <AuthProvider>
-          <SideBar />
-          <Providers>
-            <div className="w-[100vw] px-8 h-screen overflow-y-scroll">
-              {children}
-            </div>
-          </Providers>
+          <div className="flex min-h-screen">
+            <SideBar />
+            <Providers>
+              <main className="flex-1 w-full lg:ml-0 px-4 sm:px-6 lg:px-8 py-4 overflow-x-hidden">
+                <div className="h-full overflow-y-auto">
+                  {children}
+                </div>
+              </main>
+            </Providers>
+          </div>
           <Toaster />
         </AuthProvider>
       </body>

@@ -76,84 +76,97 @@ export default function Providers() {
   }
 
   return (
-    <div className="flex flex-col w-full py-5 gap-4">
-      <Title className="text-4xl text-center">Proveedores</Title>
-
-      <div className="flex justify-end w-full pr-10">
-        <a
-          href="/dashboard/providers/create"
-          className="rounded-md px-4 py-2 bg-[#22c55e] text-white"
-        >
-          Agregar
-        </a>
+    <div className="w-full space-y-6">
+      {/* Header */}
+      <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+          <Title className="text-2xl sm:text-3xl font-bold text-gray-900">Proveedores</Title>
+          <a
+            href="/dashboard/providers/create"
+            className="inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 sm:w-auto w-full"
+          >
+            Agregar Proveedor
+          </a>
+        </div>
       </div>
 
-      <div className="flex justify-end mx-32">
-        <Card className="mr-8 w-fit" decoration="top" decorationColor="green">
-          <Text>Proveedores activos</Text>
-          <Metric>{providers.length}</Metric>
+      {/* Metrics Card */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Card className="p-4" decoration="top" decorationColor="green">
+          <Text className="text-sm font-medium text-gray-600">Proveedores activos</Text>
+          <Metric className="text-2xl sm:text-3xl font-bold text-green-600 mt-2">
+            {providers.length}
+          </Metric>
         </Card>
       </div>
 
-      <section className="flex w-full justify-center h-fit px-10">
-        <div className="flex flex-col w-fit">
-          <div className="mb-3">
+      {/* Search and Table Section */}
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="p-4 sm:p-6 border-b border-gray-200">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <Title className="text-lg sm:text-xl font-semibold">Lista de proveedores</Title>
             <TextInput
-              className="w-[240px]"
+              className="w-full sm:w-64"
               icon={SearchIcon}
-              placeholder="Buscar"
+              placeholder="Buscar proveedores..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-
-          <Card className="w-full">
-            <Title>Lista de proveedores</Title>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Nombre</TableCell>
-                  <TableCell>Telefono</TableCell>
-                  <TableCell>Correo</TableCell>
-                  <TableCell>Activo</TableCell>
-                  <TableCell>Acciones</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredProviders.map((provider, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
-                      {provider.firstName} {provider.lastName}
-                    </TableCell>
-                    <TableCell>{provider.phone}</TableCell>
-                    <TableCell>{provider.email}</TableCell>
-                    <TableCell>
-                      {/* {provider.active ? (
-                        <Badge color="green">Activo</Badge>
-                      ) : (
-                        <Badge color="red">Inactivo</Badge>
-                      )} */}
-                      <Switch 
-                        checked={provider.active} 
-                        onChange={(value: boolean) => handleChangeProviderState(provider)}
-                        disabled={loading}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Link
-                        href={`/dashboard/providers/${provider.id}`}
-                        className="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                      >
-                        Editar
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Card>
         </div>
-      </section>
+
+        {/* Table Container with horizontal scroll */}
+        <div className="overflow-x-auto">
+          <Table className="min-w-full">
+            <TableHead>
+              <TableRow>
+                <TableCell className="whitespace-nowrap">Nombre</TableCell>
+                <TableCell className="whitespace-nowrap">Teléfono</TableCell>
+                <TableCell className="whitespace-nowrap hidden sm:table-cell">Correo</TableCell>
+                <TableCell className="whitespace-nowrap">Estado</TableCell>
+                <TableCell className="whitespace-nowrap">Acciones</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredProviders.map((provider, index) => (
+                <TableRow key={index}>
+                  <TableCell className="whitespace-nowrap font-medium">
+                    <div className="flex flex-col">
+                      <span>{provider.firstName} {provider.lastName}</span>
+                      <span className="sm:hidden text-xs text-gray-500">{provider.email}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">{provider.phone}</TableCell>
+                  <TableCell className="whitespace-nowrap hidden sm:table-cell text-gray-600">
+                    {provider.email}
+                  </TableCell>
+                  <TableCell>
+                    <Switch 
+                      checked={provider.active} 
+                      onChange={() => handleChangeProviderState(provider)}
+                      disabled={loading}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Link
+                      href={`/dashboard/providers/${provider.id}`}
+                      className="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
+                    >
+                      Editar
+                    </Link>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {filteredProviders.length === 0 && (
+          <div className="p-8 text-center">
+            <Text className="text-gray-500">No se encontraron proveedores</Text>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,3 +1,77 @@
 @tailwind base; 
 @tailwind components; 
 @tailwind utilities;
+
+@layer base {
+  /* Base responsive styles */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /* Ensure touch targets are appropriately sized for mobile */
+  button, 
+  input[type="button"], 
+  input[type="reset"], 
+  input[type="submit"],
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+@layer components {
+  /* Mobile-first responsive utilities */
+  .responsive-padding {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+  
+  .responsive-container {
+    @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  /* Better table responsivity for Tremor components */
+  .tremor-Table-root {
+    @apply overflow-x-auto;
+  }
+  
+  /* Mobile-friendly card spacing */
+  .mobile-card {
+    @apply p-4 sm:p-6 rounded-lg shadow-sm bg-white;
+  }
+}
+
+@layer utilities {
+  /* Hide scrollbars but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+  
+  /* Safe area insets for mobile */
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* Mobile-specific text sizes */
+  .text-mobile-sm {
+    font-size: 14px;
+    line-height: 20px;
+  }
+  
+  .text-mobile-base {
+    font-size: 16px;
+    line-height: 24px;
+  }
+}

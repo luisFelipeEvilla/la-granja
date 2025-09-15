@@ -5,12 +5,15 @@ export type Link = {
 };
 export default function LinkButton(props: { link: Link }) {
   return (
-    <li className="flex items-center px-4 py-2 text-center border-t-[1px] border-slate-400 hover:bg-slate-800">
-      <a href={props.link.href} className="flex">
-        {
-          props.link.icon
-        }
-        <p className="ml-2">{props.link.label}</p>
+    <li>
+      <a 
+        href={props.link.href} 
+        className="flex items-center px-4 py-3 text-gray-100 rounded-lg hover:bg-slate-800 transition-colors duration-200"
+      >
+        <span className="flex-shrink-0">
+          {props.link.icon}
+        </span>
+        <span className="ml-3 text-sm font-medium">{props.link.label}</span>
       </a>
     </li>
   );

@@ -81,59 +81,82 @@ export default function ProductionPage() {
     }
     
     return (
-        <div className="flex flex-col items-center justify-center w-full h-screen ">
-        <div className="mb-4 rounded-md bg-white border shadow-sm cursor-pointer px-3 py-1 focus:outline-none ring-0">
-            <input
-                type="date"
-                value={date.toISOString().split('T')[0]}
-                onChange={handleDateChange}
-                placeholder="Selecciona una fecha"
-            />
-        </div>
-
-        <form onSubmit={handleSubmit}>
-            <Card className="w-[70%] m-auto overflow-x-scroll md:overflow-hidden md:w-[600px]">
-                <Title>Planilla de recolección</Title>
-
-                <Table className="max-h-[400px] overflow-y-scroll">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Proveedor</TableCell>
-                            <TableCell>Litros</TableCell>
-                        </TableRow>
-                    </TableHead>
-
-                    <TableBody>
-                        {
-                            sheet.map((product, index) => {
-                                const provider = providers.find((provider) => provider.id === product.providerId);
-                                return (
-                                    <TableRow key={index}>
-                                        <TableCell>{provider?.firstName} {provider?.lastName}</TableCell>
-                                        <TableCell>
-                                            <TextInput
-                                                onChange={(e) => handleQuantityChange(e, provider?.id as string)}
-                                                placeholder="Litros de leche"
-                                                className="w-[100px]"
-                                                value={sheet.find((product) => product.providerId === provider?.id)?.quantity.toString()}
-                                            />
-                                        </TableCell>
-                                    </TableRow>
-                                )
-                            })
-                        }
-                    </TableBody>
-                </Table>
-
-                <div className="flex items-center">
-                    <Text>Total: <span className="font-bold">{total}</span></Text>
+        <div className="w-full max-w-6xl mx-auto space-y-6">
+            {/* Header */}
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                    <Title className="text-2xl sm:text-3xl font-bold text-gray-900">Producción Diaria</Title>
+                    <div className="flex items-center gap-2">
+                        <Text className="text-sm font-medium text-gray-600 hidden sm:block">Fecha:</Text>
+                        <input
+                            type="date"
+                            value={date.toISOString().split('T')[0]}
+                            onChange={handleDateChange}
+                            className="px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                    </div>
                 </div>
-            </Card>
-
-            <div className="w-full flex mt-6 justify-center">
-                <PrimaryButton text="Guardar"></PrimaryButton>
             </div>
-        </form>
-    </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <div className="p-4 sm:p-6 border-b border-gray-200">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                            <Title className="text-lg sm:text-xl font-semibold">Planilla de recolección</Title>
+                            <div className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-lg">
+                                <Text className="text-sm font-medium text-gray-600">Total:</Text>
+                                <Metric className="text-xl font-bold text-green-600">{total} L</Metric>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                        <Table className="min-w-full">
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell className="whitespace-nowrap font-medium text-gray-900">Proveedor</TableCell>
+                                    <TableCell className="whitespace-nowrap font-medium text-gray-900">Litros</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody className="divide-y divide-gray-200">
+                                {sheet.map((product, index) => {
+                                    const provider = providers.find((provider) => provider.id === product.providerId);
+                                    return (
+                                        <TableRow key={index} className="hover:bg-gray-50">
+                                            <TableCell className="whitespace-nowrap font-medium text-gray-900">
+                                                {provider?.firstName} {provider?.lastName}
+                                            </TableCell>
+                                            <TableCell className="whitespace-nowrap">
+                                                <div className="flex items-center gap-2">
+                                                    <TextInput
+                                                        onChange={(e) => handleQuantityChange(e, provider?.id as string)}
+                                                        placeholder="0"
+                                                        className="w-20 sm:w-24"
+                                                        type="number"
+                                                        min="0"
+                                                        value={sheet.find((product) => product.providerId === provider?.id)?.quantity.toString()}
+                                                    />
+                                                    <Text className="text-sm text-gray-500">L</Text>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    </div>
+
+                    {sheet.length === 0 && (
+                        <div className="p-8 text-center">
+                            <Text className="text-gray-500">No hay proveedores activos</Text>
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex justify-center">
+                    <PrimaryButton text="Guardar Planilla" />
+                </div>
+            </form>
+        </div>
     )
 }

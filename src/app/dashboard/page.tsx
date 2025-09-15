@@ -132,111 +132,121 @@ export default function Providers() {
     }
 
     return (
-        <div className="grid col-span-1 w-full py-5 gap-4">
-            <div className="grid md:grid-flow-col justify-start gap-12 ml-8" >
-                <DateRangePicker
-                    value={dates}
-                    locale={es}
-                    onValueChange={setDates}
-                    selectPlaceholder="Fechas"
-                    className="max-w-[300px]"
-                />
-                <MultiSelect
-                    placeholder="Seleccionar proveedor"
-                    className="max-w-[300px]"
-                    value={filteredProviders.map(provider => provider.id)}
-                    onValueChange={e => handleFilterProvider(e)}
-                >
-                    {
-                        providers.map((provider) => (
-                            <MultiSelectItem value={provider.id} key={provider.id}>{provider.firstName} {provider.lastName}</MultiSelectItem>
-                        ))
-                    }
-                </MultiSelect>
+        <div className="w-full space-y-6">
+            {/* Filters Section */}
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
+                <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+                    <DateRangePicker
+                        value={dates}
+                        locale={es}
+                        onValueChange={setDates}
+                        selectPlaceholder="Fechas"
+                        className="w-full sm:w-auto sm:min-w-[280px]"
+                    />
+                    <MultiSelect
+                        placeholder="Seleccionar proveedor"
+                        className="w-full sm:w-auto sm:min-w-[280px]"
+                        value={filteredProviders.map(provider => provider.id)}
+                        onValueChange={e => handleFilterProvider(e)}
+                    >
+                        {providers.map((provider) => (
+                            <MultiSelectItem value={provider.id} key={provider.id}>
+                                {provider.firstName} {provider.lastName}
+                            </MultiSelectItem>
+                        ))}
+                    </MultiSelect>
+                </div>
             </div>
 
 
-            <div className="flex flex-col items-center gap-8 md:flex-row md:justify-end md:mx-32">
-                <Card className="w-fit" decoration="top" decorationColor="green">
-                    <Text>Proveedores activos</Text>
-                    <Metric>{filteredProviders.length}</Metric>
+            {/* Metrics Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                <Card className="p-4" decoration="top" decorationColor="green">
+                    <Text className="text-sm font-medium text-gray-600">Proveedores activos</Text>
+                    <Metric className="text-2xl sm:text-3xl font-bold text-green-600 mt-2">
+                        {filteredProviders.length}
+                    </Metric>
                 </Card>
 
-                <Card className="w-fit" decoration="top" decorationColor="green">
-                    <Text>Litros de leche Recogidos</Text>
-                    <Metric>{
-                        milkLogs.reduce((acc, product) => acc + product.Cantidad, 0)
-                    }</Metric>
+                <Card className="p-4" decoration="top" decorationColor="blue">
+                    <Text className="text-sm font-medium text-gray-600">Litros de leche Recogidos</Text>
+                    <Metric className="text-2xl sm:text-3xl font-bold text-blue-600 mt-2">
+                        {milkLogs.reduce((acc, product) => acc + product.Cantidad, 0)}
+                    </Metric>
                 </Card>
 
-                <Card className="w-fit" decoration="top" decorationColor="green">
-                    <Text>Promedio de litros de leche recogidos</Text>
-                    <Metric>{new Intl.NumberFormat('es-co', { maximumFractionDigits: 0}).format(average)}</Metric>
+                <Card className="p-4 sm:col-span-2 lg:col-span-1" decoration="top" decorationColor="purple">
+                    <Text className="text-sm font-medium text-gray-600">Promedio diario</Text>
+                    <Metric className="text-2xl sm:text-3xl font-bold text-purple-600 mt-2">
+                        {new Intl.NumberFormat('es-co', { maximumFractionDigits: 0}).format(average)}
+                    </Metric>
                 </Card>
             </div>
 
-            <section className="grid gap-4 justify-center ">
-                <div className="grid gap-4">
-                    <Title>Litros de Leche por proveedor</Title>
-                    <div  className="md:w-[800px] grid md:grid-flow-col gap-4">
-                        <Card className="">
-                            <BarChart
-                                className="md:w-[600px]"
-                                data={milkLogs}
-                                index="provider"
-                                categories={["Cantidad"]}
-                                colors={["blue"]}
-                            />
+            {/* Charts Section */}
+            <div className="space-y-8">
+                {/* Leche por proveedor */}
+                <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
+                    <Title className="text-xl sm:text-2xl font-bold mb-6">Litros de Leche por proveedor</Title>
+                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                        <Card className="xl:col-span-2 p-4">
+                            <div className="w-full overflow-x-auto">
+                                <BarChart
+                                    className="h-80 min-w-[500px] w-full"
+                                    data={milkLogs}
+                                    index="provider"
+                                    categories={["Cantidad"]}
+                                    colors={["blue"]}
+                                />
+                            </div>
                         </Card>
 
-                        <Card className="flex items-center w-[200px]" >
-                            <DonutChart
-                                data={milkLogs}
-                                index="provider"
-                                category={"Cantidad"}
-                                colors={["blue", "green", "red", "yellow", "purple", "pink", "orange", "indigo", "teal", "cyan"]}
-                            />
+                        <Card className="p-4 flex items-center justify-center">
+                            <div className="w-full max-w-xs">
+                                <DonutChart
+                                    className="h-60 w-full"
+                                    data={milkLogs}
+                                    index="provider"
+                                    category="Cantidad"
+                                    colors={["blue", "green", "red", "yellow", "purple", "pink", "orange", "indigo", "teal", "cyan"]}
+                                />
+                            </div>
                         </Card>
                     </div>
                 </div>
 
-                <div className="grid gap-4">
-                    <Title>Litros de Leche por día</Title>
-                    <div  className="md:w-[800px] grid grid-flow-col gap-4">
-                        <Card className="">
+                {/* Leche por día */}
+                <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
+                    <Title className="text-xl sm:text-2xl font-bold mb-6">Litros de Leche por día</Title>
+                    <Card className="p-4">
+                        <div className="w-full overflow-x-auto">
                             <LineChart
-                                className="md:w-[600px]"
+                                className="h-80 min-w-[500px] w-full"
                                 data={milkLogsByDate}
                                 index="Fecha"
                                 categories={["Cantidad"]}
                                 colors={["blue"]}
                             />
-                        </Card>
-                    </div>
+                        </div>
+                    </Card>
                 </div>
 
-                <div className="grid gap-4">
-                    <Title>Promedio por producto</Title>
-
-                    <div  className="md:w-[800px] grid grid-flow-col gap-4">
-                        <Card className="">
+                {/* Promedio por producto */}
+                <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
+                    <Title className="text-xl sm:text-2xl font-bold mb-6">Producción por día</Title>
+                    <Card className="p-4">
+                        <div className="w-full overflow-x-auto">
                             <LineChart
-                                className="md:w-[600px]"
+                                className="h-80 min-w-[500px] w-full"
                                 data={productsLogsByDate}
                                 index="Fecha"
                                 categories={["Cantidad"]}
-                                colors={["blue"]}
+                                colors={["purple"]}
                             />
-                        </Card>
-                    </div>
-
+                        </div>
+                    </Card>
                 </div>
-            </section>
-
-            <section>
-                
-           
-            </section>
+            </div>
         </div>
     )
 }

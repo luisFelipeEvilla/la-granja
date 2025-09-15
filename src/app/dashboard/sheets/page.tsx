@@ -159,117 +159,163 @@ export default function Sheet() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-screen ">
-      <div className="mb-4 rounded-md bg-white border shadow-sm cursor-pointer px-3 py-1 focus:outline-none ring-0">
-        <input
-          type="date"
-          value={date.toISOString().split("T")[0]}
-          onChange={handleDateChange}
-          placeholder="Selecciona una fecha"
-          disabled={user?.role === user_role.USER}
-        />
+    <div className="w-full max-w-6xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+          <Title className="text-2xl sm:text-3xl font-bold text-gray-900">Planillas de Recolección</Title>
+          <div className="flex items-center gap-2">
+            <Text className="text-sm font-medium text-gray-600 hidden sm:block">Fecha:</Text>
+            <input
+              type="date"
+              value={date.toISOString().split("T")[0]}
+              onChange={handleDateChange}
+              disabled={user?.role === user_role.USER}
+              className="px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+          </div>
+        </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-8">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <MilkLogTable />
         {/* <ProductionLogTable /> */}
 
-        <div className="w-full flex mt-2 justify-center">
-          <PrimaryButton text="Guardar"></PrimaryButton>
+        <div className="flex justify-center">
+          <PrimaryButton text="Guardar Planilla" />
         </div>
       </form>
     </div>
   );
 
   function MilkLogTable() {
+    const totalLiters = milkSheet.reduce((acc, product) => acc + product.quantity, 0);
+    
     return (
-      <Card className="w-[70%] m-auto overflow-x-scroll md:overflow-hidden md:w-[600px]">
-        <Title>Planilla de recolección</Title>
-
-        <Table className="max-h-[400px] overflow-y-scroll">
-          <TableHead>
-            <TableRow>
-              <TableCell>Proveedor</TableCell>
-              <TableCell>Litros</TableCell>
-            </TableRow>
-          </TableHead>
-
-          <TableBody>
-            {milkSheet.map((product, index) => {
-              const provider = providers.find(
-                (provider) => provider.id === product.providerId
-              );
-              return (
-                <TableRow key={index}>
-                  <TableCell>
-                    {provider?.firstName} {provider?.lastName}
-                  </TableCell>
-                  <TableCell>
-                    <TextInput
-                      onChange={(e) =>
-                        handleQuantityChange(e, provider?.id as string)
-                      }
-                      placeholder="Litros de leche"
-                      className="w-[100px]"
-                      value={milkSheet
-                        .find((product) => product.providerId === provider?.id)
-                        ?.quantity.toString()}
-                    />
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-
-        <div className="flex items-center">
-          <Text>
-            Total:{" "}
-            <span className="font-bold">
-              {milkSheet.reduce((acc, product) => acc + product.quantity, 0)}
-            </span>
-          </Text>
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="p-4 sm:p-6 border-b border-gray-200">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <Title className="text-lg sm:text-xl font-semibold">Planilla de recolección</Title>
+            <div className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-lg">
+              <Text className="text-sm font-medium text-gray-600">Total:</Text>
+              <Metric className="text-xl font-bold text-green-600">{totalLiters} L</Metric>
+            </div>
+          </div>
         </div>
-      </Card>
+
+        <div className="overflow-x-auto">
+          <Table className="min-w-full">
+            <TableHead>
+              <TableRow>
+                <TableCell className="whitespace-nowrap font-medium text-gray-900">Proveedor</TableCell>
+                <TableCell className="whitespace-nowrap font-medium text-gray-900">Litros</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody className="divide-y divide-gray-200">
+              {milkSheet.map((product, index) => {
+                const provider = providers.find(
+                  (provider) => provider.id === product.providerId
+                );
+                return (
+                  <TableRow key={index} className="hover:bg-gray-50">
+                    <TableCell className="whitespace-nowrap font-medium text-gray-900">
+                      {provider?.firstName} {provider?.lastName}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <TextInput
+                          onChange={(e) =>
+                            handleQuantityChange(e, provider?.id as string)
+                          }
+                          placeholder="0"
+                          className="w-20 sm:w-24"
+                          type="number"
+                          min="0"
+                          disabled={user?.role === user_role.USER}
+                          value={milkSheet
+                            .find((product) => product.providerId === provider?.id)
+                            ?.quantity.toString()}
+                        />
+                        <Text className="text-sm text-gray-500">L</Text>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+
+        {milkSheet.length === 0 && (
+          <div className="p-8 text-center">
+            <Text className="text-gray-500">No hay proveedores activos</Text>
+          </div>
+        )}
+      </div>
     );
   }
 
   function ProductionLogTable() {
+    const totalProduction = productsSheet.reduce((acc, product) => acc + product.quantity, 0);
+    
     return (
-      <Card className="w-[70%] m-auto overflow-x-scroll md:overflow-hidden md:w-[600px]">
-        <Title>Producción del día</Title>
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="p-4 sm:p-6 border-b border-gray-200">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <Title className="text-lg sm:text-xl font-semibold">Producción del día</Title>
+            <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg">
+              <Text className="text-sm font-medium text-gray-600">Total:</Text>
+              <Metric className="text-xl font-bold text-blue-600">{totalProduction}</Metric>
+            </div>
+          </div>
+        </div>
 
-        <Table className="max-h-[400px] overflow-y-scroll">
-          <TableHead>
-            <TableRow>
-              <TableCell>Producto</TableCell>
-              <TableCell>Producción</TableCell>
-            </TableRow>
-          </TableHead>
+        <div className="overflow-x-auto">
+          <Table className="min-w-full">
+            <TableHead>
+              <TableRow>
+                <TableCell className="whitespace-nowrap font-medium text-gray-900">Producto</TableCell>
+                <TableCell className="whitespace-nowrap font-medium text-gray-900">Producción</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody className="divide-y divide-gray-200">
+              {products.map((product) => {
+                return (
+                  <TableRow key={product.id} className="hover:bg-gray-50">
+                    <TableCell className="whitespace-nowrap font-medium text-gray-900">
+                      {product.name}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <TextInput
+                          onChange={(e) =>
+                            handleProductQuantityChange(e, product.id as string)
+                          }
+                          placeholder="0"
+                          className="w-20 sm:w-24"
+                          type="number"
+                          min="0"
+                          disabled={user?.role === user_role.USER}
+                          value={productsSheet
+                            .find((p) => p.productId === product.id)
+                            ?.quantity.toString()}
+                        />
+                        <Text className="text-sm text-gray-500">{product.unit}</Text>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
 
-          <TableBody>
-            {products.map((product) => {
-              return (
-                <TableRow key={product.id}>
-                  <TableCell>{product.name}</TableCell>
-                  <TableCell>
-                    <TextInput
-                      onChange={(e) =>
-                        handleProductQuantityChange(e, product.id as string)
-                      }
-                      placeholder={`Producido del día ${product.unit}`}
-                      className="w-[100px]"
-                      value={productsSheet
-                        .find((p) => p.productId === product.id)
-                        ?.quantity.toString()}
-                    />
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </Card>
+        {products.length === 0 && (
+          <div className="p-8 text-center">
+            <Text className="text-gray-500">No hay productos registrados</Text>
+          </div>
+        )}
+      </div>
     );
   }
 }

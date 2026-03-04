@@ -121,7 +121,7 @@ export default function Providers() {
             <TableHead>
               <TableRow>
                 <TableCell className="whitespace-nowrap">Nombre</TableCell>
-                <TableCell className="whitespace-nowrap">Teléfono</TableCell>
+                <TableCell className="whitespace-nowrap hidden sm:table-cell">Teléfono</TableCell>
                 <TableCell className="whitespace-nowrap hidden sm:table-cell">Correo</TableCell>
                 <TableCell className="whitespace-nowrap">Estado</TableCell>
                 <TableCell className="whitespace-nowrap">Acciones</TableCell>
@@ -134,9 +134,10 @@ export default function Providers() {
                     <div className="flex flex-col">
                       <span>{provider.firstName} {provider.lastName}</span>
                       <span className="sm:hidden text-xs text-gray-500">{provider.email}</span>
+                      <span className="sm:hidden text-xs text-gray-500">{provider.phone}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="whitespace-nowrap">{provider.phone}</TableCell>
+                  <TableCell className="whitespace-nowrap hidden sm:table-cell">{provider.phone}</TableCell>
                   <TableCell className="whitespace-nowrap hidden sm:table-cell text-gray-600">
                     {provider.email}
                   </TableCell>

@@ -55,11 +55,10 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="flex justify-center items-center h-screen">
+    <div className="flex justify-center items-center min-h-screen px-4">
       <form
         onSubmit={handleSubmit}
-        className={`border rounded-md shadow-md 
-      flex flex-col gap-6 w-[300px] py-8 px-8`}
+        className="border rounded-md shadow-md flex flex-col gap-6 w-full max-w-sm py-8 px-8"
       >
         <h4 className="text-2xl text-center">Iniciar sesión</h4>
         <Input

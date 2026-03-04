@@ -190,15 +190,13 @@ export default function Providers() {
                     <Title className="text-xl sm:text-2xl font-bold mb-6">Litros de Leche por proveedor</Title>
                     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                         <Card className="xl:col-span-2 p-4">
-                            <div className="w-full overflow-x-auto">
-                                <BarChart
-                                    className="h-80 min-w-[500px] w-full"
-                                    data={milkLogs}
-                                    index="provider"
-                                    categories={["Cantidad"]}
-                                    colors={["blue"]}
-                                />
-                            </div>
+                            <BarChart
+                                className="h-60 sm:h-80 w-full"
+                                data={milkLogs}
+                                index="provider"
+                                categories={["Cantidad"]}
+                                colors={["blue"]}
+                            />
                         </Card>
 
                         <Card className="p-4 flex items-center justify-center">
@@ -219,15 +217,13 @@ export default function Providers() {
                 <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
                     <Title className="text-xl sm:text-2xl font-bold mb-6">Litros de Leche por día</Title>
                     <Card className="p-4">
-                        <div className="w-full overflow-x-auto">
-                            <LineChart
-                                className="h-80 min-w-[500px] w-full"
-                                data={milkLogsByDate}
-                                index="Fecha"
-                                categories={["Cantidad"]}
-                                colors={["blue"]}
-                            />
-                        </div>
+                        <LineChart
+                            className="h-60 sm:h-80 w-full"
+                            data={milkLogsByDate}
+                            index="Fecha"
+                            categories={["Cantidad"]}
+                            colors={["blue"]}
+                        />
                     </Card>
                 </div>
 
@@ -235,15 +231,13 @@ export default function Providers() {
                 <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
                     <Title className="text-xl sm:text-2xl font-bold mb-6">Producción por día</Title>
                     <Card className="p-4">
-                        <div className="w-full overflow-x-auto">
-                            <LineChart
-                                className="h-80 min-w-[500px] w-full"
-                                data={productsLogsByDate}
-                                index="Fecha"
-                                categories={["Cantidad"]}
-                                colors={["purple"]}
-                            />
-                        </div>
+                        <LineChart
+                            className="h-60 sm:h-80 w-full"
+                            data={productsLogsByDate}
+                            index="Fecha"
+                            categories={["Cantidad"]}
+                            colors={["purple"]}
+                        />
                     </Card>
                 </div>
             </div>

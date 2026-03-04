@@ -165,7 +165,7 @@ export default function Sheet() {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <Title className="text-2xl sm:text-3xl font-bold text-gray-900">Planillas de Recolección</Title>
           <div className="flex items-center gap-2">
-            <Text className="text-sm font-medium text-gray-600 hidden sm:block">Fecha:</Text>
+            <Text className="text-sm font-medium text-gray-600">Fecha:</Text>
             <input
               type="date"
               value={date.toISOString().split("T")[0]}
@@ -228,7 +228,7 @@ export default function Sheet() {
                             handleQuantityChange(e, provider?.id as string)
                           }
                           placeholder="0"
-                          className="w-20 sm:w-24"
+                          className="w-24 sm:w-28"
                           type="number"
                           min="0"
                           disabled={user?.role === user_role.USER}
@@ -292,7 +292,7 @@ export default function Sheet() {
                             handleProductQuantityChange(e, product.id as string)
                           }
                           placeholder="0"
-                          className="w-20 sm:w-24"
+                          className="w-24 sm:w-28"
                           type="number"
                           min="0"
                           disabled={user?.role === user_role.USER}

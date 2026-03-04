@@ -30,7 +30,7 @@ export default function SideBarBody(props: { links: Link[] }) {
         {/* Sidebar */}
         <aside className={`
           fixed lg:static inset-y-0 left-0 z-50 lg:z-0
-          w-64 bg-slate-900 text-gray-100 
+          w-56 sm:w-64 bg-slate-900 text-gray-100
           transform ${isOpen ? "translate-x-0" : "-translate-x-full"} 
           lg:translate-x-0 transition-transform duration-300 ease-in-out
           flex flex-col h-full lg:h-screen

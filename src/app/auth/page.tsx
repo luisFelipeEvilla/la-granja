@@ -55,18 +55,24 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="flex justify-center items-center min-h-screen px-4">
+    <div className="flex justify-center items-center min-h-screen min-h-[100dvh] px-4 py-8">
       <form
         onSubmit={handleSubmit}
-        className="border rounded-md shadow-md flex flex-col gap-6 w-full max-w-sm py-8 px-8"
+        className="bg-white border rounded-xl sm:rounded-md shadow-sm sm:shadow-md flex flex-col gap-5 sm:gap-6 w-full max-w-sm px-5 py-7 sm:px-8 sm:py-8"
       >
-        <h4 className="text-2xl text-center">Iniciar sesión</h4>
+        <h4 className="text-xl sm:text-2xl text-center">Iniciar sesión</h4>
         <Input
           value={username}
           onValueChange={handleUsernameChange}
           type="text"
           placeholder="Usuario"
           errorMessage={error.user && "Usuario no encontrado"}
+          autoComplete="username"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          size="lg"
+          classNames={{ input: "text-base sm:text-small" }}
           required
         />
         <PasswordInput
@@ -76,8 +82,10 @@ export default function AuthPage() {
         />
         <Button
           isDisabled={loading}
+          isLoading={loading}
           type="submit"
           color="success"
+          size="lg"
           className="text-white"
         >
           Iniciar sesión

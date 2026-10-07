@@ -18,11 +18,15 @@ export default function PasswordInput(props: propsType) {
       onValueChange={props.onChange}
       placeholder="Contraseña"
       errorMessage={props.error && "Contraseña incorrecta"}
+      autoComplete="current-password"
+      size="lg"
+      classNames={{ input: "text-base sm:text-small" }}
       required
       endContent={
         <button
-          className="focus:outline-none"
+          className="focus:outline-none flex items-center justify-center -mr-2"
           type="button"
+          aria-label={isVisible ? "Ocultar contraseña" : "Mostrar contraseña"}
           onClick={() => setIsVisible(!isVisible)}
         >
           {isVisible ? (

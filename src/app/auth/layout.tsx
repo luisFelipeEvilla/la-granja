@@ -11,7 +11,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="w-full px-8 h-screen overflow-y-scroll">
+      <body className="w-full min-h-screen bg-gray-50 sm:bg-white">
         <NextUIProvider>
           <AuthProvider>{children}</AuthProvider>
         </NextUIProvider>

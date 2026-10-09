@@ -32,6 +32,8 @@ model MilkRouteLog {
   providerId String @db.ObjectId
   provider   Provider @relation(fields: [providerId], references: [id])
   quantity     Int
+  // Precio de compra por litro; se guarda al generar la factura
+  price      Int?
   createdAt  DateTime @default(now())
 }
 

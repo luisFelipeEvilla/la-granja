@@ -164,24 +164,27 @@ export default function Sheet() {
       <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <Title className="text-2xl sm:text-3xl font-bold text-gray-900">Planillas de Recolección</Title>
-          <div className="flex items-center gap-2">
-            <Text className="text-sm font-medium text-gray-600">Fecha:</Text>
+          <label className="flex items-center gap-2 w-full sm:w-auto">
+            <Text className="text-sm font-medium text-gray-600 shrink-0">Fecha:</Text>
             <input
               type="date"
               value={date.toISOString().split("T")[0]}
               onChange={handleDateChange}
               disabled={user?.role === user_role.USER}
-              className="px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 sm:flex-none min-w-0 px-3 py-2 text-base sm:text-sm border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             />
-          </div>
+          </label>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <MilkLogTable />
-        {/* <ProductionLogTable /> */}
+        {/* Se llama como función (no <MilkLogTable />) para que React no
+            remonte la tabla en cada render y los inputs no pierdan el foco */}
+        {MilkLogTable()}
+        {/* {ProductionLogTable()} */}
 
-        <div className="flex justify-center">
+        {/* Botón fijo abajo en móvil para no tener que hacer scroll hasta el final */}
+        <div className="sticky bottom-0 -mx-4 sm:mx-0 px-4 py-3 sm:p-0 bg-gray-50/95 backdrop-blur sm:bg-transparent sm:backdrop-blur-none border-t border-gray-200 sm:border-0 sm:static flex justify-center">
           <PrimaryButton text="Guardar Planilla" />
         </div>
       </form>
@@ -218,7 +221,7 @@ export default function Sheet() {
                 );
                 return (
                   <TableRow key={index} className="hover:bg-gray-50">
-                    <TableCell className="whitespace-nowrap font-medium text-gray-900">
+                    <TableCell className="whitespace-normal sm:whitespace-nowrap font-medium text-gray-900">
                       {provider?.firstName} {provider?.lastName}
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
@@ -228,7 +231,8 @@ export default function Sheet() {
                             handleQuantityChange(e, provider?.id as string)
                           }
                           placeholder="0"
-                          className="w-24 sm:w-28"
+                          inputMode="numeric"
+                          className="w-24 sm:w-28 min-w-0"
                           type="number"
                           min="0"
                           disabled={user?.role === user_role.USER}
@@ -282,7 +286,7 @@ export default function Sheet() {
               {products.map((product) => {
                 return (
                   <TableRow key={product.id} className="hover:bg-gray-50">
-                    <TableCell className="whitespace-nowrap font-medium text-gray-900">
+                    <TableCell className="whitespace-normal sm:whitespace-nowrap font-medium text-gray-900">
                       {product.name}
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
@@ -292,7 +296,8 @@ export default function Sheet() {
                             handleProductQuantityChange(e, product.id as string)
                           }
                           placeholder="0"
-                          className="w-24 sm:w-28"
+                          inputMode="numeric"
+                          className="w-24 sm:w-28 min-w-0"
                           type="number"
                           min="0"
                           disabled={user?.role === user_role.USER}

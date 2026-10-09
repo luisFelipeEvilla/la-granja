@@ -15,16 +15,17 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen bg-gray-50">
         <AuthProvider>
-          <div className="flex min-h-screen">
-            <SideBar />
-            <Providers>
-              <main className="flex-1 w-full lg:ml-0 px-4 sm:px-6 lg:px-8 py-4 overflow-x-hidden">
-                <div className="h-full overflow-y-auto">
-                  {children}
-                </div>
+          {/* Providers envuelve todo el layout: NextUIProvider agrega un <div> propio
+              que, si queda dentro del contenedor flex, impide que <main> se encoja */}
+          <Providers>
+            <div className="flex min-h-screen">
+              <SideBar />
+              {/* pt-20 deja espacio para la barra superior fija en móvil/tablet */}
+              <main className="flex-1 min-w-0 w-full px-4 sm:px-6 lg:px-8 pt-20 pb-8 lg:py-6">
+                {children}
               </main>
-            </Providers>
-          </div>
+            </div>
+          </Providers>
           <Toaster />
         </AuthProvider>
       </body>

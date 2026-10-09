@@ -82,6 +82,7 @@ export default function Invoices() {
                                     onChange={(e) => setPrice(parseInt(e.target.value) || 0)} 
                                     placeholder="Precio por litro"
                                     type="number"
+                                    inputMode="numeric"
                                     min="0"
                                 />
                             </div>

@@ -5,6 +5,7 @@ import { Provider } from "@prisma/client";
 import { ProviderWithProducts } from "@/types/Provider";
 import { es } from "date-fns/locale";
 import axios from "axios";
+import useMediaQuery from "@/hooks/useMediaQuery";
 
 export default function Providers() {
     const [providers, setProviders] = useState<ProviderWithProducts[]>([]);
@@ -22,6 +23,10 @@ export default function Providers() {
     const [dates, setDates] = useState<DateRangePickerValue>({
         from: new Date(), to: new Date()
     });
+
+    // En móvil y tablet los nombres de proveedores no caben en el eje X,
+    // así que el gráfico de barras se muestra en horizontal.
+    const isCompact = useMediaQuery("(max-width: 1023px)");
     
     useEffect(() => {
         fetchData();
@@ -184,14 +189,17 @@ export default function Providers() {
             </div>
 
             {/* Charts Section */}
-            <div className="space-y-8">
+            <div className="space-y-6 sm:space-y-8">
                 {/* Leche por proveedor */}
                 <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
-                    <Title className="text-xl sm:text-2xl font-bold mb-6">Litros de Leche por proveedor</Title>
+                    <Title className="text-lg sm:text-2xl font-bold mb-4 sm:mb-6">Litros de Leche por proveedor</Title>
                     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                        <Card className="xl:col-span-2 p-4">
+                        <Card className="xl:col-span-2 p-2 sm:p-4">
                             <BarChart
-                                className="h-60 sm:h-80 w-full"
+                                className="w-full lg:h-80"
+                                style={isCompact ? { height: Math.max(240, milkLogs.length * 28) } : undefined}
+                                layout={isCompact ? "vertical" : "horizontal"}
+                                yAxisWidth={isCompact ? 120 : 56}
                                 data={milkLogs}
                                 index="provider"
                                 categories={["Cantidad"]}
@@ -215,8 +223,8 @@ export default function Providers() {
 
                 {/* Leche por día */}
                 <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
-                    <Title className="text-xl sm:text-2xl font-bold mb-6">Litros de Leche por día</Title>
-                    <Card className="p-4">
+                    <Title className="text-lg sm:text-2xl font-bold mb-4 sm:mb-6">Litros de Leche por día</Title>
+                    <Card className="p-2 sm:p-4">
                         <LineChart
                             className="h-60 sm:h-80 w-full"
                             data={milkLogsByDate}
@@ -229,8 +237,8 @@ export default function Providers() {
 
                 {/* Promedio por producto */}
                 <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
-                    <Title className="text-xl sm:text-2xl font-bold mb-6">Producción por día</Title>
-                    <Card className="p-4">
+                    <Title className="text-lg sm:text-2xl font-bold mb-4 sm:mb-6">Producción por día</Title>
+                    <Card className="p-2 sm:p-4">
                         <LineChart
                             className="h-60 sm:h-80 w-full"
                             data={productsLogsByDate}

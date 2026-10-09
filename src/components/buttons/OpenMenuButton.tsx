@@ -2,14 +2,17 @@ export default function OpenMenuBotton(props: {
   isOpen: boolean;
   setIsOpen: (value: boolean) => void;
 }) {
-  return props.isOpen ? null : (
-    <button 
+  return (
+    <button
+      type="button"
       onClick={() => props.setIsOpen(true)}
-      className="p-2 rounded-lg bg-white shadow-md hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      className="p-2 -ml-2 rounded-lg hover:bg-slate-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
       aria-label="Abrir menú"
+      aria-expanded={props.isOpen}
+      aria-controls="sidebar"
     >
       <svg
-        className="w-6 h-6 text-gray-700"
+        className="w-6 h-6 text-gray-100"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"

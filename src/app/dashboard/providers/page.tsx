@@ -47,7 +47,7 @@ export default function Providers() {
 
       setProducts(aux);
     });
-  });
+  }, []);
 
   useEffect(() => {
     const filtered = providers.filter((provider) =>
@@ -115,14 +115,52 @@ export default function Providers() {
           </div>
         </div>
 
-        {/* Table Container with horizontal scroll */}
-        <div className="overflow-x-auto">
+        {/* Mobile: lista de tarjetas */}
+        <ul className="md:hidden divide-y divide-gray-200">
+          {filteredProviders.map((provider) => (
+            <li key={provider.id} className="p-4 flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-gray-900 truncate">
+                  {provider.firstName} {provider.lastName}
+                </p>
+                {provider.phone && (
+                  <a href={`tel:${provider.phone}`} className="block text-sm text-blue-600 truncate min-h-0 min-w-0">
+                    {provider.phone}
+                  </a>
+                )}
+                {provider.email && (
+                  <p className="text-sm text-gray-500 truncate">{provider.email}</p>
+                )}
+                <div className="mt-2 flex items-center gap-2">
+                  <Switch
+                    id={`active-${provider.id}`}
+                    checked={provider.active}
+                    onChange={() => handleChangeProviderState(provider)}
+                    disabled={loading}
+                  />
+                  <label htmlFor={`active-${provider.id}`} className="text-sm text-gray-600">
+                    {provider.active ? "Activo" : "Inactivo"}
+                  </label>
+                </div>
+              </div>
+              <Link
+                href={`/dashboard/providers/${provider.id}`}
+                className="shrink-0 inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
+              >
+                Editar
+              </Link>
+            </li>
+          ))}
+        </ul>
+
+        {/* Tablet / Desktop: tabla con scroll horizontal */}
+        <div className="hidden md:block overflow-x-auto">
           <Table className="min-w-full">
             <TableHead>
               <TableRow>
                 <TableCell className="whitespace-nowrap">Nombre</TableCell>
-                <TableCell className="whitespace-nowrap hidden sm:table-cell">Teléfono</TableCell>
-                <TableCell className="whitespace-nowrap hidden sm:table-cell">Correo</TableCell>
+                <TableCell className="whitespace-nowrap">Teléfono</TableCell>
+                <TableCell className="whitespace-nowrap hidden lg:table-cell">Correo</TableCell>
                 <TableCell className="whitespace-nowrap">Estado</TableCell>
                 <TableCell className="whitespace-nowrap">Acciones</TableCell>
               </TableRow>
@@ -133,12 +171,11 @@ export default function Providers() {
                   <TableCell className="whitespace-nowrap font-medium">
                     <div className="flex flex-col">
                       <span>{provider.firstName} {provider.lastName}</span>
-                      <span className="sm:hidden text-xs text-gray-500">{provider.email}</span>
-                      <span className="sm:hidden text-xs text-gray-500">{provider.phone}</span>
+                      <span className="lg:hidden text-xs text-gray-500">{provider.email}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="whitespace-nowrap hidden sm:table-cell">{provider.phone}</TableCell>
-                  <TableCell className="whitespace-nowrap hidden sm:table-cell text-gray-600">
+                  <TableCell className="whitespace-nowrap">{provider.phone}</TableCell>
+                  <TableCell className="whitespace-nowrap hidden lg:table-cell text-gray-600">
                     {provider.email}
                   </TableCell>
                   <TableCell>

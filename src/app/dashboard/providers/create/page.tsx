@@ -43,7 +43,7 @@ export default function CreateProvider() {
                     <Title className="text-2xl sm:text-3xl font-bold text-gray-900">Crear Nuevo Proveedor</Title>
                     <a
                         href="/dashboard/providers"
-                        className="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors duration-200 text-center"
+                        className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors duration-200 text-center"
                     >
                         Volver a la lista
                     </a>
@@ -99,6 +99,7 @@ export default function CreateProvider() {
                                     errorMessage={errors.idNum ? "Este campo es requerido" : ''}
                                     placeholder="Número de identificación"
                                     type="number"
+                                    inputMode="numeric"
                                 />
                             </div>
                         </div>
@@ -118,6 +119,8 @@ export default function CreateProvider() {
                                     {...register('email')}  
                                     placeholder="correo@ejemplo.com"
                                     type="email"
+                                    inputMode="email"
+                                    autoComplete="email"
                                 />
                             </div>
                             <div className="space-y-2">
@@ -128,6 +131,8 @@ export default function CreateProvider() {
                                     error={errors.phone != undefined}
                                     errorMessage={errors.phone ? "Este campo es requerido" : ''}
                                     type="tel"
+                                    inputMode="tel"
+                                    autoComplete="tel"
                                 />
                             </div>
                         </div>

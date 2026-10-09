@@ -160,7 +160,7 @@ export default function Providers() {
 
 
             {/* Metrics Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
                 <Card className="p-4" decoration="top" decorationColor="green">
                     <Text className="text-sm font-medium text-gray-600">Proveedores activos</Text>
                     <Metric className="text-2xl sm:text-3xl font-bold text-green-600 mt-2">
@@ -175,7 +175,7 @@ export default function Providers() {
                     </Metric>
                 </Card>
 
-                <Card className="p-4 sm:col-span-2 lg:col-span-1" decoration="top" decorationColor="purple">
+                <Card className="p-4 sm:col-span-2 md:col-span-1" decoration="top" decorationColor="purple">
                     <Text className="text-sm font-medium text-gray-600">Promedio diario</Text>
                     <Metric className="text-2xl sm:text-3xl font-bold text-purple-600 mt-2">
                         {new Intl.NumberFormat('es-co', { maximumFractionDigits: 0}).format(average)}
@@ -186,16 +186,29 @@ export default function Providers() {
             {/* Charts Section */}
             <div className="space-y-8">
                 {/* Leche por proveedor */}
-                <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
-                    <Title className="text-xl sm:text-2xl font-bold mb-6">Litros de Leche por proveedor</Title>
+                <div className="bg-white p-3 sm:p-6 rounded-lg shadow-sm">
+                    <Title className="text-lg sm:text-2xl font-bold mb-4 sm:mb-6">Litros de Leche por proveedor</Title>
                     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                        <Card className="xl:col-span-2 p-4">
+                        <Card className="xl:col-span-2 p-2 sm:p-4">
+                            {/* Horizontal bars on phones/tablets so provider names stay readable */}
                             <BarChart
-                                className="h-60 sm:h-80 w-full"
+                                className="lg:hidden w-full"
+                                style={{ height: Math.max(240, milkLogs.length * 36) }}
                                 data={milkLogs}
                                 index="provider"
                                 categories={["Cantidad"]}
                                 colors={["blue"]}
+                                layout="vertical"
+                                yAxisWidth={110}
+                                showLegend={false}
+                            />
+                            <BarChart
+                                className="hidden lg:block h-80 w-full"
+                                data={milkLogs}
+                                index="provider"
+                                categories={["Cantidad"]}
+                                colors={["blue"]}
+                                yAxisWidth={48}
                             />
                         </Card>
 
@@ -214,11 +227,12 @@ export default function Providers() {
                 </div>
 
                 {/* Leche por día */}
-                <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
-                    <Title className="text-xl sm:text-2xl font-bold mb-6">Litros de Leche por día</Title>
-                    <Card className="p-4">
+                <div className="bg-white p-3 sm:p-6 rounded-lg shadow-sm">
+                    <Title className="text-lg sm:text-2xl font-bold mb-4 sm:mb-6">Litros de Leche por día</Title>
+                    <Card className="p-2 sm:p-4">
                         <LineChart
                             className="h-60 sm:h-80 w-full"
+                            yAxisWidth={48}
                             data={milkLogsByDate}
                             index="Fecha"
                             categories={["Cantidad"]}
@@ -228,11 +242,12 @@ export default function Providers() {
                 </div>
 
                 {/* Promedio por producto */}
-                <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
-                    <Title className="text-xl sm:text-2xl font-bold mb-6">Producción por día</Title>
-                    <Card className="p-4">
+                <div className="bg-white p-3 sm:p-6 rounded-lg shadow-sm">
+                    <Title className="text-lg sm:text-2xl font-bold mb-4 sm:mb-6">Producción por día</Title>
+                    <Card className="p-2 sm:p-4">
                         <LineChart
                             className="h-60 sm:h-80 w-full"
+                            yAxisWidth={48}
                             data={productsLogsByDate}
                             index="Fecha"
                             categories={["Cantidad"]}

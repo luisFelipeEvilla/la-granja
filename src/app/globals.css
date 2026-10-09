@@ -13,14 +13,29 @@
     text-size-adjust: 100%;
   }
 
-  /* Ensure touch targets are appropriately sized for mobile */
-  button, 
-  input[type="button"], 
-  input[type="reset"], 
-  input[type="submit"],
-  a {
-    min-height: 44px;
-    min-width: 44px;
+  /* Ensure touch targets are appropriately sized on touch screens only,
+     so desktop widgets (e.g. calendar days) keep their compact size */
+  @media (pointer: coarse) {
+    button,
+    input[type="button"],
+    input[type="reset"],
+    input[type="submit"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    nav a {
+      min-height: 44px;
+    }
+  }
+
+  /* iOS Safari zooms in on focus when inputs are smaller than 16px */
+  @media (max-width: 1023px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
   }
 }
 

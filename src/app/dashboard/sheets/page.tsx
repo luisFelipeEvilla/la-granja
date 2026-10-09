@@ -164,31 +164,33 @@ export default function Sheet() {
       <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <Title className="text-2xl sm:text-3xl font-bold text-gray-900">Planillas de Recolección</Title>
-          <div className="flex items-center gap-2">
+          <label className="flex items-center gap-2 w-full sm:w-auto">
             <Text className="text-sm font-medium text-gray-600">Fecha:</Text>
             <input
               type="date"
               value={date.toISOString().split("T")[0]}
               onChange={handleDateChange}
               disabled={user?.role === user_role.USER}
-              className="px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 sm:flex-none min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             />
-          </div>
+          </label>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <MilkLogTable />
-        {/* <ProductionLogTable /> */}
+        {/* Called as functions (not <Components />) so inputs keep focus while typing */}
+        {renderMilkLogTable()}
+        {/* {renderProductionLogTable()} */}
 
-        <div className="flex justify-center">
+        {/* Sticky on small screens so saving is always reachable on long lists */}
+        <div className="sticky bottom-0 -mx-3 sm:mx-0 px-3 py-3 sm:p-0 bg-gray-50/95 backdrop-blur sm:bg-transparent sm:backdrop-blur-none sm:static flex justify-center border-t border-gray-200 sm:border-0">
           <PrimaryButton text="Guardar Planilla" />
         </div>
       </form>
     </div>
   );
 
-  function MilkLogTable() {
+  function renderMilkLogTable() {
     const totalLiters = milkSheet.reduce((acc, product) => acc + product.quantity, 0);
     
     return (
@@ -208,7 +210,7 @@ export default function Sheet() {
             <TableHead>
               <TableRow>
                 <TableCell className="whitespace-nowrap font-medium text-gray-900">Proveedor</TableCell>
-                <TableCell className="whitespace-nowrap font-medium text-gray-900">Litros</TableCell>
+                <TableCell className="whitespace-nowrap font-medium text-gray-900 text-right">Litros</TableCell>
               </TableRow>
             </TableHead>
             <TableBody className="divide-y divide-gray-200">
@@ -218,11 +220,11 @@ export default function Sheet() {
                 );
                 return (
                   <TableRow key={index} className="hover:bg-gray-50">
-                    <TableCell className="whitespace-nowrap font-medium text-gray-900">
+                    <TableCell className="whitespace-normal break-words font-medium text-gray-900">
                       {provider?.firstName} {provider?.lastName}
                     </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      <div className="flex items-center gap-2">
+                    <TableCell className="whitespace-nowrap w-px">
+                      <div className="flex items-center justify-end gap-2">
                         <TextInput
                           onChange={(e) =>
                             handleQuantityChange(e, provider?.id as string)
@@ -230,6 +232,7 @@ export default function Sheet() {
                           placeholder="0"
                           className="w-24 sm:w-28"
                           type="number"
+                          inputMode="numeric"
                           min="0"
                           disabled={user?.role === user_role.USER}
                           value={milkSheet
@@ -255,7 +258,7 @@ export default function Sheet() {
     );
   }
 
-  function ProductionLogTable() {
+  function renderProductionLogTable() {
     const totalProduction = productsSheet.reduce((acc, product) => acc + product.quantity, 0);
     
     return (
@@ -275,18 +278,18 @@ export default function Sheet() {
             <TableHead>
               <TableRow>
                 <TableCell className="whitespace-nowrap font-medium text-gray-900">Producto</TableCell>
-                <TableCell className="whitespace-nowrap font-medium text-gray-900">Producción</TableCell>
+                <TableCell className="whitespace-nowrap font-medium text-gray-900 text-right">Producción</TableCell>
               </TableRow>
             </TableHead>
             <TableBody className="divide-y divide-gray-200">
               {products.map((product) => {
                 return (
                   <TableRow key={product.id} className="hover:bg-gray-50">
-                    <TableCell className="whitespace-nowrap font-medium text-gray-900">
+                    <TableCell className="whitespace-normal break-words font-medium text-gray-900">
                       {product.name}
                     </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      <div className="flex items-center gap-2">
+                    <TableCell className="whitespace-nowrap w-px">
+                      <div className="flex items-center justify-end gap-2">
                         <TextInput
                           onChange={(e) =>
                             handleProductQuantityChange(e, product.id as string)
@@ -294,6 +297,7 @@ export default function Sheet() {
                           placeholder="0"
                           className="w-24 sm:w-28"
                           type="number"
+                          inputMode="numeric"
                           min="0"
                           disabled={user?.role === user_role.USER}
                           value={productsSheet

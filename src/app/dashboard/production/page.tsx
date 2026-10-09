@@ -86,15 +86,15 @@ export default function ProductionPage() {
             <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                     <Title className="text-2xl sm:text-3xl font-bold text-gray-900">Producción Diaria</Title>
-                    <div className="flex items-center gap-2">
+                    <label className="flex items-center gap-2 w-full sm:w-auto">
                         <Text className="text-sm font-medium text-gray-600">Fecha:</Text>
                         <input
                             type="date"
                             value={date.toISOString().split('T')[0]}
                             onChange={handleDateChange}
-                            className="px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="flex-1 sm:flex-none min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         />
-                    </div>
+                    </label>
                 </div>
             </div>
 
@@ -115,7 +115,7 @@ export default function ProductionPage() {
                             <TableHead>
                                 <TableRow>
                                     <TableCell className="whitespace-nowrap font-medium text-gray-900">Proveedor</TableCell>
-                                    <TableCell className="whitespace-nowrap font-medium text-gray-900">Litros</TableCell>
+                                    <TableCell className="whitespace-nowrap font-medium text-gray-900 text-right">Litros</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody className="divide-y divide-gray-200">
@@ -123,16 +123,17 @@ export default function ProductionPage() {
                                     const provider = providers.find((provider) => provider.id === product.providerId);
                                     return (
                                         <TableRow key={index} className="hover:bg-gray-50">
-                                            <TableCell className="whitespace-nowrap font-medium text-gray-900">
+                                            <TableCell className="whitespace-normal break-words font-medium text-gray-900">
                                                 {provider?.firstName} {provider?.lastName}
                                             </TableCell>
-                                            <TableCell className="whitespace-nowrap">
-                                                <div className="flex items-center gap-2">
+                                            <TableCell className="whitespace-nowrap w-px">
+                                                <div className="flex items-center justify-end gap-2">
                                                     <TextInput
                                                         onChange={(e) => handleQuantityChange(e, provider?.id as string)}
                                                         placeholder="0"
                                                         className="w-24 sm:w-28"
                                                         type="number"
+                                                        inputMode="numeric"
                                                         min="0"
                                                         value={sheet.find((product) => product.providerId === provider?.id)?.quantity.toString()}
                                                     />
@@ -153,7 +154,8 @@ export default function ProductionPage() {
                     )}
                 </div>
 
-                <div className="flex justify-center">
+                {/* Sticky on small screens so saving is always reachable on long lists */}
+                <div className="sticky bottom-0 -mx-3 sm:mx-0 px-3 py-3 sm:p-0 bg-gray-50/95 backdrop-blur sm:bg-transparent sm:backdrop-blur-none sm:static flex justify-center border-t border-gray-200 sm:border-0">
                     <PrimaryButton text="Guardar Planilla" />
                 </div>
             </form>

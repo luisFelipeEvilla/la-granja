@@ -167,7 +167,7 @@ export default function PDFView(props: Props) {
     return (
         <PDFDownloadLink 
             // style={{ textDecoration: 'none', color: 'white', backgroundColor: 'green', padding: 10, borderRadius: 5}}
-            className="bg-blue-500 p-2 rounded-md text-white text-center"
+            className="inline-flex w-full sm:w-auto items-center justify-center min-h-[44px] px-6 py-3 bg-blue-500 hover:bg-blue-600 rounded-lg text-white font-medium text-center"
             document={<MyDocument />} 
             fileName={`Liquidación ${props.provider.firstName} ${props.provider.lastName}.pdf`}
         >Descargar

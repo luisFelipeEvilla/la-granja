@@ -47,7 +47,7 @@ export default function Providers() {
 
       setProducts(aux);
     });
-  });
+  }, []);
 
   useEffect(() => {
     const filtered = providers.filter((provider) =>
@@ -122,23 +122,23 @@ export default function Providers() {
               <TableRow>
                 <TableCell className="whitespace-nowrap">Nombre</TableCell>
                 <TableCell className="whitespace-nowrap hidden sm:table-cell">Teléfono</TableCell>
-                <TableCell className="whitespace-nowrap hidden sm:table-cell">Correo</TableCell>
+                <TableCell className="whitespace-nowrap hidden lg:table-cell">Correo</TableCell>
                 <TableCell className="whitespace-nowrap">Estado</TableCell>
-                <TableCell className="whitespace-nowrap">Acciones</TableCell>
+                <TableCell className="whitespace-nowrap text-right">Acciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {filteredProviders.map((provider, index) => (
                 <TableRow key={index}>
-                  <TableCell className="whitespace-nowrap font-medium">
-                    <div className="flex flex-col">
-                      <span>{provider.firstName} {provider.lastName}</span>
-                      <span className="sm:hidden text-xs text-gray-500">{provider.email}</span>
+                  <TableCell className="whitespace-normal font-medium">
+                    <div className="flex flex-col min-w-0">
+                      <span className="break-words">{provider.firstName} {provider.lastName}</span>
+                      <span className="lg:hidden text-xs text-gray-500 break-all">{provider.email}</span>
                       <span className="sm:hidden text-xs text-gray-500">{provider.phone}</span>
                     </div>
                   </TableCell>
                   <TableCell className="whitespace-nowrap hidden sm:table-cell">{provider.phone}</TableCell>
-                  <TableCell className="whitespace-nowrap hidden sm:table-cell text-gray-600">
+                  <TableCell className="whitespace-nowrap hidden lg:table-cell text-gray-600">
                     {provider.email}
                   </TableCell>
                   <TableCell>
@@ -148,10 +148,10 @@ export default function Providers() {
                       disabled={loading}
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-right">
                     <Link
                       href={`/dashboard/providers/${provider.id}`}
-                      className="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
+                      className="inline-flex items-center justify-center min-h-[40px] px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
                     >
                       Editar
                     </Link>

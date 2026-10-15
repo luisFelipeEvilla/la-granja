@@ -24,6 +24,7 @@ export default function Sheet() {
   const [milkSheet, setMilkSheet] = useState<MilkRouteLogWithProvider[]>([]);
   const [date, setDate] = useState<Date>(new Date());
   const [total, setTotal] = useState<number>(0);
+  const [saving, setSaving] = useState<boolean>(false);
 
   const [products, setProducts] = useState<Product[]>([]);
   const [productsSheet, setProductsSheet] = useState<ProductLog[]>([]);
@@ -134,6 +135,9 @@ export default function Sheet() {
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
+    // avoid duplicate submissions (double click) while a save is in flight
+    if (saving) return;
+    setSaving(true);
 
     //  remove time zone from date
     const aux = date.toISOString().split("T")[0];
@@ -155,6 +159,8 @@ export default function Sheet() {
     } catch (error) {
       console.error(error);
       toast.error("Error al guardar la planilla");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -182,7 +188,10 @@ export default function Sheet() {
         {/* <ProductionLogTable /> */}
 
         <div className="flex justify-center">
-          <PrimaryButton text="Guardar Planilla" />
+          <PrimaryButton
+            text={saving ? "Guardando..." : "Guardar Planilla"}
+            disabled={saving}
+          />
         </div>
       </form>
     </div>

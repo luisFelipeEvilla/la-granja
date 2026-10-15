@@ -1,5 +1,5 @@
 import prisma from "@/db/client";
-import { MilkRouteLog } from "@prisma/client";
+import { MilkRouteLog, Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest, { ...params }: any) {
@@ -28,25 +28,46 @@ export async function GET(req: NextRequest, { ...params }: any) {
     }
 }
 
-export async function POST(req: any) {
-    const { ...sheet } = await req.json();
+const MAX_SAVE_ATTEMPTS = 3;
 
-    const products = sheet.products.map((product: MilkRouteLog) => { return { ...product, createdAt: sheet.date } });
-    try {
-        // first delete all products from the same day
-        const deletedProducts = await prisma.milkRouteLog.deleteMany({
-            where: {
-                createdAt: sheet.date
-            }
-        });
+// Prisma errors caused by a concurrent save of the same sheet:
+// P2002 = unique constraint violation, P2034 = transaction write conflict
+const isConcurrencyError = (error: any) =>
+    error instanceof Prisma.PrismaClientKnownRequestError && ['P2002', 'P2034'].includes(error.code);
 
-        const newProducts = await prisma.milkRouteLog.createMany({
-            data: products
-        });
+export async function POST(req: NextRequest) {
+    const sheet = await req.json();
 
-        return NextResponse.json(newProducts);
-    } catch (error: any) {
-        console.log(error);
-        return error;
+    const date = new Date(sheet.date);
+    if (isNaN(date.getTime()) || !Array.isArray(sheet.products)) {
+        return NextResponse.json({ message: 'Invalid sheet' }, { status: 400 });
+    }
+    // one sheet per day: normalize to UTC midnight
+    date.setUTCHours(0, 0, 0, 0);
+
+    const products: Pick<MilkRouteLog, 'providerId' | 'quantity'>[] = sheet.products;
+    const providerIds = products.map((product) => product.providerId);
+
+    for (let attempt = 1; attempt <= MAX_SAVE_ATTEMPTS; attempt++) {
+        try {
+            // upsert per provider inside a transaction so concurrent saves never create duplicates
+            const savedProducts = await prisma.$transaction([
+                prisma.milkRouteLog.deleteMany({
+                    where: { createdAt: date, providerId: { notIn: providerIds } }
+                }),
+                ...products.map((product) => prisma.milkRouteLog.upsert({
+                    where: { providerId_createdAt: { providerId: product.providerId, createdAt: date } },
+                    update: { quantity: product.quantity },
+                    create: { providerId: product.providerId, quantity: product.quantity, createdAt: date }
+                }))
+            ]);
+
+            return NextResponse.json({ count: savedProducts.length - 1 });
+        } catch (error) {
+            if (isConcurrencyError(error) && attempt < MAX_SAVE_ATTEMPTS) continue;
+
+            console.log(error);
+            return NextResponse.json({ message: 'Server error' }, { status: 500 });
+        }
     }
 }

@@ -33,6 +33,9 @@ model MilkRouteLog {
   provider   Provider @relation(fields: [providerId], references: [id])
   quantity     Int
   createdAt  DateTime @default(now())
+
+  // a provider can only have one milk log per day
+  @@unique([providerId, createdAt])
 }
 
 enum unit {

@@ -1,11 +1,13 @@
 import { createLocalDriver } from "./local";
+import { createS3Driver } from "./s3";
 import { createSupabaseDriver } from "./supabase";
 import { StorageDriver } from "./types";
 
 export type { StorageDriver };
 
-// add new providers here (e.g. "s3": createS3Driver) and select them with STORAGE_DRIVER
+// add new providers here and select them with STORAGE_DRIVER
 const drivers: Record<string, () => StorageDriver> = {
+    s3: createS3Driver,
     supabase: createSupabaseDriver,
     local: createLocalDriver,
 };

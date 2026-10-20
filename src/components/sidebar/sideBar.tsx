@@ -1,6 +1,7 @@
 import { MdAddBusiness } from "react-icons/md";
 import { BiSpreadsheet, BiHome } from "react-icons/bi";
 import { LiaFileInvoiceDollarSolid } from "react-icons/lia";
+import { FaUserTie } from "react-icons/fa";
 
 import getUserFromCookies from "@/app/utils/getUserFromCookies";
 import SideBarBody from "./SideBarBody";
@@ -22,6 +23,7 @@ export default function SideBar(req: any) {
       href: "/dashboard/invoices",
       icon: <LiaFileInvoiceDollarSolid className="fill-gray-100 text-2xl" />,
     },
+    { label: "Clientes", href: "/dashboard/clients", icon: <FaUserTie className="fill-gray-100 text-2xl" /> },
     { label: "Producción", href: "/dashboard/production", icon: <BiSpreadsheet className="fill-gray-100 text-2xl" /> },
   ];
 

@@ -71,3 +71,62 @@ model User {
   password String
   role user_role
 }
+
+model Client {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  idType    idType
+  idNum     String
+  phone     String?
+  email     String?
+  address   String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  invoices  ClientInvoice[]
+
+  @@unique([idType, idNum])
+}
+
+enum invoice_status {
+  ACTIVA
+  ANULADA
+}
+
+model ClientInvoice {
+  id         String         @id @default(auto()) @map("_id") @db.ObjectId
+  number     Int            @unique
+  clientId   String         @db.ObjectId
+  client     Client         @relation(fields: [clientId], references: [id])
+  concept    String
+  amount     Int
+  // sum of the invoice payments, kept in sync on every payment so the balance check is atomic
+  paidAmount Int            @default(0)
+  issueDate  DateTime       @default(now())
+  status     invoice_status @default(ACTIVA)
+  notes      String?
+  createdAt  DateTime       @default(now())
+  payments   ClientPayment[]
+}
+
+enum payment_method {
+  EFECTIVO
+  TRANSFERENCIA
+  OTRO
+}
+
+model ClientPayment {
+  id        String         @id @default(auto()) @map("_id") @db.ObjectId
+  invoiceId String         @db.ObjectId
+  invoice   ClientInvoice  @relation(fields: [invoiceId], references: [id])
+  amount    Int
+  method    payment_method
+  date      DateTime       @default(now())
+  reference String?
+  createdAt DateTime       @default(now())
+}
+
+// sequential counters (e.g. client invoice numbers)
+model Counter {
+  id    String @id @map("_id")
+  value Int
+}

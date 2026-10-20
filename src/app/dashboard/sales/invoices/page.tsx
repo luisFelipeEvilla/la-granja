@@ -185,7 +185,7 @@ export default function SalesInvoices() {
                             <TH className="hidden xl:table-cell">Productos</TH>
                             <TH align="right" className="hidden lg:table-cell">Total</TH>
                             <TH align="right">Saldo</TH>
-                            <TH align="right">Estado</TH>
+                            <TH align="right" className="hidden sm:table-cell">Estado</TH>
                         </THead>
                         <TBody>
                             {shown.map((invoice) => {
@@ -211,8 +211,10 @@ export default function SalesInvoices() {
                                         </TD>
                                         <TD align="right" className={`whitespace-nowrap tabular-nums font-semibold ${balance > 0 ? "text-slate-900" : "text-slate-400"}`}>
                                             {status === "ANULADA" ? "—" : formatCOP(balance)}
+                                            {/* on phones the status goes under the balance */}
+                                            <div className="mt-1 sm:hidden"><InvoiceStatusBadge status={status} /></div>
                                         </TD>
-                                        <TD align="right"><InvoiceStatusBadge status={status} /></TD>
+                                        <TD align="right" className="hidden sm:table-cell"><InvoiceStatusBadge status={status} /></TD>
                                     </TR>
                                 );
                             })}
@@ -227,7 +229,7 @@ export default function SalesInvoices() {
                                 <td className="hidden xl:table-cell" />
                                 <td className="hidden px-4 py-3 text-right font-semibold tabular-nums text-slate-900 lg:table-cell">{formatCOP(totalAmount)}</td>
                                 <td className="whitespace-nowrap px-4 py-3 text-right font-semibold tabular-nums text-red-600">{formatCOP(totalBalance)}</td>
-                                <td className="pr-4 sm:pr-6" />
+                                <td className="hidden pr-4 sm:table-cell sm:pr-6" />
                             </tr>
                         </tfoot>
                     </Table>

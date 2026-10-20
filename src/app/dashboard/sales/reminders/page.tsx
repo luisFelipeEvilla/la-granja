@@ -110,7 +110,7 @@ function Reminders() {
                             <TH>Cliente</TH>
                             <TH align="right">Saldo</TH>
                             <TH className="hidden md:table-cell">Antigüedad</TH>
-                            <TH className="hidden lg:table-cell">Último recordatorio</TH>
+                            <TH className="hidden xl:table-cell">Último recordatorio</TH>
                             <TH align="right"><span className="sr-only">Acciones</span></TH>
                         </THead>
                         <TBody>
@@ -127,7 +127,7 @@ function Reminders() {
                                                 {pending.length} factura(s) pendiente(s)
                                                 <span className="md:hidden"> · {oldestDays} días</span>
                                             </p>
-                                            <p className="text-xs text-slate-500 lg:hidden">Recordado: {lastLabel}</p>
+                                            <p className="text-xs text-slate-500 xl:hidden">Recordado: {lastLabel}</p>
                                             {!hasPhone && <p className="mt-1"><Badge tone="amber" dot={false}>Sin celular</Badge></p>}
                                         </TD>
                                         <TD align="right" className="whitespace-nowrap font-semibold tabular-nums text-red-600">{formatCOP(balance)}</TD>
@@ -136,7 +136,7 @@ function Reminders() {
                                                 {oldestDays} días
                                             </Badge>
                                         </TD>
-                                        <TD className="hidden whitespace-nowrap text-slate-500 lg:table-cell">{lastLabel}</TD>
+                                        <TD className="hidden whitespace-nowrap text-slate-500 xl:table-cell">{lastLabel}</TD>
                                         <TD align="right">
                                             <Button
                                                 variant="secondary"

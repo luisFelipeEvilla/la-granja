@@ -20,7 +20,8 @@ export default function StatCard({ label, value, icon, tone = "default", hint, c
                 <p className="text-sm font-medium text-slate-500">{label}</p>
                 {icon && <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-lg ${tones[tone].icon}`}>{icon}</span>}
             </div>
-            <p className={`mt-2 text-2xl font-bold tracking-tight tabular-nums sm:text-[28px] ${tones[tone].value}`}>{value}</p>
+            {/* sized to fit two cards per row on phones with amounts in the millions */}
+            <p className={`mt-2 text-lg font-bold tracking-tight tabular-nums [overflow-wrap:anywhere] min-[420px]:text-xl sm:text-2xl xl:text-[28px] ${tones[tone].value}`}>{value}</p>
             {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
         </div>
     );

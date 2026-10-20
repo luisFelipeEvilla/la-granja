@@ -142,7 +142,7 @@ export default function SalesSummary() {
                 />
             </Panel>
 
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid gap-6 xl:grid-cols-2">
                 <Panel title="Ventas por producto" description={`Productos vendidos · ${periodLabel}`} flush>
                     {products.length > 0 ? (
                         <Table>

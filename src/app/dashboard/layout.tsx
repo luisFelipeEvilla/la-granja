@@ -13,8 +13,9 @@ export default function DashboardLayout({
       <Providers>
         <div className="flex flex-col md:flex-row min-h-[100dvh]">
           <SideBar />
-          {/* min-w-0 keeps wide content (tables, multiselects) from stretching the page */}
-          <main className="flex-1 min-w-0 px-4 sm:px-6 lg:px-10 pt-5 md:pt-safe pb-safe">
+          {/* min-w-0 keeps wide content (tables, multiselects) from stretching the page; overflow-x clip
+              (unlike hidden) stops sub-pixel sideways wobble on touch screens without breaking sticky bars */}
+          <main className="flex-1 min-w-0 [overflow-x:clip] px-4 sm:px-6 lg:px-10 pt-5 md:pt-safe pb-safe">
             <div className="mx-auto w-full max-w-6xl">{children}</div>
           </main>
         </div>

@@ -138,7 +138,7 @@ export default function ClientStatement({ params }: { params: { id: string } }) 
                             {statement.movements.map((movement, index) => (
                                 <TR key={index}>
                                     <TD className="hidden whitespace-nowrap text-slate-500 sm:table-cell">{formatDate(movement.date)}</TD>
-                                    <TD className="sm:min-w-[12rem]">
+                                    <TD className="[overflow-wrap:anywhere]">
                                         <div className="flex items-start gap-2">
                                             <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${movement.charge ? 'bg-blue-500' : 'bg-emerald-500'}`} />
                                             <div className="min-w-0">
@@ -187,9 +187,9 @@ export default function ClientStatement({ params }: { params: { id: string } }) 
                     <Table>
                         <THead>
                             <TH>Factura</TH>
-                            <TH className="hidden md:table-cell">Productos</TH>
+                            <TH className="hidden xl:table-cell">Productos</TH>
                             <TH align="right" className="hidden sm:table-cell">Total</TH>
-                            <TH align="right" className="hidden sm:table-cell">Pagado</TH>
+                            <TH align="right" className="hidden lg:table-cell">Pagado</TH>
                             <TH align="right">Saldo</TH>
                         </THead>
                         <TBody>
@@ -197,15 +197,16 @@ export default function ClientStatement({ params }: { params: { id: string } }) 
                                 const invoiceId = client.invoices.find((clientInvoice) => clientInvoice.number === invoice.number)?.id;
                                 return (
                                     <TR key={invoice.number} href={invoiceId && `/dashboard/clients/${client.id}/invoices/${invoiceId}`}>
-                                        <TD className="whitespace-nowrap">
+                                        <TD>
                                             <p className="font-semibold text-slate-900">#{invoice.number}</p>
                                             <p className="text-xs text-slate-500">{formatDate(invoice.issueDate)}</p>
+                                            <p className="mt-0.5 line-clamp-2 [overflow-wrap:anywhere] text-xs text-slate-500 xl:hidden">{getItemsSummary(invoice.items)}</p>
                                         </TD>
-                                        <TD className="hidden max-w-xs md:table-cell">
-                                            <p className="truncate text-slate-600">{getItemsSummary(invoice.items)}</p>
+                                        <TD className="hidden xl:table-cell">
+                                            <p className="line-clamp-2 [overflow-wrap:anywhere] text-slate-600">{getItemsSummary(invoice.items)}</p>
                                         </TD>
                                         <TD align="right" className="hidden whitespace-nowrap tabular-nums sm:table-cell">{formatCOP(invoice.amount)}</TD>
-                                        <TD align="right" className="hidden whitespace-nowrap tabular-nums text-emerald-600 sm:table-cell">{formatCOP(invoice.paidAmount)}</TD>
+                                        <TD align="right" className="hidden whitespace-nowrap tabular-nums text-emerald-600 lg:table-cell">{formatCOP(invoice.paidAmount)}</TD>
                                         <TD align="right" className="whitespace-nowrap tabular-nums font-semibold text-red-600">{formatCOP(getInvoiceBalance(invoice))}</TD>
                                     </TR>
                                 );

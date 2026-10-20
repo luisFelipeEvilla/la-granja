@@ -123,8 +123,8 @@ export default function ClientDetail({ params }: { params: { id: string } }) {
                     <Table>
                         <THead>
                             <TH>Factura</TH>
-                            <TH className="hidden md:table-cell">Productos</TH>
-                            <TH align="right" className="hidden sm:table-cell">Total</TH>
+                            <TH className="hidden xl:table-cell">Productos</TH>
+                            <TH align="right" className="hidden lg:table-cell">Total</TH>
                             <TH align="right">Saldo</TH>
                             <TH align="right">Estado</TH>
                         </THead>
@@ -134,12 +134,12 @@ export default function ClientDetail({ params }: { params: { id: string } }) {
                                     <TD>
                                         <p className="font-semibold text-slate-900">#{invoice.number}</p>
                                         <p className="text-xs text-slate-500">{formatDate(invoice.issueDate)}</p>
-                                        <p className="mt-0.5 max-w-[14rem] truncate text-xs text-slate-500 md:hidden">{getItemsSummary(invoice.items)}</p>
+                                        <p className="mt-0.5 line-clamp-2 [overflow-wrap:anywhere] text-xs text-slate-500 xl:hidden">{getItemsSummary(invoice.items)}</p>
                                     </TD>
-                                    <TD className="hidden max-w-xs md:table-cell">
-                                        <p className="truncate text-slate-600">{getItemsSummary(invoice.items)}</p>
+                                    <TD className="hidden xl:table-cell">
+                                        <p className="line-clamp-2 [overflow-wrap:anywhere] text-slate-600">{getItemsSummary(invoice.items)}</p>
                                     </TD>
-                                    <TD align="right" className="hidden tabular-nums sm:table-cell">{formatCOP(invoice.amount)}</TD>
+                                    <TD align="right" className="hidden tabular-nums lg:table-cell">{formatCOP(invoice.amount)}</TD>
                                     <TD align="right" className={`tabular-nums font-semibold ${status === 'ANULADA' || getInvoiceBalance(invoice) === 0 ? 'text-slate-400' : 'text-slate-900'}`}>
                                         {status === 'ANULADA' ? '—' : formatCOP(getInvoiceBalance(invoice))}
                                     </TD>

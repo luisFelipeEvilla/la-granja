@@ -93,7 +93,7 @@ export default function Clients() {
                       </span>
                       <div className="min-w-0">
                         <p className="flex items-center gap-2 font-medium text-slate-900">
-                          <span className="truncate">{client.name}</span>
+                          <span className="line-clamp-2 [overflow-wrap:anywhere]">{client.name}</span>
                           {!client.active && <Badge tone="gray" dot={false}>Inactivo</Badge>}
                         </p>
                         <p className="text-xs text-slate-500">{client.idType} {client.idNum}</p>

@@ -101,19 +101,19 @@ export default function Providers() {
                         {`${provider.firstName.charAt(0)}${provider.lastName.charAt(0)}`.toUpperCase()}
                       </span>
                       <div className="min-w-0">
-                        <p className={`truncate font-medium ${provider.active ? "text-slate-900" : "text-slate-500"}`}>
+                        <p className={`line-clamp-2 [overflow-wrap:anywhere] font-medium ${provider.active ? "text-slate-900" : "text-slate-500"}`}>
                           {provider.firstName} {provider.lastName}
                         </p>
-                        <p className="truncate text-xs text-slate-500">
+                        <p className="[overflow-wrap:anywhere] text-xs text-slate-500">
                           {provider.idType} {provider.idNum}
                           <span className="md:hidden"> · {provider.phone}</span>
                         </p>
-                        {provider.email && <p className="truncate text-xs text-slate-500 lg:hidden">{provider.email}</p>}
+                        {provider.email && <p className="[overflow-wrap:anywhere] text-xs text-slate-500 lg:hidden">{provider.email}</p>}
                       </div>
                     </div>
                   </TD>
                   <TD className="hidden md:table-cell tabular-nums">{provider.phone}</TD>
-                  <TD className="hidden lg:table-cell text-slate-500">{provider.email || "—"}</TD>
+                  <TD className="hidden lg:table-cell text-slate-500 [overflow-wrap:anywhere]">{provider.email || "—"}</TD>
                   <TD align="right">
                     {/* toggling must not open the provider */}
                     <div className="inline-flex justify-end" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>

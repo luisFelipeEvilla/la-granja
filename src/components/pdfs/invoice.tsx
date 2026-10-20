@@ -31,6 +31,15 @@ export default function PDFView({ provider, price }: Props) {
                 ]}
             />
 
+            {/* the amount to pay goes first, so a long month never leaves it alone on the last page */}
+            <TotalsBox
+                rows={[
+                    { label: "Litros entregados", value: `${formatQuantity(totalLiters)} L` },
+                    { label: "Precio por litro", value: formatCOP(price) },
+                    { label: "Total a pagar", value: formatCOP(totalLiters * price), emphasis: true },
+                ]}
+            />
+
             <SectionTitle>Entregas de leche</SectionTitle>
             <PdfTable
                 columns={[
@@ -51,13 +60,6 @@ export default function PDFView({ provider, price }: Props) {
                 empty="No hay entregas en este período"
             />
 
-            <TotalsBox
-                rows={[
-                    { label: "Litros entregados", value: `${formatQuantity(totalLiters)} L` },
-                    { label: "Precio por litro", value: formatCOP(price) },
-                    { label: "Total a pagar", value: formatCOP(totalLiters * price), emphasis: true },
-                ]}
-            />
         </PdfDocument>
     );
 

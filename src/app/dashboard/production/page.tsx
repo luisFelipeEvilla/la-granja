@@ -120,7 +120,7 @@ export default function ProductionPage() {
                     <MilkSheetList rows={rows} onChange={handleQuantityChange} search={search} />
                 </Panel>
 
-                <div className="sticky bottom-0 z-10 -mx-4 border-t border-slate-200 bg-white/90 px-4 py-3 backdrop-blur safe-bottom sm:mx-0 sm:rounded-xl sm:border sm:shadow-lg">
+                <div className="sticky bottom-0 z-10 -mx-4 border-t border-slate-200 bg-white px-4 py-3 safe-bottom sm:mx-0 sm:rounded-xl sm:border sm:shadow-lg">
                     <div className="flex items-center justify-between gap-4">
                         <div>
                             <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Total</p>

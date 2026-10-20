@@ -108,7 +108,7 @@ export default function InvoiceForm({ clientId, client, invoice }: Props) {
     const submitLabel = invoice ? "Guardar cambios" : "Crear factura";
 
     return (
-        <div className="space-y-6 pb-24 xl:pb-0">
+        <div className="space-y-6">
             <PageHeader
                 back={{ href: backHref, label: invoice ? `Factura #${invoice.number}` : client?.name ?? 'Cliente' }}
                 title={invoice ? `Editar factura #${invoice.number}` : 'Nueva factura de venta'}
@@ -257,8 +257,9 @@ export default function InvoiceForm({ clientId, client, invoice }: Props) {
                     </div>
                 </aside>
 
-                <div className="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white/95 backdrop-blur safe-bottom md:left-[88px] lg:left-64 xl:hidden">
-                    <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-10">
+                {/* sticks to the bottom of the page content, so it lines up whether the sidebar is shown or hidden */}
+                <div className="sticky bottom-0 z-20 -mx-4 border-t border-slate-200 bg-white safe-bottom sm:mx-0 sm:rounded-xl sm:border sm:shadow-lg xl:hidden">
+                    <div className="flex items-center justify-between gap-4 px-4 py-3">
                         <div>
                             <p className="text-xs font-medium text-slate-500">Total factura</p>
                             <p className={`text-xl font-bold tabular-nums ${belowPaid ? 'text-red-600' : 'text-slate-900'}`}>{formatCOP(total)}</p>

@@ -4,10 +4,23 @@ import Spinner from "@/components/ui/Spinner";
 import { AuthContext } from "@/contexts/AuthContext";
 import axios from "axios";
 import Image from "next/image";
-import { FormEvent, useContext, useState } from "react";
+import { FormEvent, useContext, useEffect, useState } from "react";
+import { HiOutlineMoon, HiOutlineSun } from "react-icons/hi2";
 import toast from "react-hot-toast";
 
-const today = new Date().toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+// greeting for the team based on the time of day (computed in the browser, so it uses the local hour)
+function getMoment() {
+  const now = new Date();
+  const hour = now.getHours();
+  return {
+    greeting: hour < 12 ? "¡Buenos días, equipo!" : hour < 19 ? "¡Buenas tardes, equipo!" : "¡Buenas noches, equipo!",
+    message: hour < 12
+      ? "Arranquemos la jornada con todo."
+      : hour < 19 ? "Sigamos con la jornada." : "Cerremos bien el día.",
+    night: hour >= 19 || hour < 6,
+    date: now.toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long" }),
+  };
+}
 
 export default function AuthPage() {
   const [username, setUsername] = useState("");
@@ -15,6 +28,9 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState({ user: false, password: false });
   const { signin } = useContext(AuthContext);
+  const [moment, setMoment] = useState<ReturnType<typeof getMoment>>();
+
+  useEffect(() => setMoment(getMoment()), []);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -59,16 +75,25 @@ export default function AuthPage() {
 
   return (
     <div className="flex min-h-[100dvh] bg-slate-50 lg:bg-white">
-      {/* Farm identity panel (internal tool, no marketing): iPad landscape and desktop */}
-      <aside className="relative hidden w-1/2 max-w-2xl flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-700 via-emerald-900 to-slate-950 p-12 text-center text-white lg:flex">
-        <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-emerald-400/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-32 -left-16 h-96 w-96 rounded-full bg-emerald-300/10 blur-3xl" />
+      {/* Team welcome panel: iPad landscape and desktop */}
+      <aside className="relative hidden w-1/2 max-w-2xl flex-col items-center justify-center overflow-hidden bg-emerald-950 p-12 text-center text-white lg:flex">
+        {/* the farm illustration of the logo, blurred, as the backdrop */}
+        <Image src="/images/logo.jpg" alt="" fill priority sizes="50vw" className="scale-125 object-cover opacity-90 blur-2xl saturate-150" />
+        <div className="absolute inset-0 bg-gradient-to-b from-emerald-950/10 via-emerald-950/55 to-slate-950/90" />
 
-        <Image src="/images/logo.jpg" alt="Lácteos La Granja" width={320} height={320} priority className="relative h-40 w-40 rounded-3xl object-cover shadow-2xl ring-4 ring-white/15" />
-        <h2 className="relative mt-8 text-3xl font-bold tracking-tight">Lácteos La Granja</h2>
-        <p className="relative mt-2 text-sm font-medium uppercase tracking-widest text-emerald-100/70">Uso interno del personal</p>
+        <div className="relative flex flex-col items-center">
+          <Image src="/images/logo.jpg" alt="Lácteos La Granja" width={360} height={360} priority className="h-44 w-44 rounded-[2rem] object-cover shadow-2xl shadow-black/40 ring-4 ring-white/20" />
+          <p className="mt-8 text-sm font-semibold text-emerald-200">Lácteos La Granja</p>
+          <h2 className="mt-2 min-h-[2.5rem] text-4xl font-bold tracking-tight">{moment?.greeting ?? "¡Hola, equipo!"}</h2>
+          <p className="mt-3 text-lg text-emerald-50/80">{moment?.message}</p>
+        </div>
 
-        <p suppressHydrationWarning className="absolute bottom-10 text-sm text-emerald-100/60 first-letter:uppercase">{today}</p>
+        {moment && (
+          <p className="absolute bottom-10 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm text-emerald-50/90 ring-1 ring-white/15 backdrop-blur first-letter:uppercase">
+            {moment.night ? <HiOutlineMoon className="h-4 w-4" /> : <HiOutlineSun className="h-4 w-4 text-amber-300" />}
+            <span className="first-letter:uppercase">{moment.date}</span>
+          </p>
+        )}
       </aside>
 
       {/* Form */}
@@ -76,8 +101,8 @@ export default function AuthPage() {
         <div className="w-full max-w-sm">
           <div className="mb-8 flex flex-col items-center text-center lg:items-start lg:text-left">
             <Image src="/images/logo.jpg" alt="" width={112} height={112} priority className="mb-5 h-14 w-14 rounded-2xl object-cover shadow-sm ring-1 ring-slate-200 lg:hidden" />
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Iniciar sesión</h1>
-            <p className="mt-2 text-sm text-slate-500">Ingresa con tu usuario de La Granja</p>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Hola de nuevo 👋</h1>
+            <p className="mt-2 text-sm text-slate-500">Ingresa con tu usuario para empezar</p>
           </div>
 
           <form

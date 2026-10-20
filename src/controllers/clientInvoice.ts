@@ -1,7 +1,8 @@
 import prisma from "@/db/client";
-import { ClientInvoice, ClientPayment } from "@prisma/client";
+import { ClientInvoice, ClientPayment, Prisma } from "@prisma/client";
 import { HttpError, isConcurrencyError } from "./client";
 import { NextResponse } from "next/server";
+import { formatCOP } from "@/app/utils/clientInvoice";
 
 const MAX_SAVE_ATTEMPTS = 3;
 const INVOICE_COUNTER_ID = 'clientInvoice';
@@ -107,6 +108,32 @@ export async function createInvoice(clientId: string, data: InvoiceInput) {
     }));
 }
 
+// replaces the lines, date and notes of an active invoice; the new total can't go below what was already paid
+export async function updateInvoice(id: string, data: InvoiceInput) {
+    const items = await buildItems(data.items);
+    const amount = items.reduce((total, item) => total + item.total, 0);
+
+    // conditional update so a payment registered at the same time can't leave the invoice overpaid
+    const { count } = await prisma.clientInvoice.updateMany({
+        where: { id, status: 'ACTIVA', paidAmount: { lte: amount } },
+        data: {
+            items,
+            amount,
+            ...(data.issueDate ? { issueDate: toCalendarDay(data.issueDate) } : {}),
+            notes: data.notes?.trim() || null
+        }
+    });
+
+    if (count === 0) {
+        const invoice = await getInvoice(id);
+        if (invoice.status !== 'ACTIVA') throw new HttpError(409, 'La factura está anulada');
+
+        throw new HttpError(409, `El total no puede ser menor a lo ya pagado (${formatCOP(invoice.paidAmount)})`);
+    }
+
+    return getInvoice(id);
+}
+
 export async function voidInvoice(id: string) {
     const { count } = await prisma.clientInvoice.updateMany({
         where: { id, status: 'ACTIVA', paidAmount: 0 },
@@ -170,6 +197,11 @@ export async function deletePayment(id: string) {
 export function handleError(error: any) {
     if (error instanceof HttpError) {
         return NextResponse.json({ message: error.message }, { status: error.status });
+    }
+
+    // P2023: malformed id in the URL
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2023') {
+        return NextResponse.json({ message: 'No encontrado' }, { status: 404 });
     }
 
     console.error(error);

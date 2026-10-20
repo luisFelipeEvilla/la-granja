@@ -126,6 +126,14 @@ export default function InvoiceDetail({ params }: Params) {
                         >
                             Volver
                         </a>
+                        {invoice.status === 'ACTIVA' && (
+                            <a
+                                href={`/dashboard/clients/${params.id}/invoices/${invoice.id}/edit`}
+                                className="inline-flex items-center px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white font-medium rounded-lg transition-colors duration-200"
+                            >
+                                Editar
+                            </a>
+                        )}
                         <ClientInvoicePDF invoice={invoice} />
                         {canVoid && (
                             <button

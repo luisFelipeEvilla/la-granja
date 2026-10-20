@@ -1,4 +1,4 @@
-import { getInvoice, handleError, voidInvoice } from "@/controllers/clientInvoice";
+import { getInvoice, handleError, updateInvoice, voidInvoice } from "@/controllers/clientInvoice";
 import { NextRequest, NextResponse } from "next/server";
 
 type Params = { params: { id: string } };
@@ -13,12 +13,12 @@ export async function GET(req: NextRequest, { params }: Params) {
 
 export async function PATCH(req: NextRequest, { params }: Params) {
     try {
-        const { status } = await req.json();
-        if (status !== 'ANULADA') {
-            return NextResponse.json({ message: 'Solo se permite anular la factura' }, { status: 400 });
-        }
+        const body = await req.json();
 
-        return NextResponse.json(await voidInvoice(params.id));
+        // { status: 'ANULADA' } voids the invoice, anything else edits it
+        if (body.status === 'ANULADA') return NextResponse.json(await voidInvoice(params.id));
+
+        return NextResponse.json(await updateInvoice(params.id, body));
     } catch (error) {
         return handleError(error);
     }

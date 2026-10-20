@@ -217,7 +217,12 @@ export default function InvoiceForm({ clientId, client, invoice }: Props) {
 
                     <Panel title="Detalles">
                         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                            <Field label="Fecha de emisión">
+                            <Field
+                                label="Fecha de emisión"
+                                hint={issueDate && toDateString(issueDate) > toDateString()
+                                    ? <span className="text-amber-700">La fecha es posterior a hoy. Revísala si no es intencional.</span>
+                                    : undefined}
+                            >
                                 <DatePicker value={issueDate} onValueChange={setIssueDate} locale={es} enableClear={false} />
                             </Field>
                             <Field label="Notas" hint="Aparecen en la factura y en el PDF">

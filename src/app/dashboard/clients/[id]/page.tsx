@@ -56,6 +56,12 @@ export default function ClientDetail({ params }: { params: { id: string } }) {
                         >
                             Nueva factura
                         </Link>
+                        <Link
+                            href={`/dashboard/clients/${client.id}/statement`}
+                            className="inline-flex items-center px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white font-medium rounded-lg transition-colors duration-200"
+                        >
+                            Estado de cuenta
+                        </Link>
                         <a
                             href={`/dashboard/clients/${client.id}/edit`}
                             className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"

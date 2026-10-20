@@ -24,7 +24,7 @@ export default function PasswordInput(props: propsType) {
       required
       endContent={
         <button
-          className="focus:outline-none flex items-center justify-center -mr-2"
+          className="focus:outline-none flex items-center justify-center min-h-[44px] min-w-[44px] -mr-2"
           type="button"
           aria-label={isVisible ? "Ocultar contraseña" : "Mostrar contraseña"}
           onClick={() => setIsVisible(!isVisible)}

@@ -2,7 +2,7 @@ export default function CloseMenuButton(props: { setIsOpen: (value: boolean) => 
   return (
     <button 
       onClick={() => props.setIsOpen(false)}
-      className="p-2 rounded-lg hover:bg-slate-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-slate-900"
+      className="min-h-[44px] min-w-[44px] p-2 rounded-lg hover:bg-slate-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-slate-900"
       aria-label="Cerrar menú"
     >
       <svg

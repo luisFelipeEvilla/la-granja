@@ -135,17 +135,17 @@ export default function Providers() {
         <div className="w-full space-y-6">
             {/* Filters Section */}
             <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
-                <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+                <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
                     <DateRangePicker
                         value={dates}
                         locale={es}
                         onValueChange={setDates}
                         selectPlaceholder="Fechas"
-                        className="w-full sm:w-auto sm:min-w-[280px]"
+                        className="w-full lg:w-auto lg:min-w-[340px] lg:max-w-none"
                     />
                     <MultiSelect
                         placeholder="Seleccionar proveedor"
-                        className="w-full sm:w-auto sm:min-w-[280px]"
+                        className="w-full lg:flex-1 min-w-0 lg:max-w-none"
                         value={filteredProviders.map(provider => provider.id)}
                         onValueChange={e => handleFilterProvider(e)}
                     >
@@ -160,7 +160,7 @@ export default function Providers() {
 
 
             {/* Metrics Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
                 <Card className="p-4" decoration="top" decorationColor="green">
                     <Text className="text-sm font-medium text-gray-600">Proveedores activos</Text>
                     <Metric className="text-2xl sm:text-3xl font-bold text-green-600 mt-2">
@@ -175,7 +175,7 @@ export default function Providers() {
                     </Metric>
                 </Card>
 
-                <Card className="p-4 sm:col-span-2 lg:col-span-1" decoration="top" decorationColor="purple">
+                <Card className="p-4 sm:col-span-2 md:col-span-1" decoration="top" decorationColor="purple">
                     <Text className="text-sm font-medium text-gray-600">Promedio diario</Text>
                     <Metric className="text-2xl sm:text-3xl font-bold text-purple-600 mt-2">
                         {new Intl.NumberFormat('es-co', { maximumFractionDigits: 0}).format(average)}

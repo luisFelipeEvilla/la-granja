@@ -11,13 +11,25 @@
   body {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    /* no grey flash when tapping on iPad / iPhone */
+    -webkit-tap-highlight-color: transparent;
   }
 
-  /* Ensure touch targets are appropriately sized for mobile */
-  button, 
-  input[type="button"], 
-  input[type="reset"], 
-  input[type="submit"],
+  /* removes the double-tap-to-zoom delay on touch screens */
+  a, button, input, select, textarea, label, [role="button"], [role="option"] {
+    touch-action: manipulation;
+  }
+
+  /* Safari zooms into inputs with text smaller than 16px when focused */
+  @media (pointer: coarse) {
+    input, select, textarea {
+      font-size: 16px !important;
+    }
+  }
+
+  /* Ensure touch targets are appropriately sized for touch screens.
+     Buttons are sized per component: a global min size on <button> also grows the small
+     icon buttons inside Tremor inputs (clear date, remove chip) and overlaps their text */
   a {
     min-height: 44px;
     min-width: 44px;
@@ -63,6 +75,15 @@
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);
   }
+
+  /* page padding plus the area under the status bar / home indicator (home screen app) */
+  .pt-safe {
+    padding-top: calc(1.5rem + env(safe-area-inset-top));
+  }
+
+  .pb-safe {
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  }
   
   /* Mobile-specific text sizes */
   .text-mobile-sm {
@@ -73,5 +94,26 @@
   .text-mobile-base {
     font-size: 16px;
     line-height: 24px;
+  }
+}
+
+/* Touch screen (iPad / iPhone) sizing. Kept outside @layer so Tailwind does not drop
+   selectors that only appear in node_modules (Tremor) */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]) {
+    min-height: 44px;
+  }
+
+  /* Tremor switches are 20px tall: enlarge them and their tap area for fingers */
+  .tremor-Switch-switch {
+    transform: scale(1.4);
+    transform-origin: left center;
+    margin-right: 0.75rem;
+  }
+
+  .tremor-Switch-switch::after {
+    content: "";
+    position: absolute;
+    inset: -10px;
   }
 }

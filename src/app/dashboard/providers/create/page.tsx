@@ -32,7 +32,7 @@ export default function CreateProvider() {
 
         const json = await res.json();
 
-        window.location.href = '/providers';
+        window.location.href = '/dashboard/providers';
     }
 
     return (

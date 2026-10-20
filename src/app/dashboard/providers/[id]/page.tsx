@@ -45,7 +45,7 @@ export default function CreateProvider({ params }: any) {
         const json = await res.json();
         
         toast.success('Proveedor actualizado correctamente');
-        window.location.href = '/providers';
+        window.location.href = '/dashboard/providers';
     }
 
     return (

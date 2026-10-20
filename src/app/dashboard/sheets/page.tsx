@@ -12,17 +12,40 @@ import {
   Title,
 } from "@tremor/react";
 import PrimaryButton from "../../../components/buttons/PrimaryButton";
-import { useContext, useEffect, useState } from "react";
+import { KeyboardEvent, useContext, useEffect, useState } from "react";
 import { MilkRouteLog, Product, ProductLog, Provider, user_role } from "@prisma/client";
 import { MilkRouteLogWithProvider } from "@/types/Product";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import { AuthContext } from "@/contexts/AuthContext";
 
+// today's local calendar day at UTC midnight, the format the sheets API uses
+const today = () => {
+  const now = new Date();
+  return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+};
+
+// numeric keyboard on iPad/iPhone, select the value on tap so typing replaces the 0,
+// and the keyboard "next" key moves to the following row instead of submitting the form
+const quantityInputProps = {
+  inputMode: "numeric" as const,
+  enterKeyHint: "next" as const,
+  onFocus: (e: any) => e.target.select(),
+  onKeyDown: (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+
+    const inputs = Array.from(document.querySelectorAll<HTMLInputElement>("input[data-quantity]"));
+    const next = inputs[inputs.indexOf(e.currentTarget) + 1];
+    next ? next.focus() : e.currentTarget.blur();
+  },
+  "data-quantity": true,
+};
+
 export default function Sheet() {
   const [providers, setProviders] = useState<Provider[]>([]);
   const [milkSheet, setMilkSheet] = useState<MilkRouteLogWithProvider[]>([]);
-  const [date, setDate] = useState<Date>(new Date());
+  const [date, setDate] = useState<Date>(today);
   const [total, setTotal] = useState<number>(0);
   const [saving, setSaving] = useState<boolean>(false);
 
@@ -110,6 +133,7 @@ export default function Sheet() {
   };
 
   const handleDateChange = async (e: any) => {
+    if (!e.target.value) return;
     setDate(new Date(e.target.value));
   };
 
@@ -177,21 +201,29 @@ export default function Sheet() {
               value={date.toISOString().split("T")[0]}
               onChange={handleDateChange}
               disabled={user?.role === user_role.USER}
-              className="px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="min-h-[44px] px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <MilkLogTable />
-        {/* <ProductionLogTable /> */}
+        {/* rendered as plain calls (not <MilkLogTable />) so the inputs keep focus while typing */}
+        {MilkLogTable()}
+        {/* {ProductionLogTable()} */}
 
-        <div className="flex justify-center">
-          <PrimaryButton
-            text={saving ? "Guardando..." : "Guardar Planilla"}
-            disabled={saving}
-          />
+        {/* save button stays reachable at the bottom of long sheets */}
+        <div className="sticky bottom-0 z-10 -mx-4 sm:mx-0 px-4 py-3 sm:rounded-lg bg-white/90 backdrop-blur border-t border-gray-200 shadow-[0_-2px_8px_rgba(0,0,0,0.05)] safe-bottom">
+          <div className="flex items-center justify-between gap-4 max-w-6xl mx-auto">
+            <Text className="text-sm text-gray-600">
+              Total: <span className="font-bold text-green-600">{milkSheet.reduce((acc, product) => acc + product.quantity, 0)} L</span>
+            </Text>
+            <PrimaryButton
+              text={saving ? "Guardando..." : "Guardar Planilla"}
+              disabled={saving}
+              className="sm:w-auto w-auto"
+            />
+          </div>
         </div>
       </form>
     </div>
@@ -226,7 +258,7 @@ export default function Sheet() {
                   (provider) => provider.id === product.providerId
                 );
                 return (
-                  <TableRow key={index} className="hover:bg-gray-50">
+                  <TableRow key={product.providerId} className="hover:bg-gray-50">
                     <TableCell className="whitespace-nowrap font-medium text-gray-900">
                       {provider?.firstName} {provider?.lastName}
                     </TableCell>
@@ -240,6 +272,7 @@ export default function Sheet() {
                           className="w-24 sm:w-28"
                           type="number"
                           min="0"
+                          {...quantityInputProps}
                           disabled={user?.role === user_role.USER}
                           value={milkSheet
                             .find((product) => product.providerId === provider?.id)
@@ -304,6 +337,7 @@ export default function Sheet() {
                           className="w-24 sm:w-28"
                           type="number"
                           min="0"
+                          {...quantityInputProps}
                           disabled={user?.role === user_role.USER}
                           value={productsSheet
                             .find((p) => p.productId === product.id)

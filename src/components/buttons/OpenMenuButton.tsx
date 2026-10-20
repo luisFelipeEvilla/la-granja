@@ -5,11 +5,11 @@ export default function OpenMenuBotton(props: {
   return props.isOpen ? null : (
     <button 
       onClick={() => props.setIsOpen(true)}
-      className="p-2 rounded-lg bg-white shadow-md hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      className="min-h-[44px] min-w-[44px] p-2 rounded-lg text-gray-100 hover:bg-slate-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       aria-label="Abrir menú"
     >
       <svg
-        className="w-6 h-6 text-gray-700"
+        className="w-6 h-6"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"

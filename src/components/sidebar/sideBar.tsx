@@ -9,10 +9,9 @@ import {
   HiOutlineUserGroup,
 } from "react-icons/hi2";
 
-import getUserFromCookies from "@/app/utils/getUserFromCookies";
+import { getSession } from "@/lib/auth/session";
 import SideBarBody, { NavSection } from "./SideBarBody";
 
-import { cookies } from "next/headers";
 
 const iconClass = "h-5 w-5 shrink-0";
 
@@ -51,14 +50,14 @@ const userSections: NavSection[] = [
   },
 ];
 
-export default function SideBar() {
-  const user = getUserFromCookies(cookies());
-  const isAdmin = user?.role === "ADMIN";
+export default async function SideBar() {
+  const session = await getSession();
+  const isAdmin = session?.role === "ADMIN";
 
   return (
     <SideBarBody
       sections={isAdmin ? adminSections : userSections}
-      user={{ name: user?.username ?? "", role: isAdmin ? "Administrador" : "Operario" }}
+      user={{ name: session?.username ?? "", role: isAdmin ? "Administrador" : "Operario" }}
     />
   );
 }

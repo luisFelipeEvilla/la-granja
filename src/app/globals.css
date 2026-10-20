@@ -22,25 +22,6 @@
   }
 }
 
-@utility responsive-padding {
-  /* Mobile-first responsive utilities */
-  @apply px-4 sm:px-6 lg:px-8;
-}
-
-@utility responsive-container {
-  @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-}
-
-@utility tremor-Table-root {
-  /* Better table responsivity for Tremor components */
-  @apply overflow-x-auto;
-}
-
-@utility mobile-card {
-  /* Mobile-friendly card spacing */
-  @apply p-4 sm:p-6 rounded-lg shadow-xs bg-white;
-}
-
 @utility scrollbar-hide {
   /* Hide scrollbars but keep functionality */
   -ms-overflow-style: none; /* IE and Edge */
@@ -66,17 +47,6 @@
 
 @utility pb-safe {
   padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
-}
-
-@utility text-mobile-sm {
-  /* Mobile-specific text sizes */
-  font-size: 14px;
-  line-height: 20px;
-}
-
-@utility text-mobile-base {
-  font-size: 16px;
-  line-height: 24px;
 }
 
 @layer base {
@@ -121,16 +91,4 @@
     min-height: 44px;
   }
 
-  /* Tremor switches are 20px tall: enlarge them and their tap area for fingers */
-  .tremor-Switch-switch {
-    transform: scale(1.4);
-    transform-origin: left center;
-    margin-right: 0.75rem;
-  }
-
-  .tremor-Switch-switch::after {
-    content: "";
-    position: absolute;
-    inset: -10px;
-  }
 }

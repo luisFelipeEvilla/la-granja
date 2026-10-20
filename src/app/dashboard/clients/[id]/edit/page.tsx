@@ -3,9 +3,10 @@ import ClientForm from "@/components/clients/ClientForm";
 import PageHeader from "@/components/ui/PageHeader";
 import { PageSkeleton } from "@/components/ui/Skeleton";
 import { Client } from "@prisma/client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 
-export default function EditClient({ params }: { params: { id: string } }) {
+export default function EditClient(props: { params: Promise<{ id: string }> }) {
+    const params = use(props.params);
     const [client, setClient] = useState<Client>();
 
     useEffect(() => {

@@ -1,6 +1,7 @@
 "use client";
 import { Provider } from "@prisma/client";
-import { DateRangePicker, DateRangePickerValue, SearchSelect, SearchSelectItem } from "@tremor/react";
+import { SearchSelect, SearchSelectItem } from "@/components/ui/form";
+import { DateRangePicker, type DateRangePickerValue } from "@/components/ui/form/DatePicker";
 import { es } from "date-fns/locale";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";

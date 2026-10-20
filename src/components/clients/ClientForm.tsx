@@ -4,7 +4,7 @@ import Field, { FormSection } from "@/components/ui/Field";
 import Panel from "@/components/ui/Panel";
 import { idTypeLabels } from "@/app/utils/clientInvoice";
 import { Client } from "@prisma/client";
-import { Select, SelectItem, TextInput } from "@tremor/react";
+import { Select, SelectItem, TextInput } from "@/components/ui/form";
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";

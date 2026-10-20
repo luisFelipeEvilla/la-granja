@@ -2,9 +2,10 @@ import { getClient, updateClient } from "@/controllers/client";
 import { handleError } from "@/controllers/clientInvoice";
 import { NextRequest, NextResponse } from "next/server";
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> };
 
-export async function GET(req: NextRequest, { params }: Params) {
+export async function GET(req: NextRequest, props: Params) {
+    const params = await props.params;
     try {
         return NextResponse.json(await getClient(params.id));
     } catch (error) {
@@ -12,7 +13,8 @@ export async function GET(req: NextRequest, { params }: Params) {
     }
 }
 
-export async function PATCH(req: NextRequest, { params }: Params) {
+export async function PATCH(req: NextRequest, props: Params) {
+    const params = await props.params;
     try {
         return NextResponse.json(await updateClient(params.id, await req.json()));
     } catch (error) {

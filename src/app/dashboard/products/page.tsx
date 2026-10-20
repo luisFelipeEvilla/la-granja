@@ -9,7 +9,7 @@ import { PageSkeleton } from "@/components/ui/Skeleton";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/Table";
 import Badge from "@/components/ui/Badge";
 import { Product, unit } from "@prisma/client";
-import { Select, SelectItem, TextInput } from "@tremor/react";
+import { Select, SelectItem, TextInput } from "@/components/ui/form";
 import { useEffect, useState } from "react";
 import { HiOutlineCheck, HiOutlineCube, HiOutlinePencilSquare, HiOutlinePlus, HiOutlineXMark } from "react-icons/hi2";
 import toast from "react-hot-toast";

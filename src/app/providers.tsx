@@ -1,12 +1,8 @@
 "use client";
 
-import { AuthProvider } from "@/contexts/AuthContext";
-import { NextUIProvider } from "@nextui-org/react";
+import { ReactNode } from "react";
 
-export  default function Providers({ children }: { children: React.ReactNode }) {
-  return (
-    <NextUIProvider>
-      {children}
-    </NextUIProvider>
-  );
+// client-side providers shared by the dashboard (none needed after removing NextUI)
+export default function Providers({ children }: { children: ReactNode }) {
+  return <>{children}</>;
 }

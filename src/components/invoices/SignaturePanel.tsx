@@ -5,8 +5,8 @@ import { InvoiceWithClient, SignatureRequest } from "@/types/Client";
 import Badge from "@/components/ui/Badge";
 import Button, { ButtonLink } from "@/components/ui/Button";
 import Panel from "@/components/ui/Panel";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/react";
-import { Textarea } from "@tremor/react";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@/components/ui/Modal";
+import { Textarea } from "@/components/ui/form";
 import { useState } from "react";
 import {
     HiOutlineChatBubbleLeftEllipsis,

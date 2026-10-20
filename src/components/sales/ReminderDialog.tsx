@@ -2,7 +2,7 @@
 import { ClientReceivable, getReminderMessage, getWhatsappUrl, toWhatsappPhone } from "@/app/utils/sales";
 import { formatCOP } from "@/app/utils/clientInvoice";
 import Button, { ButtonLink } from "@/components/ui/Button";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/react";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@/components/ui/Modal";
 import { useEffect, useState } from "react";
 import { HiOutlineChatBubbleLeftEllipsis, HiOutlineClipboardDocument, HiOutlineExclamationTriangle } from "react-icons/hi2";
 import toast from "react-hot-toast";

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { BarChart } from "@tremor/react";
+import { BarChart } from "@/components/ui/charts";
 import {
     HiOutlineBanknotes,
     HiOutlineDocumentText,

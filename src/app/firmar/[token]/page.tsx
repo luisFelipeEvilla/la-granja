@@ -6,7 +6,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import Panel from "@/components/ui/Panel";
 import { Skeleton } from "@/components/ui/Skeleton";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, use } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { HiCheck, HiOutlineArrowPath, HiOutlineCheckBadge, HiOutlineLink, HiOutlineNoSymbol } from "react-icons/hi2";
 
@@ -30,7 +30,8 @@ const formatDateTime = (date: string) =>
     // "p. m." already ends with a period: drop it so sentences don't end with ".."
     new Date(date).toLocaleString("es-CO", { dateStyle: "long", timeStyle: "short" }).replace(/\.$/, "");
 
-export default function SignInvoicePage({ params }: { params: { token: string } }) {
+export default function SignInvoicePage(props: { params: Promise<{ token: string }> }) {
+    const params = use(props.params);
     const [state, setState] = useState<State>({ kind: "loading" });
     const [empty, setEmpty] = useState(true);
     const [signing, setSigning] = useState(false);

@@ -11,7 +11,7 @@ import { PageSkeleton } from "@/components/ui/Skeleton";
 import StatCard from "@/components/ui/StatCard";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/Table";
 import Badge from "@/components/ui/Badge";
-import { ReactNode, useCallback, useEffect, useState } from "react";
+import { ReactNode, useCallback, useEffect, useState, use } from "react";
 import {
     HiOutlineBanknotes,
     HiOutlineChatBubbleLeftEllipsis,
@@ -45,7 +45,8 @@ function ContactChip({ icon, children }: { icon: ReactNode, children: ReactNode 
     );
 }
 
-export default function ClientDetail({ params }: { params: { id: string } }) {
+export default function ClientDetail(props: { params: Promise<{ id: string }> }) {
+    const params = use(props.params);
     const [client, setClient] = useState<ClientWithInvoices & { summary: ClientSummary }>();
     const [filter, setFilter] = useState<Filter>("all");
 

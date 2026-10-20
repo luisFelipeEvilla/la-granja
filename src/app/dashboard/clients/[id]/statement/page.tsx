@@ -7,10 +7,10 @@ import Panel from "@/components/ui/Panel";
 import { PageSkeleton } from "@/components/ui/Skeleton";
 import StatCard from "@/components/ui/StatCard";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/Table";
-import { DateRangePicker, DateRangePickerItem, DateRangePickerValue } from "@tremor/react";
+import { DateRangePicker, DateRangePickerItem, type DateRangePickerValue } from "@/components/ui/form/DatePicker";
 import { es } from "date-fns/locale";
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import {
     HiOutlineArrowDownLeft,
     HiOutlineArrowUpRight,
@@ -32,7 +32,8 @@ const daysAgo = (days: number) => new Date(today.getFullYear(), today.getMonth()
 // "all" keeps the whole history: no bounds are applied to the statement
 const ALL = 'all';
 
-export default function ClientStatement({ params }: { params: { id: string } }) {
+export default function ClientStatement(props: { params: Promise<{ id: string }> }) {
+    const params = use(props.params);
     const [client, setClient] = useState<ClientWithInvoices>();
     const [dates, setDates] = useState<DateRangePickerValue>({ selectValue: ALL });
 

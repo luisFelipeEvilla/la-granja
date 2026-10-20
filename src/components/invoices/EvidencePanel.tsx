@@ -5,7 +5,7 @@ import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import EmptyState from "@/components/ui/EmptyState";
 import Panel from "@/components/ui/Panel";
 import Spinner from "@/components/ui/Spinner";
-import { Modal, ModalBody, ModalContent } from "@nextui-org/react";
+import { Modal, ModalBody, ModalContent } from "@/components/ui/Modal";
 import { ChangeEvent, useRef, useState } from "react";
 import { HiOutlineCamera, HiOutlineChevronLeft, HiOutlineChevronRight, HiOutlineTrash } from "react-icons/hi2";
 import toast from "react-hot-toast";

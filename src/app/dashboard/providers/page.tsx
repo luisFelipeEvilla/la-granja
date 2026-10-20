@@ -1,5 +1,5 @@
 "use client";
-import { Switch } from "@tremor/react";
+import { Switch } from "@/components/ui/form";
 import { useEffect, useState } from "react";
 import { Provider } from "@prisma/client";
 import axios from "axios";

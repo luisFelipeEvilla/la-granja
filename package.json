@@ -7,25 +7,19 @@
     "build": "next build",
     "start": "next start",
     "postinstall": "prisma generate",
-    "lint": "next lint"
+    "lint": "eslint ."
   },
   "dependencies": {
-    "@headlessui/react": "2",
-    "@heroicons/react": "^1.0.6",
-    "@nextui-org/react": "^2.2.9",
+    "@headlessui/react": "^2.2.10",
     "@prisma/client": "^6.19.3",
     "@react-pdf/renderer": "^4.9.0",
     "@tailwindcss/postcss": "^4.3.3",
-    "@tremor/react": "^3.12.1",
     "aws4fetch": "^1.0.20",
     "axios": "^1.20.0",
     "bcryptjs": "3",
-    "cookies-next": "^4.1.1",
     "date-fns": "^4.4.0",
-    "framer-motion": "^11.0.5",
     "jose": "6",
     "next": "^16.4.2",
-    "nookies": "^2.5.2",
     "postcss": "8.5.31",
     "react": "^19.3.1",
     "react-day-picker": "^10.0.2",
@@ -45,5 +39,17 @@
     "prisma": "^6.19.3",
     "typescript": "6.0.3"
   },
-  "packageManager": "pnpm@9.15.4+sha512.b2dc20e2fc72b3e18848459b37359a32064663e5627a51e4c74b2c29dd8e8e0491483c3abb40789cfd578bf362fb6ba8261b05f0387d76792ed6e23ea3b1b6a0"
+  "packageManager": "pnpm@9.15.4+sha512.b2dc20e2fc72b3e18848459b37359a32064663e5627a51e4c74b2c29dd8e8e0491483c3abb40789cfd578bf362fb6ba8261b05f0387d76792ed6e23ea3b1b6a0",
+  "pnpm": {
+    "overrides": {
+      "baseline-browser-mapping": "^2.11.0",
+      "browserslist": "^4.28.7",
+      "source-map-js": "^1.2.2",
+      "deepmerge-ts": "^8.0.0",
+      "brace-expansion@<2": "^1.1.21",
+      "minimatch@<4": "^3.1.4",
+      "picomatch@<3": "^2.3.2",
+      "picomatch@>=4 <5": "^4.0.4"
+    }
+  }
 }

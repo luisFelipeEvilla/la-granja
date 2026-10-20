@@ -15,11 +15,12 @@ import Segmented from "@/components/ui/Segmented";
 import { PageSkeleton } from "@/components/ui/Skeleton";
 import StatCard from "@/components/ui/StatCard";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/Table";
-import { DatePicker, TextInput } from "@tremor/react";
+import { TextInput } from "@/components/ui/form";
+import { DatePicker } from "@/components/ui/form/DatePicker";
 import { es } from "date-fns/locale";
 import dynamic from "next/dynamic";
 import NextLink from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, use } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import MoneyInput from "@/components/inputs/MoneyInput";
 import {
@@ -39,14 +40,15 @@ const ClientInvoicePDF = dynamic(() => import("@/components/pdfs/clientInvoice")
 
 type PaymentInputs = { amount: string, reference: string };
 
-type Params = { params: { id: string, invoiceId: string } };
+type Params = { params: Promise<{ id: string, invoiceId: string }> };
 
 type PaymentMethod = keyof typeof paymentMethodLabels;
 
 // what the confirmation dialog is about to do
 type PendingAction = { type: 'void' } | { type: 'deletePayment', paymentId: string, amount: number } | null;
 
-export default function InvoiceDetail({ params }: Params) {
+export default function InvoiceDetail(props: Params) {
+    const params = use(props.params);
     const [invoice, setInvoice] = useState<InvoiceWithClient>();
     const [method, setMethod] = useState<PaymentMethod>('EFECTIVO');
     const [date, setDate] = useState<Date | undefined>(new Date());

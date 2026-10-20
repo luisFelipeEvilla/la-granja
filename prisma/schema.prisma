@@ -207,3 +207,15 @@ model InvoiceSignatureRequest {
   signerIp        String?
   signerUserAgent String?
 }
+
+// sign-in attempts used to throttle password guessing (per username and per IP)
+model LoginAttempt {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  username  String
+  ip        String
+  success   Boolean
+  createdAt DateTime @default(now())
+
+  @@index([username, createdAt])
+  @@index([ip, createdAt])
+}

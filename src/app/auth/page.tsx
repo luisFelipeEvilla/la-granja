@@ -47,15 +47,13 @@ export default function AuthPage() {
     } catch (requestError: any) {
       const status = requestError.response?.status;
 
-      if (status === 404) {
-        toast.error("Usuario no encontrado");
-        return setError((current) => ({ ...current, user: true }));
+      if (status === 401 || status === 400) {
+        // the server doesn't say which field is wrong, so usernames can't be discovered
+        setError({ user: true, password: true });
+        return toast.error("Usuario o contraseña incorrectos");
       }
 
-      if (status === 401) {
-        setError((current) => ({ ...current, password: true }));
-        return toast.error("Contraseña incorrecta");
-      }
+      if (status === 429) return toast.error(requestError.response?.data?.message ?? "Demasiados intentos. Espera unos minutos");
 
       toast.error("No pudimos iniciar sesión. Intenta de nuevo");
     } finally {
@@ -125,17 +123,17 @@ export default function AuthPage() {
                 autoFocus
                 required
                 aria-invalid={error.user || undefined}
-                aria-describedby={error.user ? "username-error" : undefined}
+                aria-describedby={error.user ? "password-error" : undefined}
                 className={`h-12 w-full rounded-lg border-0 bg-white px-4 text-base text-slate-900 shadow-xs ring-1 ring-inset placeholder:text-slate-400 focus:outline-hidden focus:ring-2 sm:text-sm
                   ${error.user ? "ring-red-300 focus:ring-red-500" : "ring-slate-300 focus:ring-emerald-500"}`}
               />
-              {error.user && <p id="username-error" className="text-sm text-red-600" role="alert">Usuario no encontrado</p>}
+              
             </div>
 
             <div className="space-y-1.5">
               <label htmlFor="password" className="block text-sm font-medium text-slate-700">Contraseña</label>
               <PasswordInput id="password" value={password} onChange={handlePasswordChange} error={error.password} />
-              {error.password && <p id="password-error" className="text-sm text-red-600" role="alert">Contraseña incorrecta</p>}
+              {error.password && <p id="password-error" className="text-sm text-red-600" role="alert">Usuario o contraseña incorrectos</p>}
             </div>
 
             <button

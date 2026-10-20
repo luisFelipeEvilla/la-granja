@@ -1,5 +1,5 @@
 "use client";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/react";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@/components/ui/Modal";
 import { ReactNode } from "react";
 import Button from "./Button";
 

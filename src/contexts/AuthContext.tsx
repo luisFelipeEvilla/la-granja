@@ -1,58 +1,43 @@
 "use client";
-import { User } from "@prisma/client";
-import { createContext, useEffect, useState } from "react";
-import { destroyCookie, parseCookies, setCookie } from "nookies";
+import { createContext, ReactNode, useEffect, useState } from "react";
+
+export type SessionUser = { username: string, role: "ADMIN" | "USER" };
 
 type AuthContextType = {
-    user: User | null;  
-    signin: (user: User) => void;
-    signout: () => void;
+    user: SessionUser | null;
+    signin: (user: SessionUser) => void;
+    signout: () => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextType>({
     user: null,
-    signin: async () => {},
+    signin: () => {},
     signout: async () => {},
-    });
+});
 
-    
-export function AuthProvider({ children }: any) {
-    const [user, setUser] = useState<User | null>(null);
+// the session lives in an httpOnly cookie set by the server; this only mirrors who is signed in
+export function AuthProvider({ children }: { children: ReactNode }) {
+    const [user, setUser] = useState<SessionUser | null>(null);
 
     useEffect(() => {
-        const { user } = parseCookies();
-
-        if (user) return setUser(JSON.parse(user));
-    
-        if (window.location.pathname !== "/auth") {
-            window.location.href = "/auth";
-        }
-
+        if (window.location.pathname === "/auth") return;
+        fetch("/api/auth/me", { cache: "no-store" })
+            .then(async (res) => {
+                if (res.ok) return setUser((await res.json()).user);
+                window.location.href = "/auth";
+            })
+            .catch(() => {});
     }, []);
 
-    async function signin(user: User) {
-        console.log(user);
+    function signin(user: SessionUser) {
         setUser(user);
-    
-        setCookie(null, "user", JSON.stringify(user), {
-            maxAge: 30 * 24 * 60 * 60,
-            path: "/",
-        });
     }
 
     async function signout() {
+        await fetch("/api/auth/signout", { method: "POST" }).catch(() => {});
         setUser(null);
-
-        destroyCookie(null, "user", {
-            path: "/",
-        });
-
         window.location.href = "/auth";
     }
 
-    return (
-        <AuthContext.Provider value={{ user, signin, signout }}>
-            {children}
-        </AuthContext.Provider>
-    );
+    return <AuthContext.Provider value={{ user, signin, signout }}>{children}</AuthContext.Provider>;
 }

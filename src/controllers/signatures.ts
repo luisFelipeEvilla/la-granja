@@ -2,6 +2,7 @@ import prisma from "@/db/client";
 import { getStorage } from "@/lib/storage";
 import { Prisma } from "@prisma/client";
 import { randomBytes, randomUUID } from "crypto";
+import { detectImageType } from "./attachments";
 import { HttpError } from "./client";
 
 export type RequestMeta = { ip: string | null, userAgent: string | null };
@@ -89,7 +90,9 @@ export async function signInvoice(token: string, signature: string, meta: Reques
     const match = /^data:image\/png;base64,([A-Za-z0-9+/=]+)$/.exec(signature ?? '');
     if (!match) throw new HttpError(400, 'Firma inválida');
     const image = Buffer.from(match[1], 'base64');
-    if (image.length < 200 || image.length > MAX_SIGNATURE_BYTES) throw new HttpError(400, 'Firma inválida');
+    if (image.length < 200 || image.length > MAX_SIGNATURE_BYTES || detectImageType(image) !== 'image/png') {
+        throw new HttpError(400, 'Firma inválida');
+    }
 
     const request = await getPublicInvoice(token);
     if (request.signedAt) throw new HttpError(409, 'Esta factura ya fue firmada');

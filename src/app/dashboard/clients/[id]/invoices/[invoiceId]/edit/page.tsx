@@ -5,13 +5,14 @@ import EmptyState from "@/components/ui/EmptyState";
 import Panel from "@/components/ui/Panel";
 import { PageSkeleton } from "@/components/ui/Skeleton";
 import { InvoiceWithClient } from "@/types/Client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { HiOutlineCheckBadge, HiOutlineNoSymbol } from "react-icons/hi2";
 import toast from "react-hot-toast";
 
-type Params = { params: { id: string, invoiceId: string } };
+type Params = { params: Promise<{ id: string, invoiceId: string }> };
 
-export default function EditInvoice({ params }: Params) {
+export default function EditInvoice(props: Params) {
+    const params = use(props.params);
     const [invoice, setInvoice] = useState<InvoiceWithClient>();
 
     useEffect(() => {

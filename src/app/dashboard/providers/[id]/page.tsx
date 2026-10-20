@@ -1,6 +1,6 @@
 "use client";
 import { Provider } from "@prisma/client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { HiOutlineTruck } from "react-icons/hi2";
 import ProviderForm from "@/components/providers/ProviderForm";
 import { ButtonLink } from "@/components/ui/Button";
@@ -9,7 +9,8 @@ import PageHeader from "@/components/ui/PageHeader";
 import Badge from "@/components/ui/Badge";
 import { PageSkeleton } from "@/components/ui/Skeleton";
 
-export default function EditProvider({ params }: { params: { id: string } }) {
+export default function EditProvider(props: { params: Promise<{ id: string }> }) {
+    const params = use(props.params);
     const [provider, setProvider] = useState<Provider | null>();
 
     useEffect(() => {

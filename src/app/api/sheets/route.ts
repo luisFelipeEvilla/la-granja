@@ -46,6 +46,12 @@ export async function POST(req: NextRequest) {
     date.setUTCHours(0, 0, 0, 0);
 
     const products: Pick<MilkRouteLog, 'providerId' | 'quantity'>[] = sheet.products;
+    // every line must reference a provider id and carry a whole, reasonable amount of liters
+    const valid = products.length <= 2000 && products.every((product) =>
+        typeof product?.providerId === 'string' && /^[a-f0-9]{24}$/.test(product.providerId) &&
+        Number.isInteger(product.quantity) && product.quantity >= 0 && product.quantity <= 100_000
+    );
+    if (!valid) return NextResponse.json({ message: 'Invalid sheet' }, { status: 400 });
     const providerIds = products.map((product) => product.providerId);
 
     for (let attempt = 1; attempt <= MAX_SAVE_ATTEMPTS; attempt++) {

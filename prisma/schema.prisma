@@ -92,12 +92,23 @@ enum invoice_status {
   ANULADA
 }
 
+// product line of a sales invoice; name and unit are copied so past invoices don't change
+type InvoiceItem {
+  productId String @db.ObjectId
+  name      String
+  unit      unit
+  quantity  Float
+  unitPrice Int
+  total     Int
+}
+
 model ClientInvoice {
   id         String         @id @default(auto()) @map("_id") @db.ObjectId
   number     Int            @unique
   clientId   String         @db.ObjectId
   client     Client         @relation(fields: [clientId], references: [id])
-  concept    String
+  items      InvoiceItem[]
+  // invoice total: sum of the item totals
   amount     Int
   // sum of the invoice payments, kept in sync on every payment so the balance check is atomic
   paidAmount Int            @default(0)

@@ -1,7 +1,7 @@
 "use client";
 import PrimaryButton from "@/components/buttons/PrimaryButton";
 import InvoiceStatusBadge from "@/components/clients/InvoiceStatusBadge";
-import { formatCOP, formatDate, getInvoiceBalance, getPaymentStatus, paymentMethodLabels, toDateString } from "@/app/utils/clientInvoice";
+import { formatCOP, formatDate, getInvoiceBalance, getPaymentStatus, paymentMethodLabels, toDateString, formatQuantity } from "@/app/utils/clientInvoice";
 import { InvoiceWithClient } from "@/types/Client";
 import {
     Card,
@@ -138,9 +138,40 @@ export default function InvoiceDetail({ params }: Params) {
                         )}
                     </div>
                 </div>
-                <div className="mt-4 space-y-1">
-                    <Text><span className="font-medium">Concepto:</span> {invoice.concept}</Text>
-                    {invoice.notes && <Text><span className="font-medium">Notas:</span> {invoice.notes}</Text>}
+                {invoice.notes && (
+                    <Text className="mt-4"><span className="font-medium">Notas:</span> {invoice.notes}</Text>
+                )}
+            </div>
+
+            {/* Products */}
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                <div className="p-4 sm:p-6 border-b border-gray-200">
+                    <Title className="text-lg font-semibold">Productos</Title>
+                </div>
+                <div className="overflow-x-auto">
+                    <Table className="min-w-full">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell className="whitespace-nowrap">Producto</TableCell>
+                                <TableCell className="whitespace-nowrap text-right">Cantidad</TableCell>
+                                <TableCell className="whitespace-nowrap text-right hidden sm:table-cell">Precio unitario</TableCell>
+                                <TableCell className="whitespace-nowrap text-right">Total</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {invoice.items.map((item, index) => (
+                                <TableRow key={index}>
+                                    <TableCell className="font-medium">
+                                        {item.name}
+                                        <div className="sm:hidden text-xs text-gray-500">{formatCOP(item.unitPrice)} / {item.unit}</div>
+                                    </TableCell>
+                                    <TableCell className="whitespace-nowrap text-right">{formatQuantity(item.quantity)} {item.unit}</TableCell>
+                                    <TableCell className="whitespace-nowrap text-right hidden sm:table-cell">{formatCOP(item.unitPrice)}</TableCell>
+                                    <TableCell className="whitespace-nowrap text-right font-medium">{formatCOP(item.total)}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
                 </div>
             </div>
 

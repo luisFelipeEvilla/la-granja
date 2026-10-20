@@ -6,7 +6,9 @@ import { NextResponse } from "next/server";
 const MAX_SAVE_ATTEMPTS = 3;
 const INVOICE_COUNTER_ID = 'clientInvoice';
 
-export type InvoiceInput = Pick<ClientInvoice, 'concept' | 'amount'> &
+export type InvoiceItemInput = { productId: string, quantity: number, unitPrice: number };
+
+export type InvoiceInput = { items: InvoiceItemInput[] } &
     Partial<Pick<ClientInvoice, 'issueDate' | 'notes'>>;
 
 export type PaymentInput = Pick<ClientPayment, 'amount' | 'method'> &
@@ -45,14 +47,44 @@ export async function getInvoice(id: string) {
     return invoice;
 }
 
-export async function createInvoice(clientId: string, data: InvoiceInput) {
-    const amount = Number(data.amount);
-    if (!data.concept?.trim() || !isPositiveInt(amount)) {
-        throw new HttpError(400, 'Concepto y un monto mayor a cero son requeridos');
+// validates the lines against the product catalog and computes their totals on the server
+async function buildItems(items: InvoiceItemInput[]) {
+    if (!Array.isArray(items) || items.length === 0) {
+        throw new HttpError(400, 'Agrega al menos un producto a la factura');
     }
 
+    const products = await prisma.product.findMany({
+        where: { id: { in: items.map((item) => String(item.productId)) } }
+    });
+
+    return items.map((item) => {
+        const product = products.find((product) => product.id === item.productId);
+        const quantity = Number(item.quantity);
+        const unitPrice = Number(item.unitPrice);
+
+        if (!product) throw new HttpError(400, 'Producto no encontrado');
+        if (!(quantity > 0) || !Number.isFinite(quantity)) {
+            throw new HttpError(400, `Cantidad inválida para ${product.name}`);
+        }
+        if (!isPositiveInt(unitPrice)) throw new HttpError(400, `Precio inválido para ${product.name}`);
+
+        return {
+            productId: product.id,
+            name: product.name,
+            unit: product.unit,
+            quantity,
+            unitPrice,
+            total: Math.round(quantity * unitPrice)
+        };
+    });
+}
+
+export async function createInvoice(clientId: string, data: InvoiceInput) {
     const client = await prisma.client.findUnique({ where: { id: clientId } });
     if (!client) throw new HttpError(404, 'Cliente no encontrado');
+
+    const items = await buildItems(data.items);
+    const amount = items.reduce((total, item) => total + item.total, 0);
 
     // the counter increment and the invoice are created together so numbers are never skipped or repeated
     return withRetries(() => prisma.$transaction(async (tx) => {
@@ -66,7 +98,7 @@ export async function createInvoice(clientId: string, data: InvoiceInput) {
             data: {
                 number: counter.value,
                 clientId,
-                concept: data.concept.trim(),
+                items,
                 amount,
                 issueDate: toCalendarDay(data.issueDate) ?? toCalendarDay(new Date().toISOString()),
                 notes: data.notes?.trim() || null

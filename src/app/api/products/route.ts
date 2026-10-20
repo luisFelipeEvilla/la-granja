@@ -14,9 +14,12 @@ export async function GET(){
 
 export async function POST(req: NextRequest, res: NextResponse){
     try {
-        const body = await req.json();
+        const { name, unit } = await req.json();
+        if (!name?.trim() || !unit) {
+            return NextResponse.json({ message: 'Nombre y unidad son requeridos' }, { status: 400 });
+        }
 
-        const newProduct = await createProduct(body);
+        const newProduct = await createProduct({ name: name.trim(), unit });
 
         return NextResponse.json(newProduct);
     } catch (error) {

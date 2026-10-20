@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { BarChart } from "@tremor/react";
+import { BarChart } from "@/components/ui/charts";
 import {
     HiOutlineBanknotes,
     HiOutlineDocumentText,
@@ -156,7 +156,7 @@ export default function SalesSummary() {
                                     const share = productsTotal ? product.amount / productsTotal : 0;
                                     return (
                                         <TR key={product.name}>
-                                            <TD className="[overflow-wrap:anywhere]">
+                                            <TD className="wrap-anywhere">
                                                 <p className="font-medium text-slate-900">{product.name}</p>
                                                 <p className="text-xs text-slate-500 sm:hidden">{formatQuantity(product.quantity)} {product.unit}</p>
                                                 <div className="mt-1.5 flex items-center gap-2">
@@ -191,7 +191,7 @@ export default function SalesSummary() {
                             <TBody>
                                 {clients.map((entry, index) => (
                                     <TR key={entry.client.id} href={`/dashboard/clients/${entry.client.id}`}>
-                                        <TD className="[overflow-wrap:anywhere]">
+                                        <TD className="wrap-anywhere">
                                             <div className="flex items-center gap-3">
                                                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
                                                     {index + 1}
@@ -232,7 +232,7 @@ export default function SalesSummary() {
                             const status = getPaymentStatus(invoice);
                             return (
                                 <TR key={invoice.id} href={`/dashboard/clients/${invoice.clientId}/invoices/${invoice.id}`}>
-                                    <TD className="[overflow-wrap:anywhere]">
+                                    <TD className="wrap-anywhere">
                                         <p className="font-semibold text-slate-900">#{invoice.number}</p>
                                         <p className="text-xs text-slate-500">
                                             {formatDate(invoice.issueDate)}
@@ -241,7 +241,7 @@ export default function SalesSummary() {
                                         <p className="mt-0.5 line-clamp-2 text-xs text-slate-500">{getItemsSummary(invoice.items)}</p>
                                         <span className="mt-1 inline-block sm:hidden"><InvoiceStatusBadge status={status} /></span>
                                     </TD>
-                                    <TD className="hidden [overflow-wrap:anywhere] md:table-cell">{invoice.client.name}</TD>
+                                    <TD className="hidden wrap-anywhere md:table-cell">{invoice.client.name}</TD>
                                     <TD align="right" className={`whitespace-nowrap font-semibold tabular-nums ${status === "ANULADA" ? "text-slate-400 line-through" : "text-slate-900"}`}>
                                         {formatCOP(invoice.amount)}
                                     </TD>

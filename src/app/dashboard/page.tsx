@@ -1,5 +1,7 @@
 "use client"
-import { BarChart, DateRangePicker, DateRangePickerValue, DonutChart, LineChart, MultiSelect, MultiSelectItem } from "@tremor/react";
+import { MultiSelect, MultiSelectItem } from "@/components/ui/form";
+import { DateRangePicker, type DateRangePickerValue } from "@/components/ui/form/DatePicker";
+import { BarChart, DonutChart, LineChart } from "@/components/ui/charts";
 import { useEffect, useState } from "react";
 import { Provider } from "@prisma/client";
 import { ProviderWithProducts } from "@/types/Provider";
@@ -138,7 +140,7 @@ export default function Dashboard() {
 
             {/* Filters */}
             <Panel>
-                <div className="grid gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
+                <div className="grid gap-4 lg:grid-cols-[minmax(0,28rem)_minmax(0,1fr)]">
                     <div className="min-w-0 space-y-1.5">
                         <p className="text-sm font-medium text-slate-700">Período</p>
                         <DateRangePicker

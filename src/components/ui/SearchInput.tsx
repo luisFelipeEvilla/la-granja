@@ -13,7 +13,7 @@ export default function SearchInput({ value, onChange, placeholder = "Buscar..."
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
                 aria-label={placeholder}
-                className="h-10 w-full rounded-lg border-0 bg-white pl-9 pr-9 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 [&::-webkit-search-cancel-button]:hidden"
+                className="h-10 w-full rounded-lg border-0 bg-white pl-9 pr-9 text-sm text-slate-900 shadow-xs ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 [&::-webkit-search-cancel-button]:hidden"
             />
             {value && (
                 <button

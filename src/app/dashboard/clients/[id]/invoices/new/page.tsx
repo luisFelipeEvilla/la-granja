@@ -1,9 +1,10 @@
 "use client";
 import InvoiceForm from "@/components/clients/InvoiceForm";
 import { Client } from "@prisma/client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 
-export default function NewInvoice({ params }: { params: { id: string } }) {
+export default function NewInvoice(props: { params: Promise<{ id: string }> }) {
+    const params = use(props.params);
     const [client, setClient] = useState<Client>();
 
     useEffect(() => {

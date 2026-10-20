@@ -99,7 +99,7 @@ export default function ProductionPage() {
                             type="date"
                             value={date.toISOString().split('T')[0]}
                             onChange={handleDateChange}
-                            className="h-11 rounded-lg border-0 bg-white px-3 text-sm font-medium text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            className="h-11 rounded-lg border-0 bg-white px-3 text-sm font-medium text-slate-900 shadow-xs ring-1 ring-inset ring-slate-300 focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
                         />
                     </label>
                 }

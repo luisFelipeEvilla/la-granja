@@ -1,4 +1,4 @@
-import { DateRangePickerItem } from "@tremor/react";
+import { DateRangePickerItem } from "@/components/ui/form/DatePicker";
 
 const daysAgo = (days: number) => {
     const date = new Date();

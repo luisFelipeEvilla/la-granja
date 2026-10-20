@@ -1,5 +1,5 @@
 "use client";
-import { Document, Image, Page, pdf, StyleSheet, Text, View } from "@react-pdf/renderer";
+import { Document, type DocumentProps, Image, Page, pdf, StyleSheet, Text, View } from "@react-pdf/renderer";
 import { ReactElement, ReactNode, useState } from "react";
 import toast from "react-hot-toast";
 import Button from "@/components/ui/Button";
@@ -289,7 +289,7 @@ export function PdfDownloadButton({ document: pdfDocument, fileName }: { documen
         if (generating) return;
         setGenerating(true);
         try {
-            const blob = await pdf(pdfDocument).toBlob();
+            const blob = await pdf(pdfDocument as ReactElement<DocumentProps>).toBlob();
             const url = URL.createObjectURL(blob);
             const link = window.document.createElement("a");
             link.href = url;

@@ -18,7 +18,7 @@ export default function PrimaryButton(props: Props) {
                 disabled:bg-gray-400 disabled:cursor-not-allowed
                 text-white font-medium rounded-lg 
                 transition-colors duration-200 
-                focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2
+                focus:outline-hidden focus:ring-2 focus:ring-green-500 focus:ring-offset-2
                 min-h-[44px] text-sm sm:text-base
                 ${props.className || ''}
             `}

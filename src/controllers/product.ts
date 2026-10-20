@@ -1,45 +1,19 @@
 import prisma from "@/db/client";
+import { unit } from "@prisma/client";
+import { HttpError } from "./client";
 
-export async function getProducts() {
-    const products = await prisma.product.findMany();
-    return products;
+const UNITS = Object.values(unit);
+
+export function parseProduct(body: any) {
+    const name = typeof body?.name === 'string' ? body.name.trim() : '';
+    if (!name || name.length > 120) throw new HttpError(400, 'Nombre y unidad son requeridos');
+    if (!UNITS.includes(body?.unit)) throw new HttpError(400, 'Unidad inválida');
+    return { name, unit: body.unit as unit };
 }
 
-export async function getProduct(id: string) {
-    const product = await prisma.product.findUnique({
-        where: {
-            id: id
-        }
-    });
+export const getProducts = () => prisma.product.findMany({ orderBy: { name: 'asc' } });
 
-    return product;
-}
+export const createProduct = (product: ReturnType<typeof parseProduct>) => prisma.product.create({ data: product });
 
-export async function createProduct(product: any) {
-    const newProduct = await prisma.product.create({
-        data: product
-    });
-
-    return newProduct;
-}
-
-export async function updateProduct(id: string, product: any) {
-    const updatedProduct = await prisma.product.update({
-        where: {
-            id: id
-        },
-        data: product
-    });
-
-    return updatedProduct;
-}
-
-export async function deleteProduct(id: string) {
-    const deletedProduct = await prisma.product.delete({
-        where: {
-            id: id
-        }
-    });
-
-    return deletedProduct;
-}
+export const updateProduct = (id: string, product: ReturnType<typeof parseProduct>) =>
+    prisma.product.update({ where: { id }, data: product });

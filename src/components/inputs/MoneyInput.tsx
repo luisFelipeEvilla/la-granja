@@ -1,5 +1,5 @@
 "use client";
-import { TextInput } from "@tremor/react";
+import { TextInput } from "@/components/ui/form";
 import { ChangeEvent, ComponentProps } from "react";
 
 type Props = Omit<ComponentProps<typeof TextInput>, 'value' | 'onChange' | 'onValueChange' | 'type'> & {

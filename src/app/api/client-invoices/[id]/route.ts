@@ -1,9 +1,10 @@
 import { getInvoice, handleError, updateInvoice, voidInvoice } from "@/controllers/clientInvoice";
 import { NextRequest, NextResponse } from "next/server";
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> };
 
-export async function GET(req: NextRequest, { params }: Params) {
+export async function GET(req: NextRequest, props: Params) {
+    const params = await props.params;
     try {
         return NextResponse.json(await getInvoice(params.id));
     } catch (error) {
@@ -11,7 +12,8 @@ export async function GET(req: NextRequest, { params }: Params) {
     }
 }
 
-export async function PATCH(req: NextRequest, { params }: Params) {
+export async function PATCH(req: NextRequest, props: Params) {
+    const params = await props.params;
     try {
         const body = await req.json();
 

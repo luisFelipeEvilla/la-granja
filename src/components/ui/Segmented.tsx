@@ -18,7 +18,7 @@ export default function Segmented<T extends string>({ value, onChange, options, 
                         aria-selected={active}
                         onClick={() => onChange(option.value)}
                         className={`inline-flex min-h-[32px] pointer-coarse:min-h-[40px] items-center gap-1.5 whitespace-nowrap rounded-md px-3 text-sm font-medium transition-colors
-                            ${active ? "bg-white text-slate-900 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
+                            ${active ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"}`}
                     >
                         {option.label}
                         {option.count !== undefined && (

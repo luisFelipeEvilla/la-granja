@@ -11,7 +11,7 @@ import { PageSkeleton } from "@/components/ui/Skeleton";
 import StatCard from "@/components/ui/StatCard";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/Table";
 import Badge from "@/components/ui/Badge";
-import { ReactNode, useCallback, useEffect, useState } from "react";
+import { ReactNode, useCallback, useEffect, useState, use } from "react";
 import {
     HiOutlineBanknotes,
     HiOutlineChatBubbleLeftEllipsis,
@@ -45,7 +45,8 @@ function ContactChip({ icon, children }: { icon: ReactNode, children: ReactNode 
     );
 }
 
-export default function ClientDetail({ params }: { params: { id: string } }) {
+export default function ClientDetail(props: { params: Promise<{ id: string }> }) {
+    const params = use(props.params);
     const [client, setClient] = useState<ClientWithInvoices & { summary: ClientSummary }>();
     const [filter, setFilter] = useState<Filter>("all");
 
@@ -140,10 +141,10 @@ export default function ClientDetail({ params }: { params: { id: string } }) {
                                     <TD>
                                         <p className="font-semibold text-slate-900">#{invoice.number}</p>
                                         <p className="text-xs text-slate-500">{formatDate(invoice.issueDate)}</p>
-                                        <p className="mt-0.5 line-clamp-2 [overflow-wrap:anywhere] text-xs text-slate-500 xl:hidden">{getItemsSummary(invoice.items)}</p>
+                                        <p className="mt-0.5 line-clamp-2 wrap-anywhere text-xs text-slate-500 xl:hidden">{getItemsSummary(invoice.items)}</p>
                                     </TD>
                                     <TD className="hidden xl:table-cell">
-                                        <p className="line-clamp-2 [overflow-wrap:anywhere] text-slate-600">{getItemsSummary(invoice.items)}</p>
+                                        <p className="line-clamp-2 wrap-anywhere text-slate-600">{getItemsSummary(invoice.items)}</p>
                                     </TD>
                                     <TD align="right" className="hidden tabular-nums lg:table-cell">{formatCOP(invoice.amount)}</TD>
                                     <TD align="right" className={`tabular-nums font-semibold ${status === 'ANULADA' || getInvoiceBalance(invoice) === 0 ? 'text-slate-400' : 'text-slate-900'}`}>

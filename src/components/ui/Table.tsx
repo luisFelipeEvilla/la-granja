@@ -39,7 +39,7 @@ export function TR({ children, href, className = "" }: { children: ReactNode, hr
             onClick={href ? open : undefined}
             onKeyDown={href ? (e: KeyboardEvent) => { if (e.key === "Enter") open() } : undefined}
             tabIndex={href ? 0 : undefined}
-            className={`${href ? "cursor-pointer hover:bg-slate-50 active:bg-slate-100 focus-visible:bg-slate-50 focus-visible:outline-none" : ""} transition-colors ${className}`}
+            className={`${href ? "cursor-pointer hover:bg-slate-50 active:bg-slate-100 focus-visible:bg-slate-50 focus-visible:outline-hidden" : ""} transition-colors ${className}`}
         >
             {children}
         </tr>

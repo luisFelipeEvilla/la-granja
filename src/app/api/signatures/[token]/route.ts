@@ -2,12 +2,13 @@ import { handleError } from "@/controllers/clientInvoice";
 import { getRequestMeta, openSignatureRequest, signInvoice } from "@/controllers/signatures";
 import { NextRequest, NextResponse } from "next/server";
 
-type Params = { params: { token: string } };
+type Params = { params: Promise<{ token: string }> };
 
 export const dynamic = 'force-dynamic';
 
 // public: the client opens the link (recorded as an "opened" event)
-export async function GET(req: NextRequest, { params }: Params) {
+export async function GET(req: NextRequest, props: Params) {
+    const params = await props.params;
     try {
         return NextResponse.json(await openSignatureRequest(params.token, getRequestMeta(req.headers)));
     } catch (error) {
@@ -16,7 +17,8 @@ export async function GET(req: NextRequest, { params }: Params) {
 }
 
 // public: the client signs (drawn signature as a PNG data URL)
-export async function POST(req: NextRequest, { params }: Params) {
+export async function POST(req: NextRequest, props: Params) {
+    const params = await props.params;
     try {
         const { signature } = await req.json();
         return NextResponse.json(await signInvoice(params.token, signature, getRequestMeta(req.headers)));

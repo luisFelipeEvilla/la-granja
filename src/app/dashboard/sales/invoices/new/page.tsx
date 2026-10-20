@@ -4,7 +4,7 @@ import Panel from "@/components/ui/Panel";
 import PageHeader from "@/components/ui/PageHeader";
 import { PageSkeleton } from "@/components/ui/Skeleton";
 import { ClientWithSummary } from "@/types/Client";
-import { SearchSelect, SearchSelectItem } from "@tremor/react";
+import { SearchSelect, SearchSelectItem } from "@/components/ui/form";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { HiOutlineUserCircle } from "react-icons/hi2";

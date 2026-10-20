@@ -141,7 +141,7 @@ export default function Sheet() {
               value={date.toISOString().split("T")[0]}
               onChange={handleDateChange}
               disabled={readOnly}
-              className="h-11 rounded-lg border-0 bg-white px-3 text-sm font-medium text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:bg-slate-50 disabled:text-slate-500"
+              className="h-11 rounded-lg border-0 bg-white px-3 text-sm font-medium text-slate-900 shadow-xs ring-1 ring-inset ring-slate-300 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 disabled:bg-slate-50 disabled:text-slate-500"
             />
           </label>
         }
@@ -162,8 +162,8 @@ export default function Sheet() {
           <MilkSheetList rows={rows} onChange={handleQuantityChange} disabled={readOnly} search={search} />
         </Panel>
 
-        {/* save button stays reachable at the bottom of long sheets */}
-        <div className="sticky bottom-0 z-10 -mx-4 border-t border-slate-200 bg-white px-4 py-3 safe-bottom sm:mx-0 sm:rounded-xl sm:border sm:shadow-lg">
+        {/* save button stays reachable at the bottom of long sheets (read-only users can't save) */}
+        {!readOnly && <div className="sticky bottom-0 z-10 -mx-4 border-t border-slate-200 bg-white px-4 py-3 safe-bottom sm:mx-0 sm:rounded-xl sm:border sm:shadow-lg">
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Total</p>
@@ -173,7 +173,7 @@ export default function Sheet() {
               {saving ? "Guardando..." : "Guardar planilla"}
             </Button>
           </div>
-        </div>
+        </div>}
       </form>
     </div>
   );

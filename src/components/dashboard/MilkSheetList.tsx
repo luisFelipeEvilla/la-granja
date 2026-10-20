@@ -66,8 +66,8 @@ export default function MilkSheetList({ rows, onChange, disabled, search = "", u
                             onChange={(e) => onChange(row.id, parseInt(e.target.value || "0"))}
                             disabled={disabled}
                             {...quantityInputProps}
-                            className={`h-12 w-full rounded-lg border-0 pl-3 pr-9 text-right text-lg font-semibold tabular-nums shadow-sm ring-1 ring-inset
-                                focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:bg-slate-50 disabled:text-slate-500
+                            className={`h-12 w-full rounded-lg border-0 pl-3 pr-9 text-right text-lg font-semibold tabular-nums shadow-xs ring-1 ring-inset
+                                focus:outline-hidden focus:ring-2 focus:ring-emerald-500 disabled:bg-slate-50 disabled:text-slate-500
                                 ${row.quantity > 0 ? "bg-emerald-50/40 text-slate-900 ring-emerald-200" : "bg-white text-slate-900 ring-slate-300"}`}
                         />
                         <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">{unit}</span>

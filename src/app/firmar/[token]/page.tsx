@@ -6,7 +6,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import Panel from "@/components/ui/Panel";
 import { Skeleton } from "@/components/ui/Skeleton";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, use } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { HiCheck, HiOutlineArrowPath, HiOutlineCheckBadge, HiOutlineLink, HiOutlineNoSymbol } from "react-icons/hi2";
 
@@ -30,7 +30,8 @@ const formatDateTime = (date: string) =>
     // "p. m." already ends with a period: drop it so sentences don't end with ".."
     new Date(date).toLocaleString("es-CO", { dateStyle: "long", timeStyle: "short" }).replace(/\.$/, "");
 
-export default function SignInvoicePage({ params }: { params: { token: string } }) {
+export default function SignInvoicePage(props: { params: Promise<{ token: string }> }) {
+    const params = use(props.params);
     const [state, setState] = useState<State>({ kind: "loading" });
     const [empty, setEmpty] = useState(true);
     const [signing, setSigning] = useState(false);
@@ -76,8 +77,8 @@ export default function SignInvoicePage({ params }: { params: { token: string } 
     };
 
     return (
-        <div className="min-h-[100dvh] bg-slate-50 pb-safe">
-            <Toaster position="top-center" toastOptions={{ className: "!rounded-xl !text-sm !font-medium" }} />
+        <div className="min-h-dvh bg-slate-50 pb-safe">
+            <Toaster position="top-center" toastOptions={{ className: "rounded-xl! text-sm! font-medium!" }} />
 
             <header className="border-b border-slate-200 bg-white safe-top">
                 <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3 sm:px-6">
@@ -167,7 +168,7 @@ function InvoiceDocument({ invoice }: { invoice: PublicInvoice }) {
                 </div>
                 <div className="mt-4 rounded-lg bg-slate-50 px-4 py-3">
                     <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Cliente</p>
-                    <p className="mt-0.5 font-semibold text-slate-900 [overflow-wrap:anywhere]">{invoice.client.name}</p>
+                    <p className="mt-0.5 font-semibold text-slate-900 wrap-anywhere">{invoice.client.name}</p>
                     <p className="text-sm text-slate-500">{idTypeLabels[invoice.client.idType] ?? invoice.client.idType} {invoice.client.idNum}</p>
                 </div>
             </div>
@@ -177,7 +178,7 @@ function InvoiceDocument({ invoice }: { invoice: PublicInvoice }) {
                 {invoice.items.map((item, index) => (
                     <li key={index} className="px-4 py-3">
                         <div className="flex items-start justify-between gap-3">
-                            <p className="font-medium text-slate-900 [overflow-wrap:anywhere]">{item.name}</p>
+                            <p className="font-medium text-slate-900 wrap-anywhere">{item.name}</p>
                             <p className="whitespace-nowrap font-semibold tabular-nums text-slate-900">{formatCOP(item.total)}</p>
                         </div>
                         <p className="mt-0.5 text-sm text-slate-500 tabular-nums">
@@ -201,7 +202,7 @@ function InvoiceDocument({ invoice }: { invoice: PublicInvoice }) {
                     <tbody className="divide-y divide-slate-100 text-slate-700">
                         {invoice.items.map((item, index) => (
                             <tr key={index}>
-                                <td className="px-6 py-3 font-medium text-slate-900 [overflow-wrap:anywhere]">{item.name}</td>
+                                <td className="px-6 py-3 font-medium text-slate-900 wrap-anywhere">{item.name}</td>
                                 <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">{formatQuantity(item.quantity)} {item.unit}</td>
                                 <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">{formatCOP(item.unitPrice)}</td>
                                 <td className="whitespace-nowrap px-6 py-3 text-right font-semibold tabular-nums text-slate-900">{formatCOP(item.total)}</td>
@@ -219,7 +220,7 @@ function InvoiceDocument({ invoice }: { invoice: PublicInvoice }) {
             {invoice.notes && (
                 <div className="border-t border-slate-100 px-4 py-4 sm:px-6">
                     <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Notas</p>
-                    <p className="mt-1 text-sm text-slate-700 [overflow-wrap:anywhere]">{invoice.notes}</p>
+                    <p className="mt-1 text-sm text-slate-700 wrap-anywhere">{invoice.notes}</p>
                 </div>
             )}
         </Panel>

@@ -2,7 +2,7 @@
 import { ClientReceivable, getReminderMessage, getWhatsappUrl, toWhatsappPhone } from "@/app/utils/sales";
 import { formatCOP } from "@/app/utils/clientInvoice";
 import Button, { ButtonLink } from "@/components/ui/Button";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/react";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@/components/ui/Modal";
 import { useEffect, useState } from "react";
 import { HiOutlineChatBubbleLeftEllipsis, HiOutlineClipboardDocument, HiOutlineExclamationTriangle } from "react-icons/hi2";
 import toast from "react-hot-toast";
@@ -96,7 +96,7 @@ export default function ReminderDialog({ receivable, onClose, onSent }: Props) {
                                     value={message}
                                     onChange={(e) => setMessage(e.target.value)}
                                     rows={9}
-                                    className="w-full rounded-lg border-0 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    className="w-full rounded-lg border-0 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-xs ring-1 ring-inset ring-slate-300 focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
                                 />
                                 <p className="text-sm text-slate-500">Puedes editarlo antes de enviarlo.</p>
                             </div>

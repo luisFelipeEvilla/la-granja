@@ -142,7 +142,7 @@ export default function Receivables() {
                                 const oldestBucket = getAgingBucket(entry.oldestDays);
                                 return (
                                     <TR key={entry.client.id} href={`/dashboard/clients/${entry.client.id}/statement`}>
-                                        <TD className="[overflow-wrap:anywhere]">
+                                        <TD className="wrap-anywhere">
                                             <p className="font-medium text-slate-900">{entry.client.name}</p>
                                             <p className="text-xs text-slate-500">
                                                 {entry.client.idType} {entry.client.idNum} · {entry.pending.length} factura{entry.pending.length === 1 ? "" : "s"}

@@ -83,6 +83,7 @@ model Client {
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   invoices  ClientInvoice[]
+  reminders ClientReminder[]
 
   @@unique([idType, idNum])
 }
@@ -140,4 +141,22 @@ model ClientPayment {
 model Counter {
   id    String @id @map("_id")
   value Int
+}
+
+
+enum reminder_channel {
+  WHATSAPP
+}
+
+// payment reminder sent to a client, kept as a log
+model ClientReminder {
+  id             String           @id @default(auto()) @map("_id") @db.ObjectId
+  clientId       String           @db.ObjectId
+  client         Client           @relation(fields: [clientId], references: [id])
+  channel        reminder_channel @default(WHATSAPP)
+  // balance and invoices the reminder was about, at the time it was sent
+  balance        Int
+  invoiceNumbers Int[]
+  message        String
+  sentAt         DateTime         @default(now())
 }

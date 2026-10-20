@@ -36,10 +36,18 @@ const toLines = (invoice?: InvoiceWithClient): Line[] => invoice
     }))
     : [emptyLine()];
 
-type Props = { clientId: string, client?: Client, invoice?: InvoiceWithClient };
+type Props = {
+    clientId: string,
+    client?: Client,
+    invoice?: InvoiceWithClient,
+    // when the page renders its own header (e.g. the sales section, where the client is picked first)
+    hideHeader?: boolean,
+    // where "Cancelar" goes, defaults to the client or invoice page
+    cancelHref?: string
+};
 
 // creates a sales invoice, or edits one when `invoice` is given
-export default function InvoiceForm({ clientId, client, invoice }: Props) {
+export default function InvoiceForm({ clientId, client, invoice, hideHeader = false, cancelHref }: Props) {
     const [products, setProducts] = useState<Product[]>([]);
     const [lines, setLines] = useState<Line[]>(() => toLines(invoice));
     // stored dates are calendar days at UTC midnight: rebuild them as local dates for the picker
@@ -109,11 +117,11 @@ export default function InvoiceForm({ clientId, client, invoice }: Props) {
 
     return (
         <div className="space-y-6">
-            <PageHeader
+            {!hideHeader && <PageHeader
                 back={{ href: backHref, label: invoice ? `Factura #${invoice.number}` : client?.name ?? 'Cliente' }}
                 title={invoice ? `Editar factura #${invoice.number}` : 'Nueva factura de venta'}
                 description={client?.name}
-            />
+            />}
 
             {invoice && invoice.paidAmount > 0 && (
                 <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
@@ -256,7 +264,7 @@ export default function InvoiceForm({ clientId, client, invoice }: Props) {
                                 <Button type="submit" loading={saving} fullWidth size="lg" icon={<HiOutlineCheckCircle className="h-5 w-5" />}>
                                     {submitLabel}
                                 </Button>
-                                <ButtonLink href={backHref} variant="ghost" fullWidth>Cancelar</ButtonLink>
+                                <ButtonLink href={cancelHref ?? backHref} variant="ghost" fullWidth>Cancelar</ButtonLink>
                             </div>
                         </Panel>
                     </div>
@@ -270,7 +278,7 @@ export default function InvoiceForm({ clientId, client, invoice }: Props) {
                             <p className={`text-xl font-bold tabular-nums ${belowPaid ? 'text-red-600' : 'text-slate-900'}`}>{formatCOP(total)}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                            <ButtonLink href={backHref} variant="ghost" className="hidden sm:inline-flex">Cancelar</ButtonLink>
+                            <ButtonLink href={cancelHref ?? backHref} variant="ghost" className="hidden sm:inline-flex">Cancelar</ButtonLink>
                             <Button type="submit" loading={saving} size="lg">{submitLabel}</Button>
                         </div>
                     </div>

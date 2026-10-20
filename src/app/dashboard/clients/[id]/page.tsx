@@ -14,6 +14,7 @@ import Badge from "@/components/ui/Badge";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import {
     HiOutlineBanknotes,
+    HiOutlineChatBubbleLeftEllipsis,
     HiOutlineCheckCircle,
     HiOutlineDocumentChartBar,
     HiOutlineDocumentText,
@@ -74,6 +75,11 @@ export default function ClientDetail({ params }: { params: { id: string } }) {
                     <ButtonLink href={`/dashboard/clients/${client.id}/edit`} variant="ghost" icon={<HiOutlinePencilSquare className="h-4 w-4" />}>
                         Editar
                     </ButtonLink>
+                    {client.summary.balance > 0 && (
+                        <ButtonLink href={`/dashboard/sales/reminders?client=${client.id}`} variant="secondary" icon={<HiOutlineChatBubbleLeftEllipsis className="h-4 w-4" />}>
+                            Recordar pago
+                        </ButtonLink>
+                    )}
                     <ButtonLink href={`/dashboard/clients/${client.id}/statement`} variant="secondary" icon={<HiOutlineDocumentChartBar className="h-4 w-4" />}>
                         Estado de cuenta
                     </ButtonLink>

@@ -3,6 +3,7 @@ import {
   HiOutlineBeaker,
   HiOutlineClipboardDocumentList,
   HiOutlineCube,
+  HiOutlineDocumentChartBar,
   HiOutlineHome,
   HiOutlineTruck,
   HiOutlineUserGroup,
@@ -34,6 +35,7 @@ const adminSections: NavSection[] = [
   {
     title: "Ventas",
     links: [
+      { label: "Facturación", href: "/dashboard/sales", icon: <HiOutlineDocumentChartBar className={iconClass} /> },
       { label: "Clientes", href: "/dashboard/clients", icon: <HiOutlineUserGroup className={iconClass} /> },
       { label: "Productos", href: "/dashboard/products", icon: <HiOutlineCube className={iconClass} /> },
     ],

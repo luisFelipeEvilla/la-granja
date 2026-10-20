@@ -94,7 +94,7 @@ export default function ClientStatement({ params }: { params: { id: string } }) 
             </Panel>
 
             {/* Summary */}
-            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
                 <StatCard
                     label="Saldo anterior"
                     value={from ? formatCOP(statement.openingBalance) : '—'}

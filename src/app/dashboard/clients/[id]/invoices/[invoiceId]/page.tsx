@@ -1,5 +1,8 @@
 "use client";
 import InvoiceStatusBadge from "@/components/clients/InvoiceStatusBadge";
+import EvidencePanel from "@/components/invoices/EvidencePanel";
+import SignaturePanel from "@/components/invoices/SignaturePanel";
+import Badge from "@/components/ui/Badge";
 import { formatCOP, formatDate, getInvoiceBalance, getPaymentStatus, paymentMethodLabels, toDateString, formatQuantity } from "@/app/utils/clientInvoice";
 import { InvoiceWithClient } from "@/types/Client";
 import Button, { ButtonLink } from "@/components/ui/Button";
@@ -112,6 +115,8 @@ export default function InvoiceDetail({ params }: Params) {
 
     const balance = getInvoiceBalance(invoice);
     const isActive = invoice.status === 'ACTIVA';
+    // a signed invoice is frozen: payments and evidence still allowed, editing is not
+    const isSigned = Boolean(invoice.signedAt);
     const canPay = isActive && balance > 0;
     const canVoid = isActive && invoice.paidAmount === 0;
     const paidPercent = invoice.amount > 0 ? Math.min(100, Math.round(invoice.paidAmount / invoice.amount * 100)) : 0;
@@ -121,7 +126,10 @@ export default function InvoiceDetail({ params }: Params) {
             <PageHeader
                 back={{ href: `/dashboard/clients/${params.id}`, label: invoice.client.name }}
                 title={`Factura #${invoice.number}`}
-                badge={<InvoiceStatusBadge status={getPaymentStatus(invoice)} />}
+                badge={<div className="flex flex-wrap items-center gap-2">
+                    <InvoiceStatusBadge status={getPaymentStatus(invoice)} />
+                    {isSigned && <Badge tone="emerald">Firmada</Badge>}
+                </div>}
                 description={<>
                     <NextLink href={`/dashboard/clients/${params.id}`} className="min-h-0 min-w-0 font-medium text-slate-700 hover:text-emerald-700 hover:underline">
                         {invoice.client.name}
@@ -134,7 +142,7 @@ export default function InvoiceDetail({ params }: Params) {
                             Anular
                         </Button>
                     )}
-                    {isActive && (
+                    {isActive && !isSigned && (
                         <ButtonLink
                             href={`/dashboard/clients/${params.id}/invoices/${invoice.id}/edit`}
                             variant="secondary"
@@ -146,6 +154,12 @@ export default function InvoiceDetail({ params }: Params) {
                     <ClientInvoicePDF invoice={invoice} />
                 </>}
             />
+
+            {isSigned && isActive && (
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                    El cliente firmó esta factura: los productos y montos ya no se pueden editar. Puedes seguir registrando pagos y evidencias.
+                </div>
+            )}
 
             {invoice.status === 'ANULADA' && (
                 <div className="rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-600">
@@ -219,6 +233,10 @@ export default function InvoiceDetail({ params }: Params) {
                             </div>
                         )}
                     </Panel>
+
+                    <SignaturePanel invoice={invoice} onChange={loadInvoice} />
+
+                    <EvidencePanel invoiceId={invoice.id} attachments={invoice.attachments} onChange={loadInvoice} />
 
                     {/* Payments */}
                     <Panel title="Pagos y abonos" description={invoice.payments.length > 0 ? `${invoice.payments.length} registrado(s)` : undefined} flush>

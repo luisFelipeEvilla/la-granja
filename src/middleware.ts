@@ -13,6 +13,9 @@ export async function middleware(req: NextRequest) {
   const dashboardURL = new URL("/dashboard", req.url);
   
   if (req.nextUrl.pathname === "/") return NextResponse.redirect(dashboardURL);
+
+  // public invoice signing page for clients (no login)
+  if (req.nextUrl.pathname.startsWith("/firmar/")) return NextResponse.next();
   
   if (isAuthPage) {
     if (userCookie) return NextResponse.redirect(dashboardURL);

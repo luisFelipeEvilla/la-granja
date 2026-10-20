@@ -3,6 +3,7 @@ import { ClientInvoice, ClientPayment, Prisma } from "@prisma/client";
 import { HttpError, isConcurrencyError } from "./client";
 import { NextResponse } from "next/server";
 import { formatCOP } from "@/app/utils/clientInvoice";
+import { StorageConfigError } from "@/lib/storage";
 
 const MAX_SAVE_ATTEMPTS = 3;
 const INVOICE_COUNTER_ID = 'clientInvoice';
@@ -40,7 +41,12 @@ async function withRetries<T>(save: () => Promise<T>): Promise<T> {
 export async function getInvoice(id: string) {
     const invoice = await prisma.clientInvoice.findUnique({
         where: { id },
-        include: { client: true, payments: { orderBy: { date: 'asc' } } }
+        include: {
+            client: true,
+            payments: { orderBy: { date: 'asc' } },
+            attachments: { orderBy: { createdAt: 'asc' } },
+            signatureRequest: true
+        }
     });
 
     if (!invoice) throw new HttpError(404, 'Factura no encontrada');
@@ -115,7 +121,8 @@ export async function updateInvoice(id: string, data: InvoiceInput) {
 
     // conditional update so a payment registered at the same time can't leave the invoice overpaid
     const { count } = await prisma.clientInvoice.updateMany({
-        where: { id, status: 'ACTIVA', paidAmount: { lte: amount } },
+        // invoices created before signatures existed have no signedAt field at all (isSet: false)
+        where: { id, status: 'ACTIVA', OR: [{ signedAt: null }, { signedAt: { isSet: false } }], paidAmount: { lte: amount } },
         data: {
             items,
             amount,
@@ -127,6 +134,7 @@ export async function updateInvoice(id: string, data: InvoiceInput) {
     if (count === 0) {
         const invoice = await getInvoice(id);
         if (invoice.status !== 'ACTIVA') throw new HttpError(409, 'La factura está anulada');
+        if (invoice.signedAt) throw new HttpError(409, 'La factura ya fue firmada por el cliente y no se puede editar');
 
         throw new HttpError(409, `El total no puede ser menor a lo ya pagado (${formatCOP(invoice.paidAmount)})`);
     }
@@ -197,6 +205,11 @@ export async function deletePayment(id: string) {
 export function handleError(error: any) {
     if (error instanceof HttpError) {
         return NextResponse.json({ message: error.message }, { status: error.status });
+    }
+
+    if (error instanceof StorageConfigError) {
+        console.error(error);
+        return NextResponse.json({ message: 'El almacenamiento de archivos no está configurado. Contacta al administrador.' }, { status: 503 });
     }
 
     // P2023: malformed id in the URL

@@ -6,7 +6,7 @@ import Panel from "@/components/ui/Panel";
 import { PageSkeleton } from "@/components/ui/Skeleton";
 import { InvoiceWithClient } from "@/types/Client";
 import { useEffect, useState } from "react";
-import { HiOutlineNoSymbol } from "react-icons/hi2";
+import { HiOutlineCheckBadge, HiOutlineNoSymbol } from "react-icons/hi2";
 import toast from "react-hot-toast";
 
 type Params = { params: { id: string, invoiceId: string } };
@@ -29,6 +29,19 @@ export default function EditInvoice({ params }: Params) {
                 <EmptyState
                     icon={<HiOutlineNoSymbol />}
                     title="Las facturas anuladas no se pueden editar"
+                    action={<ButtonLink href={`/dashboard/clients/${params.id}/invoices/${invoice.id}`} variant="secondary">Volver a la factura</ButtonLink>}
+                />
+            </Panel>
+        );
+    }
+
+    if (invoice.signedAt) {
+        return (
+            <Panel>
+                <EmptyState
+                    icon={<HiOutlineCheckBadge />}
+                    title="Esta factura ya fue firmada"
+                    description="El cliente firmó la factura, así que sus productos y montos no se pueden cambiar. Si hay un error, anúlala y crea una nueva."
                     action={<ButtonLink href={`/dashboard/clients/${params.id}/invoices/${invoice.id}`} variant="secondary">Volver a la factura</ButtonLink>}
                 />
             </Panel>

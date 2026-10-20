@@ -117,7 +117,11 @@ model ClientInvoice {
   status     invoice_status @default(ACTIVA)
   notes      String?
   createdAt  DateTime       @default(now())
+  // set when the client signs it; a signed invoice can no longer be edited
+  signedAt   DateTime?
   payments   ClientPayment[]
+  attachments InvoiceAttachment[]
+  signatureRequest InvoiceSignatureRequest?
 }
 
 enum payment_method {
@@ -159,4 +163,47 @@ model ClientReminder {
   invoiceNumbers Int[]
   message        String
   sentAt         DateTime         @default(now())
+}
+
+
+// evidence image of an invoice; `key` is the path in the storage provider (never a URL)
+model InvoiceAttachment {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  invoiceId   String        @db.ObjectId
+  invoice     ClientInvoice @relation(fields: [invoiceId], references: [id])
+  key         String
+  name        String
+  contentType String
+  size        Int
+  createdAt   DateTime      @default(now())
+}
+
+enum signature_event_type {
+  SENT
+  OPENED
+  SIGNED
+}
+
+type SignatureEvent {
+  type      signature_event_type
+  at        DateTime
+  ip        String?
+  userAgent String?
+}
+
+// public signing link of an invoice and its audit trail (sent, opened, signed)
+model InvoiceSignatureRequest {
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  invoiceId       String           @unique @db.ObjectId
+  invoice         ClientInvoice    @relation(fields: [invoiceId], references: [id])
+  token           String           @unique
+  createdAt       DateTime         @default(now())
+  events          SignatureEvent[]
+  openCount       Int              @default(0)
+  firstOpenedAt   DateTime?
+  lastOpenedAt    DateTime?
+  signedAt        DateTime?
+  signatureKey    String?
+  signerIp        String?
+  signerUserAgent String?
 }

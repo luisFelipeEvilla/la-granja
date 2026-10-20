@@ -9,8 +9,12 @@ export type ClientWithInvoices = Prisma.ClientGetPayload<{
 }>;
 
 export type InvoiceWithClient = Prisma.ClientInvoiceGetPayload<{
-    include: { client: true, payments: true }
+    include: { client: true, payments: true, attachments: true, signatureRequest: true }
 }>;
+
+export type InvoiceAttachmentItem = InvoiceWithClient['attachments'][number];
+
+export type SignatureRequest = NonNullable<InvoiceWithClient['signatureRequest']>;
 
 export type ClientSummary = {
     invoiced: number,

@@ -82,7 +82,7 @@ export default function ClientStatement({ params }: { params: { id: string } }) 
                         placeholder="Elegir fechas"
                         selectPlaceholder="Período"
                         enableClear={false}
-                        className="w-full max-w-none md:w-auto md:min-w-[26rem] [&>div]:min-w-0 [&_.w-48]:w-auto [&_.w-48]:shrink-0 [&_.w-48]:min-w-[8.5rem] md:[&_.w-48]:w-48"
+                        className="w-full max-w-none md:w-auto md:min-w-104 [&>div]:min-w-0 [&_.w-48]:w-auto [&_.w-48]:shrink-0 [&_.w-48]:min-w-34 md:[&_.w-48]:w-48"
                     >
                         <DateRangePickerItem value="month" from={startOfMonth()} to={today}>Este mes</DateRangePickerItem>
                         <DateRangePickerItem value="lastMonth" from={startOfMonth(-1)} to={new Date(today.getFullYear(), today.getMonth(), 0)}>Mes anterior</DateRangePickerItem>
@@ -138,7 +138,7 @@ export default function ClientStatement({ params }: { params: { id: string } }) 
                             {statement.movements.map((movement, index) => (
                                 <TR key={index}>
                                     <TD className="hidden whitespace-nowrap text-slate-500 sm:table-cell">{formatDate(movement.date)}</TD>
-                                    <TD className="[overflow-wrap:anywhere]">
+                                    <TD className="wrap-anywhere">
                                         <div className="flex items-start gap-2">
                                             <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${movement.charge ? 'bg-blue-500' : 'bg-emerald-500'}`} />
                                             <div className="min-w-0">
@@ -200,10 +200,10 @@ export default function ClientStatement({ params }: { params: { id: string } }) 
                                         <TD>
                                             <p className="font-semibold text-slate-900">#{invoice.number}</p>
                                             <p className="text-xs text-slate-500">{formatDate(invoice.issueDate)}</p>
-                                            <p className="mt-0.5 line-clamp-2 [overflow-wrap:anywhere] text-xs text-slate-500 xl:hidden">{getItemsSummary(invoice.items)}</p>
+                                            <p className="mt-0.5 line-clamp-2 wrap-anywhere text-xs text-slate-500 xl:hidden">{getItemsSummary(invoice.items)}</p>
                                         </TD>
                                         <TD className="hidden xl:table-cell">
-                                            <p className="line-clamp-2 [overflow-wrap:anywhere] text-slate-600">{getItemsSummary(invoice.items)}</p>
+                                            <p className="line-clamp-2 wrap-anywhere text-slate-600">{getItemsSummary(invoice.items)}</p>
                                         </TD>
                                         <TD align="right" className="hidden whitespace-nowrap tabular-nums sm:table-cell">{formatCOP(invoice.amount)}</TD>
                                         <TD align="right" className="hidden whitespace-nowrap tabular-nums text-emerald-600 lg:table-cell">{formatCOP(invoice.paidAmount)}</TD>

@@ -31,7 +31,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className={inter.variable}>
-      <body className="min-h-[100dvh] bg-slate-50 font-sans text-slate-900 antialiased">{children}</body>
+      <body className="min-h-dvh bg-slate-50 font-sans text-slate-900 antialiased">{children}</body>
     </html>
   );
 }

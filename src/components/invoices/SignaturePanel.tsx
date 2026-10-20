@@ -170,7 +170,7 @@ export default function SignaturePanel({ invoice, onChange }: Props) {
                         <ol className="relative space-y-4 border-l border-slate-200 pl-5">
                             {events.map((event, index) => (
                                 <li key={index} className="relative">
-                                    <span className={`absolute -left-[1.6rem] top-0.5 flex h-5 w-5 items-center justify-center rounded-full ring-4 ring-white
+                                    <span className={`absolute left-[-1.6rem] top-0.5 flex h-5 w-5 items-center justify-center rounded-full ring-4 ring-white
                                         ${event.type === "SIGNED" ? "bg-emerald-500" : event.type === "OPENED" ? "bg-amber-400" : "bg-blue-500"}`}>
                                         {event.type === "SIGNED"
                                             ? <HiOutlineCheckBadge className="h-3 w-3 text-white" />

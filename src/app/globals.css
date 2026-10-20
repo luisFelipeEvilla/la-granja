@@ -1,6 +1,83 @@
-@tailwind base; 
-@tailwind components; 
-@tailwind utilities;
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+@utility responsive-padding {
+  /* Mobile-first responsive utilities */
+  @apply px-4 sm:px-6 lg:px-8;
+}
+
+@utility responsive-container {
+  @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+@utility tremor-Table-root {
+  /* Better table responsivity for Tremor components */
+  @apply overflow-x-auto;
+}
+
+@utility mobile-card {
+  /* Mobile-friendly card spacing */
+  @apply p-4 sm:p-6 rounded-lg shadow-xs bg-white;
+}
+
+@utility scrollbar-hide {
+  /* Hide scrollbars but keep functionality */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+}
+
+@utility safe-top {
+  /* Safe area insets for mobile */
+  padding-top: env(safe-area-inset-top);
+}
+
+@utility safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@utility pt-safe {
+  /* page padding plus the area under the status bar / home indicator (home screen app) */
+  padding-top: calc(1.5rem + env(safe-area-inset-top));
+}
+
+@utility pb-safe {
+  padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+}
+
+@utility text-mobile-sm {
+  /* Mobile-specific text sizes */
+  font-size: 14px;
+  line-height: 20px;
+}
+
+@utility text-mobile-base {
+  font-size: 16px;
+  line-height: 24px;
+}
 
 @layer base {
   /* Base responsive styles */
@@ -30,67 +107,6 @@
   /* Ensure touch targets are appropriately sized for touch screens.
      Buttons are sized per component: a global min size on <button> also grows the small
      icon buttons inside Tremor inputs (clear date, remove chip) and overlaps their text */
-}
-
-@layer components {
-  /* Mobile-first responsive utilities */
-  .responsive-padding {
-    @apply px-4 sm:px-6 lg:px-8;
-  }
-  
-  .responsive-container {
-    @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-  }
-  
-  /* Better table responsivity for Tremor components */
-  .tremor-Table-root {
-    @apply overflow-x-auto;
-  }
-  
-  /* Mobile-friendly card spacing */
-  .mobile-card {
-    @apply p-4 sm:p-6 rounded-lg shadow-sm bg-white;
-  }
-}
-
-@layer utilities {
-  /* Hide scrollbars but keep functionality */
-  .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-  }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
-  }
-  
-  /* Safe area insets for mobile */
-  .safe-top {
-    padding-top: env(safe-area-inset-top);
-  }
-  
-  .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-
-  /* page padding plus the area under the status bar / home indicator (home screen app) */
-  .pt-safe {
-    padding-top: calc(1.5rem + env(safe-area-inset-top));
-  }
-
-  .pb-safe {
-    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
-  }
-  
-  /* Mobile-specific text sizes */
-  .text-mobile-sm {
-    font-size: 14px;
-    line-height: 20px;
-  }
-  
-  .text-mobile-base {
-    font-size: 16px;
-    line-height: 24px;
-  }
 }
 
 /* Touch screen (iPad / iPhone) sizing. Kept outside @layer so Tailwind does not drop

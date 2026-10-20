@@ -6,11 +6,11 @@ type Variant = "primary" | "secondary" | "danger" | "ghost" | "dark";
 type Size = "sm" | "md" | "lg";
 
 const variants: Record<Variant, string> = {
-    primary: "bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 active:bg-emerald-800 focus-visible:ring-emerald-500",
-    secondary: "bg-white text-slate-700 ring-1 ring-inset ring-slate-300 shadow-sm hover:bg-slate-50 active:bg-slate-100 focus-visible:ring-slate-400",
-    danger: "bg-white text-red-600 ring-1 ring-inset ring-red-200 shadow-sm hover:bg-red-50 active:bg-red-100 focus-visible:ring-red-400",
+    primary: "bg-emerald-600 text-white shadow-xs hover:bg-emerald-700 active:bg-emerald-800 focus-visible:ring-emerald-500",
+    secondary: "bg-white text-slate-700 ring-1 ring-inset ring-slate-300 shadow-xs hover:bg-slate-50 active:bg-slate-100 focus-visible:ring-slate-400",
+    danger: "bg-white text-red-600 ring-1 ring-inset ring-red-200 shadow-xs hover:bg-red-50 active:bg-red-100 focus-visible:ring-red-400",
     ghost: "text-slate-600 hover:bg-slate-100 hover:text-slate-900 active:bg-slate-200 focus-visible:ring-slate-400",
-    dark: "bg-slate-900 text-white shadow-sm hover:bg-slate-800 active:bg-slate-950 focus-visible:ring-slate-500",
+    dark: "bg-slate-900 text-white shadow-xs hover:bg-slate-800 active:bg-slate-950 focus-visible:ring-slate-500",
 };
 
 // every size keeps a 44px touch target on touch screens
@@ -32,7 +32,7 @@ type CommonProps = {
 
 const classes = ({ variant = "primary", size = "md", fullWidth, className }: CommonProps) => `
     inline-flex items-center justify-center rounded-lg font-semibold whitespace-nowrap select-none
-    transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
+    transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2
     disabled:pointer-events-none disabled:opacity-50
     ${variants[variant]} ${sizes[size]} ${fullWidth ? "w-full" : ""} ${className ?? ""}
 `;

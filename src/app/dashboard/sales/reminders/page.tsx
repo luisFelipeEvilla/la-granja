@@ -121,7 +121,7 @@ function Reminders() {
                                 const hasPhone = !!toWhatsappPhone(client.phone);
                                 return (
                                     <TR key={client.id}>
-                                        <TD className="[overflow-wrap:anywhere]">
+                                        <TD className="wrap-anywhere">
                                             <p className="font-medium text-slate-900">{client.name}</p>
                                             <p className="text-xs text-slate-500">
                                                 {pending.length} factura(s) pendiente(s)
@@ -171,7 +171,7 @@ function Reminders() {
                                         aria-expanded={open}
                                         className="flex min-h-[56px] w-full items-start justify-between gap-4 px-4 py-3 text-left hover:bg-slate-50 sm:px-6"
                                     >
-                                        <div className="min-w-0 [overflow-wrap:anywhere]">
+                                        <div className="min-w-0 wrap-anywhere">
                                             <p className="font-medium text-slate-900">{reminder.client.name}</p>
                                             <p className="text-xs text-slate-500">
                                                 {formatDateTime(reminder.sentAt)}
@@ -184,7 +184,7 @@ function Reminders() {
                                         </div>
                                     </button>
                                     {open && (
-                                        <p className="mx-4 mb-4 whitespace-pre-line rounded-lg bg-slate-50 p-3 text-sm text-slate-700 [overflow-wrap:anywhere] sm:mx-6">
+                                        <p className="mx-4 mb-4 whitespace-pre-line rounded-lg bg-slate-50 p-3 text-sm text-slate-700 wrap-anywhere sm:mx-6">
                                             {reminder.message}
                                         </p>
                                     )}

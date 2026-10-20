@@ -24,7 +24,7 @@ export default function ConfirmDialog({ open, title, description, confirmLabel =
                     <Button variant="secondary" onClick={onClose} disabled={loading}>Cancelar</Button>
                     <Button
                         variant={tone === "danger" ? "dark" : "primary"}
-                        className={tone === "danger" ? "!bg-red-600 hover:!bg-red-700" : ""}
+                        className={tone === "danger" ? "bg-red-600! hover:bg-red-700!" : ""}
                         onClick={onConfirm}
                         loading={loading}
                     >

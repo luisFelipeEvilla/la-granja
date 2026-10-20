@@ -146,7 +146,7 @@ export default function InvoiceForm({ clientId, client, invoice, hideHeader = fa
                                         className={`rounded-xl border bg-white p-4 transition-colors ${missingProduct || missingAmounts ? 'border-red-300' : 'border-slate-200'}`}
                                     >
                                         <div className="mb-3 flex items-center justify-between gap-3">
-                                            <span className="inline-flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-slate-100 px-2 text-xs font-semibold text-slate-600">
+                                            <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-100 px-2 text-xs font-semibold text-slate-600">
                                                 {index + 1}
                                             </span>
                                             <button
@@ -186,7 +186,7 @@ export default function InvoiceForm({ clientId, client, invoice, hideHeader = fa
                                                         onFocus={(e) => e.target.select()}
                                                         inputMode="decimal"
                                                         placeholder="0"
-                                                        className="h-[38px] w-full rounded-lg border-0 bg-white pl-3 pr-12 text-sm tabular-nums text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                                        className="h-[38px] w-full rounded-lg border-0 bg-white pl-3 pr-12 text-sm tabular-nums text-slate-900 shadow-xs ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
                                                     />
                                                     <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-slate-400">
                                                         {product?.unit ?? ''}

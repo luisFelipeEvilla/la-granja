@@ -132,7 +132,7 @@ export default function EvidencePanel({ invoiceId, attachments, onChange }: Prop
                                 type="button"
                                 onClick={() => setViewing(index)}
                                 aria-label={`Ver ${attachment.name}`}
-                                className="block h-full w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                                className="block h-full w-full focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-emerald-500"
                             >
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src={fileUrl(attachment.id)} alt={attachment.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" />
@@ -141,7 +141,7 @@ export default function EvidencePanel({ invoiceId, attachments, onChange }: Prop
                                 type="button"
                                 onClick={() => setDeleting(attachment)}
                                 aria-label="Eliminar imagen"
-                                className="absolute right-1.5 top-1.5 flex h-10 w-10 items-center justify-center rounded-lg bg-white/90 text-slate-600 shadow-sm backdrop-blur hover:text-red-600"
+                                className="absolute right-1.5 top-1.5 flex h-10 w-10 items-center justify-center rounded-lg bg-white/90 text-slate-600 shadow-xs backdrop-blur-sm hover:text-red-600"
                             >
                                 <HiOutlineTrash className="h-5 w-5" />
                             </button>
@@ -174,7 +174,7 @@ export default function EvidencePanel({ invoiceId, attachments, onChange }: Prop
                                             type="button"
                                             onClick={() => setViewing((viewing - 1 + attachments.length) % attachments.length)}
                                             aria-label="Imagen anterior"
-                                            className="absolute left-2 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow"
+                                            className="absolute left-2 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm"
                                         >
                                             <HiOutlineChevronLeft className="h-5 w-5" />
                                         </button>
@@ -182,7 +182,7 @@ export default function EvidencePanel({ invoiceId, attachments, onChange }: Prop
                                             type="button"
                                             onClick={() => setViewing((viewing + 1) % attachments.length)}
                                             aria-label="Imagen siguiente"
-                                            className="absolute right-2 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow"
+                                            className="absolute right-2 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm"
                                         >
                                             <HiOutlineChevronRight className="h-5 w-5" />
                                         </button>
@@ -191,7 +191,7 @@ export default function EvidencePanel({ invoiceId, attachments, onChange }: Prop
                             </div>
                             <div className="flex items-center justify-between gap-3 pt-2">
                                 <div className="min-w-0 text-sm">
-                                    <p className="font-medium text-slate-900 [overflow-wrap:anywhere]">{current.name}</p>
+                                    <p className="font-medium text-slate-900 wrap-anywhere">{current.name}</p>
                                     <p className="text-slate-500">{formatDateTime(current.createdAt)} · {viewing + 1} de {attachments.length}</p>
                                 </div>
                                 <Button variant="danger" icon={<HiOutlineTrash className="h-4 w-4" />} onClick={() => setDeleting(current)}>

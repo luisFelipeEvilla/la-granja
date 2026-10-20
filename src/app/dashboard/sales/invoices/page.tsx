@@ -136,7 +136,7 @@ export default function SalesInvoices() {
                         locale={es}
                         placeholder="Todas las fechas"
                         selectPlaceholder="Período"
-                        className="w-full max-w-none [&>div]:min-w-0 [&_.w-48]:w-auto [&_.w-48]:min-w-[8.5rem] [&_.w-48]:shrink-0"
+                        className="w-full max-w-none [&>div]:min-w-0 [&_.w-48]:w-auto [&_.w-48]:min-w-34 [&_.w-48]:shrink-0"
                     >
                         <DateRangePickerItem value="month" from={startOfMonth()} to={today}>Este mes</DateRangePickerItem>
                         <DateRangePickerItem value="lastMonth" from={startOfMonth(-1)} to={new Date(today.getFullYear(), today.getMonth(), 0)}>Mes anterior</DateRangePickerItem>
@@ -196,15 +196,15 @@ export default function SalesInvoices() {
                                         <TD>
                                             <p className="font-semibold text-slate-900">#{invoice.number}</p>
                                             <p className="text-xs text-slate-500">{formatDate(invoice.issueDate)}</p>
-                                            <p className="mt-0.5 text-xs font-medium text-slate-700 [overflow-wrap:anywhere] lg:hidden">{invoice.client.name}</p>
-                                            <p className="mt-0.5 line-clamp-2 text-xs text-slate-500 [overflow-wrap:anywhere] xl:hidden">{getItemsSummary(invoice.items)}</p>
+                                            <p className="mt-0.5 text-xs font-medium text-slate-700 wrap-anywhere lg:hidden">{invoice.client.name}</p>
+                                            <p className="mt-0.5 line-clamp-2 text-xs text-slate-500 wrap-anywhere xl:hidden">{getItemsSummary(invoice.items)}</p>
                                         </TD>
-                                        <TD className="hidden lg:table-cell [overflow-wrap:anywhere]">
+                                        <TD className="hidden lg:table-cell wrap-anywhere">
                                             <p className="font-medium text-slate-900">{invoice.client.name}</p>
                                             <p className="text-xs text-slate-500">{invoice.client.idType} {invoice.client.idNum}</p>
                                         </TD>
                                         <TD className="hidden xl:table-cell">
-                                            <p className="line-clamp-2 text-slate-600 [overflow-wrap:anywhere]">{getItemsSummary(invoice.items)}</p>
+                                            <p className="line-clamp-2 text-slate-600 wrap-anywhere">{getItemsSummary(invoice.items)}</p>
                                         </TD>
                                         <TD align="right" className={`hidden whitespace-nowrap tabular-nums lg:table-cell ${status === "ANULADA" ? "text-slate-400 line-through" : ""}`}>
                                             {formatCOP(invoice.amount)}

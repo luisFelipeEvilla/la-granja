@@ -140,10 +140,10 @@ export default function ClientDetail({ params }: { params: { id: string } }) {
                                     <TD>
                                         <p className="font-semibold text-slate-900">#{invoice.number}</p>
                                         <p className="text-xs text-slate-500">{formatDate(invoice.issueDate)}</p>
-                                        <p className="mt-0.5 line-clamp-2 [overflow-wrap:anywhere] text-xs text-slate-500 xl:hidden">{getItemsSummary(invoice.items)}</p>
+                                        <p className="mt-0.5 line-clamp-2 wrap-anywhere text-xs text-slate-500 xl:hidden">{getItemsSummary(invoice.items)}</p>
                                     </TD>
                                     <TD className="hidden xl:table-cell">
-                                        <p className="line-clamp-2 [overflow-wrap:anywhere] text-slate-600">{getItemsSummary(invoice.items)}</p>
+                                        <p className="line-clamp-2 wrap-anywhere text-slate-600">{getItemsSummary(invoice.items)}</p>
                                     </TD>
                                     <TD align="right" className="hidden tabular-nums lg:table-cell">{formatCOP(invoice.amount)}</TD>
                                     <TD align="right" className={`tabular-nums font-semibold ${status === 'ANULADA' || getInvoiceBalance(invoice) === 0 ? 'text-slate-400' : 'text-slate-900'}`}>

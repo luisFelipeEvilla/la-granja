@@ -56,7 +56,7 @@ export default function SideBarBody({ sections, user }: Props) {
     return (
       <>
         {/* Phone top bar */}
-        <header className="md:hidden sticky top-0 z-30 bg-slate-950/95 backdrop-blur text-white safe-top">
+        <header className="md:hidden sticky top-0 z-30 bg-slate-950/95 backdrop-blur-sm text-white safe-top">
           <div className="flex items-center gap-2 h-14 px-2">
             <OpenMenuButton isOpen={isOpen} setIsOpen={setIsOpen} />
             <span className="font-semibold truncate">{currentLink?.label ?? "La Granja"}</span>
@@ -66,19 +66,19 @@ export default function SideBarBody({ sections, user }: Props) {
         {/* Phone overlay */}
         <div
           onClick={() => setIsOpen(false)}
-          className={`fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-40 md:hidden transition-opacity duration-300
+          className={`fixed inset-0 bg-slate-950/50 backdrop-blur-xs z-40 md:hidden transition-opacity duration-300
                   ${isOpen ? "opacity-100" : "pointer-events-none opacity-0"}`}
         />
 
         {/* Hidden sidebar (iPad / desktop): a slim strip with the button to bring it back */}
         {hidden && (
-          <div className="hidden md:flex sticky top-0 h-[100dvh] w-14 shrink-0 flex-col items-center pt-safe">
+          <div className="hidden md:flex sticky top-0 h-dvh w-14 shrink-0 flex-col items-center pt-safe">
             <button
               type="button"
               onClick={toggleHidden}
               aria-label="Mostrar menú"
               title="Mostrar menú (⌘B)"
-              className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-slate-600 shadow-sm ring-1 ring-slate-200 hover:text-slate-900 hover:bg-slate-50"
+              className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-slate-600 shadow-xs ring-1 ring-slate-200 hover:text-slate-900 hover:bg-slate-50"
             >
               <HiOutlineBars3 className="h-5 w-5" />
             </button>
@@ -88,10 +88,10 @@ export default function SideBarBody({ sections, user }: Props) {
         {/* Drawer on phones, icon rail on iPad portrait, full sidebar on iPad landscape and desktop */}
         <aside className={`${hidden ? "md:hidden" : ""}
           fixed md:sticky top-0 inset-y-0 left-0 z-50 md:z-0
-          w-72 md:w-[88px] lg:w-64 flex-shrink-0 bg-slate-950 text-slate-300
+          w-72 md:w-[88px] lg:w-64 shrink-0 bg-slate-950 text-slate-300
           transform ${isOpen ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0 transition-transform duration-300 ease-out
-          flex flex-col h-[100dvh] overflow-y-auto overscroll-contain scrollbar-hide safe-top safe-bottom
+          flex flex-col h-dvh overflow-y-auto overscroll-contain scrollbar-hide safe-top safe-bottom
         `}>
           {/* Brand */}
           <div className="flex items-center gap-3 px-5 pt-5 pb-6 md:flex-col md:px-2 md:pt-5 md:pb-4 lg:flex-row lg:px-5 lg:pt-6 lg:pb-6">

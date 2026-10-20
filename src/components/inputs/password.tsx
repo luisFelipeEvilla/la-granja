@@ -25,7 +25,7 @@ export default function PasswordInput(props: propsType) {
         aria-invalid={props.error || undefined}
         aria-describedby={props.error && props.id ? `${props.id}-error` : undefined}
         required
-        className={`h-12 w-full rounded-lg border-0 bg-white pl-4 pr-12 text-base text-slate-900 shadow-sm ring-1 ring-inset placeholder:text-slate-400 focus:outline-none focus:ring-2 sm:text-sm
+        className={`h-12 w-full rounded-lg border-0 bg-white pl-4 pr-12 text-base text-slate-900 shadow-xs ring-1 ring-inset placeholder:text-slate-400 focus:outline-hidden focus:ring-2 sm:text-sm
           ${props.error ? "ring-red-300 focus:ring-red-500" : "ring-slate-300 focus:ring-emerald-500"}`}
       />
       <button
@@ -33,7 +33,7 @@ export default function PasswordInput(props: propsType) {
         aria-label={isVisible ? "Ocultar contraseña" : "Mostrar contraseña"}
         aria-pressed={isVisible}
         onClick={() => setIsVisible(!isVisible)}
-        className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+        className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 hover:text-slate-700 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-emerald-500"
       >
         {isVisible ? <HiOutlineEyeSlash className="h-5 w-5" /> : <HiOutlineEye className="h-5 w-5" />}
       </button>

@@ -96,7 +96,7 @@ export default function ReminderDialog({ receivable, onClose, onSent }: Props) {
                                     value={message}
                                     onChange={(e) => setMessage(e.target.value)}
                                     rows={9}
-                                    className="w-full rounded-lg border-0 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    className="w-full rounded-lg border-0 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-xs ring-1 ring-inset ring-slate-300 focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
                                 />
                                 <p className="text-sm text-slate-500">Puedes editarlo antes de enviarlo.</p>
                             </div>

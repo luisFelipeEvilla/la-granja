@@ -1,28 +1,33 @@
 "use client";
-import PrimaryButton from "@/components/buttons/PrimaryButton";
 import InvoiceStatusBadge from "@/components/clients/InvoiceStatusBadge";
 import { formatCOP, formatDate, getInvoiceBalance, getPaymentStatus, paymentMethodLabels, toDateString, formatQuantity } from "@/app/utils/clientInvoice";
 import { InvoiceWithClient } from "@/types/Client";
-import {
-    Card,
-    DatePicker,
-    Metric,
-    Select,
-    SelectItem,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
-    Text,
-    TextInput,
-    Title
-} from "@tremor/react";
+import Button, { ButtonLink } from "@/components/ui/Button";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import EmptyState from "@/components/ui/EmptyState";
+import Field from "@/components/ui/Field";
+import PageHeader from "@/components/ui/PageHeader";
+import Panel from "@/components/ui/Panel";
+import Segmented from "@/components/ui/Segmented";
+import { PageSkeleton } from "@/components/ui/Skeleton";
+import StatCard from "@/components/ui/StatCard";
+import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/Table";
+import { DatePicker, TextInput } from "@tremor/react";
 import { es } from "date-fns/locale";
 import dynamic from "next/dynamic";
+import NextLink from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import MoneyInput from "@/components/inputs/MoneyInput";
+import {
+    HiOutlineBanknotes,
+    HiOutlineCheckCircle,
+    HiOutlineCreditCard,
+    HiOutlineNoSymbol,
+    HiOutlinePencilSquare,
+    HiOutlineReceiptPercent,
+    HiOutlineTrash
+} from "react-icons/hi2";
 import toast from "react-hot-toast";
 
 const ClientInvoicePDF = dynamic(() => import("@/components/pdfs/clientInvoice"), {
@@ -33,11 +38,16 @@ type PaymentInputs = { amount: string, reference: string };
 
 type Params = { params: { id: string, invoiceId: string } };
 
+type PaymentMethod = keyof typeof paymentMethodLabels;
+
+// what the confirmation dialog is about to do
+type PendingAction = { type: 'void' } | { type: 'deletePayment', paymentId: string, amount: number } | null;
+
 export default function InvoiceDetail({ params }: Params) {
     const [invoice, setInvoice] = useState<InvoiceWithClient>();
-    const [method, setMethod] = useState<string>('EFECTIVO');
+    const [method, setMethod] = useState<PaymentMethod>('EFECTIVO');
     const [date, setDate] = useState<Date | undefined>(new Date());
-    const [pendingDelete, setPendingDelete] = useState<string | null>(null);
+    const [pendingAction, setPendingAction] = useState<PendingAction>(null);
     const [busy, setBusy] = useState(false);
     const { register, control, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<PaymentInputs>();
 
@@ -65,14 +75,11 @@ export default function InvoiceDetail({ params }: Params) {
         loadInvoice();
     }
 
-    const handleDeletePayment = async (paymentId: string) => {
-        // first click asks for confirmation, second click deletes
-        if (pendingDelete !== paymentId) return setPendingDelete(paymentId);
-
+    const deletePayment = async (paymentId: string) => {
         setBusy(true);
         const res = await fetch(`/api/client-payments/${paymentId}`, { method: 'DELETE' });
         setBusy(false);
-        setPendingDelete(null);
+        setPendingAction(null);
 
         if (!res.ok) return toast.error('Error al eliminar el pago');
 
@@ -80,9 +87,7 @@ export default function InvoiceDetail({ params }: Params) {
         loadInvoice();
     }
 
-    const handleVoidInvoice = async () => {
-        if (pendingDelete !== 'invoice') return setPendingDelete('invoice');
-
+    const voidInvoice = async () => {
         setBusy(true);
         const res = await fetch(`/api/client-invoices/${params.invoiceId}`, {
             method: 'PATCH',
@@ -90,7 +95,7 @@ export default function InvoiceDetail({ params }: Params) {
         });
         const json = await res.json();
         setBusy(false);
-        setPendingDelete(null);
+        setPendingAction(null);
 
         if (!res.ok) return toast.error(json.message ?? 'Error al anular la factura');
 
@@ -98,207 +103,244 @@ export default function InvoiceDetail({ params }: Params) {
         loadInvoice();
     }
 
-    if (!invoice) return <Text className="text-center text-gray-500">Cargando...</Text>;
+    const confirmPendingAction = () => {
+        if (pendingAction?.type === 'void') voidInvoice();
+        if (pendingAction?.type === 'deletePayment') deletePayment(pendingAction.paymentId);
+    }
+
+    if (!invoice) return <PageSkeleton />;
 
     const balance = getInvoiceBalance(invoice);
-    const canPay = invoice.status === 'ACTIVA' && balance > 0;
-    const canVoid = invoice.status === 'ACTIVA' && invoice.paidAmount === 0;
+    const isActive = invoice.status === 'ACTIVA';
+    const canPay = isActive && balance > 0;
+    const canVoid = isActive && invoice.paidAmount === 0;
+    const paidPercent = invoice.amount > 0 ? Math.min(100, Math.round(invoice.paidAmount / invoice.amount * 100)) : 0;
 
     return (
-        <div className="w-full max-w-4xl mx-auto space-y-6">
-            {/* Header */}
-            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-                    <div>
-                        <div className="flex items-center gap-3">
-                            <Title className="text-2xl sm:text-3xl font-bold text-gray-900">Factura #{invoice.number}</Title>
-                            <InvoiceStatusBadge status={getPaymentStatus(invoice)} />
-                        </div>
-                        <Text className="mt-1">{invoice.client.name}</Text>
-                        <Text className="text-gray-500">
-                            Emitida {formatDate(invoice.issueDate)}
-                        </Text>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                        <a
-                            href={`/dashboard/clients/${params.id}`}
-                            className="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors duration-200"
+        <div className="space-y-6">
+            <PageHeader
+                back={{ href: `/dashboard/clients/${params.id}`, label: invoice.client.name }}
+                title={`Factura #${invoice.number}`}
+                badge={<InvoiceStatusBadge status={getPaymentStatus(invoice)} />}
+                description={<>
+                    <NextLink href={`/dashboard/clients/${params.id}`} className="min-h-0 min-w-0 font-medium text-slate-700 hover:text-emerald-700 hover:underline">
+                        {invoice.client.name}
+                    </NextLink>
+                    {' · '}Emitida el {formatDate(invoice.issueDate)}
+                </>}
+                actions={<>
+                    {canVoid && (
+                        <Button variant="danger" icon={<HiOutlineNoSymbol className="h-4 w-4" />} onClick={() => setPendingAction({ type: 'void' })}>
+                            Anular
+                        </Button>
+                    )}
+                    {isActive && (
+                        <ButtonLink
+                            href={`/dashboard/clients/${params.id}/invoices/${invoice.id}/edit`}
+                            variant="secondary"
+                            icon={<HiOutlinePencilSquare className="h-4 w-4" />}
                         >
-                            Volver
-                        </a>
-                        {invoice.status === 'ACTIVA' && (
-                            <a
-                                href={`/dashboard/clients/${params.id}/invoices/${invoice.id}/edit`}
-                                className="inline-flex items-center px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white font-medium rounded-lg transition-colors duration-200"
-                            >
-                                Editar
-                            </a>
-                        )}
-                        <ClientInvoicePDF invoice={invoice} />
-                        {canVoid && (
-                            <button
-                                type="button"
-                                onClick={handleVoidInvoice}
-                                disabled={busy}
-                                className="min-h-[44px] inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors duration-200"
-                            >
-                                {pendingDelete === 'invoice' ? '¿Confirmar anulación?' : 'Anular'}
-                            </button>
-                        )}
-                    </div>
-                </div>
-                {invoice.notes && (
-                    <Text className="mt-4"><span className="font-medium">Notas:</span> {invoice.notes}</Text>
-                )}
-            </div>
+                            Editar
+                        </ButtonLink>
+                    )}
+                    <ClientInvoicePDF invoice={invoice} />
+                </>}
+            />
 
-            {/* Products */}
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div className="p-4 sm:p-6 border-b border-gray-200">
-                    <Title className="text-lg font-semibold">Productos</Title>
+            {invoice.status === 'ANULADA' && (
+                <div className="rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-600">
+                    Esta factura está anulada: no suma a la cartera del cliente ni admite pagos.
                 </div>
-                <div className="overflow-x-auto">
-                    <Table className="min-w-full">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell className="whitespace-nowrap">Producto</TableCell>
-                                <TableCell className="whitespace-nowrap text-right">Cantidad</TableCell>
-                                <TableCell className="whitespace-nowrap text-right hidden sm:table-cell">Precio unitario</TableCell>
-                                <TableCell className="whitespace-nowrap text-right">Total</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {invoice.items.map((item, index) => (
-                                <TableRow key={index}>
-                                    <TableCell className="font-medium">
-                                        {item.name}
-                                        <div className="sm:hidden text-xs text-gray-500">{formatCOP(item.unitPrice)} / {item.unit}</div>
-                                    </TableCell>
-                                    <TableCell className="whitespace-nowrap text-right">{formatQuantity(item.quantity)} {item.unit}</TableCell>
-                                    <TableCell className="whitespace-nowrap text-right hidden sm:table-cell">{formatCOP(item.unitPrice)}</TableCell>
-                                    <TableCell className="whitespace-nowrap text-right font-medium">{formatCOP(item.total)}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </div>
-            </div>
-
-            {/* Summary */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Card className="p-4" decoration="top" decorationColor="blue">
-                    <Text className="text-sm font-medium text-gray-600">Total</Text>
-                    <Metric className="text-2xl font-bold text-blue-600 mt-2">{formatCOP(invoice.amount)}</Metric>
-                </Card>
-                <Card className="p-4" decoration="top" decorationColor="green">
-                    <Text className="text-sm font-medium text-gray-600">Pagado</Text>
-                    <Metric className="text-2xl font-bold text-green-600 mt-2">{formatCOP(invoice.paidAmount)}</Metric>
-                </Card>
-                <Card className="p-4" decoration="top" decorationColor="red">
-                    <Text className="text-sm font-medium text-gray-600">Saldo</Text>
-                    <Metric className="text-2xl font-bold text-red-600 mt-2">{formatCOP(balance)}</Metric>
-                </Card>
-            </div>
-
-            {/* New payment */}
-            {canPay && (
-                <form onSubmit={handleSubmit(onAddPayment)} className="bg-white rounded-lg shadow-sm overflow-hidden">
-                    <div className="p-4 sm:p-6 border-b border-gray-200">
-                        <Title className="text-lg font-semibold text-gray-900">Registrar abono o pago</Title>
-                    </div>
-                    <div className="p-4 sm:p-6 space-y-6">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">Monto *</label>
-                                <Controller
-                                    name="amount"
-                                    control={control}
-                                    rules={{
-                                        required: true,
-                                        validate: (value) => parseInt(value) > 0 && parseInt(value) <= balance
-                                    }}
-                                    render={({ field }) => (
-                                        <MoneyInput
-                                            value={field.value ?? ''}
-                                            onValueChange={field.onChange}
-                                            onBlur={field.onBlur}
-                                            error={errors.amount != undefined}
-                                            errorMessage={errors.amount ? `Ingresa un monto entre $ 1 y ${formatCOP(balance)}` : ''}
-                                        />
-                                    )}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">Método de pago *</label>
-                                <Select value={method} onValueChange={setMethod} enableClear={false}>
-                                    {Object.entries(paymentMethodLabels).map(([value, label]) =>
-                                        <SelectItem value={value} key={value}>{label}</SelectItem>
-                                    )}
-                                </Select>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">Fecha</label>
-                                <DatePicker value={date} onValueChange={setDate} locale={es} enableClear={false} />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">Referencia</label>
-                                <TextInput {...register('reference')} placeholder="N° de transferencia, recibo..." />
-                            </div>
-                        </div>
-                        <div className="flex justify-end">
-                            <PrimaryButton text="Registrar pago" disabled={isSubmitting} />
-                        </div>
-                    </div>
-                </form>
             )}
 
-            {/* Payments */}
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div className="p-4 sm:p-6 border-b border-gray-200">
-                    <Title className="text-lg font-semibold">Pagos y abonos</Title>
+            {/* Summary */}
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+                <StatCard label="Total" value={formatCOP(invoice.amount)} icon={<HiOutlineReceiptPercent />} tone="blue" />
+                <StatCard label="Pagado" value={formatCOP(invoice.paidAmount)} icon={<HiOutlineCheckCircle />} tone="emerald" />
+                <StatCard
+                    className="col-span-2 md:col-span-1"
+                    label="Saldo"
+                    value={formatCOP(balance)}
+                    icon={<HiOutlineBanknotes />}
+                    tone={balance > 0 && isActive ? "red" : "default"}
+                />
+            </div>
+            {isActive && (
+                <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium text-slate-700">Progreso de pago</span>
+                        <span className="tabular-nums text-slate-500">{paidPercent}%</span>
+                    </div>
+                    <div
+                        className="h-2 overflow-hidden rounded-full bg-slate-200"
+                        role="progressbar"
+                        aria-valuenow={paidPercent}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label="Porcentaje pagado"
+                    >
+                        <div className="h-full rounded-full bg-emerald-500 transition-all duration-500" style={{ width: `${paidPercent}%` }} />
+                    </div>
                 </div>
-                <div className="overflow-x-auto">
-                    <Table className="min-w-full">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell className="whitespace-nowrap">Fecha</TableCell>
-                                <TableCell className="whitespace-nowrap">Monto</TableCell>
-                                <TableCell className="whitespace-nowrap hidden sm:table-cell">Método</TableCell>
-                                <TableCell className="whitespace-nowrap hidden sm:table-cell">Referencia</TableCell>
-                                <TableCell className="whitespace-nowrap">Acciones</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {invoice.payments.map((payment) => (
-                                <TableRow key={payment.id}>
-                                    <TableCell className="whitespace-nowrap">{formatDate(payment.date)}</TableCell>
-                                    <TableCell className="whitespace-nowrap font-medium">{formatCOP(payment.amount)}</TableCell>
-                                    <TableCell className="whitespace-nowrap hidden sm:table-cell">{paymentMethodLabels[payment.method]}</TableCell>
-                                    <TableCell className="hidden sm:table-cell">{payment.reference ?? '-'}</TableCell>
-                                    <TableCell>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleDeletePayment(payment.id)}
-                                            disabled={busy}
-                                            className="min-h-[44px] inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white text-sm font-medium rounded-md transition-colors duration-200"
-                                        >
-                                            {pendingDelete === payment.id ? '¿Confirmar?' : 'Eliminar'}
-                                        </button>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+            )}
+
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
+                <div className="space-y-6 min-w-0">
+                    {/* Products */}
+                    <Panel title="Productos" flush>
+                        <Table>
+                            <THead>
+                                <TH>Producto</TH>
+                                <TH align="right">Cantidad</TH>
+                                <TH align="right" className="hidden sm:table-cell">Precio unitario</TH>
+                                <TH align="right">Total</TH>
+                            </THead>
+                            <TBody>
+                                {invoice.items.map((item, index) => (
+                                    <TR key={index}>
+                                        <TD>
+                                            <p className="font-medium text-slate-900">{item.name}</p>
+                                            <p className="text-xs text-slate-500 sm:hidden">{formatCOP(item.unitPrice)} / {item.unit}</p>
+                                        </TD>
+                                        <TD align="right" className="whitespace-nowrap tabular-nums">{formatQuantity(item.quantity)} {item.unit}</TD>
+                                        <TD align="right" className="hidden whitespace-nowrap tabular-nums sm:table-cell">{formatCOP(item.unitPrice)}</TD>
+                                        <TD align="right" className="whitespace-nowrap tabular-nums font-medium text-slate-900">{formatCOP(item.total)}</TD>
+                                    </TR>
+                                ))}
+                            </TBody>
+                        </Table>
+                        <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50/60 px-4 py-3 sm:px-6">
+                            <span className="text-sm font-semibold text-slate-700">Total factura</span>
+                            <span className="text-lg font-bold tabular-nums text-slate-900">{formatCOP(invoice.amount)}</span>
+                        </div>
+                        {invoice.notes && (
+                            <div className="border-t border-slate-100 px-4 py-3 text-sm text-slate-600 sm:px-6">
+                                <span className="font-medium text-slate-700">Notas: </span>{invoice.notes}
+                            </div>
+                        )}
+                    </Panel>
+
+                    {/* Payments */}
+                    <Panel title="Pagos y abonos" description={invoice.payments.length > 0 ? `${invoice.payments.length} registrado(s)` : undefined} flush>
+                        {invoice.payments.length > 0 ? (
+                            <Table>
+                                <THead>
+                                    <TH>Fecha</TH>
+                                    <TH className="hidden sm:table-cell">Método</TH>
+                                    <TH className="hidden md:table-cell">Referencia</TH>
+                                    <TH align="right">Monto</TH>
+                                    <TH align="right"><span className="sr-only">Acciones</span></TH>
+                                </THead>
+                                <TBody>
+                                    {invoice.payments.map((payment) => (
+                                        <TR key={payment.id}>
+                                            <TD className="whitespace-nowrap">
+                                                <p className="text-slate-900">{formatDate(payment.date)}</p>
+                                                <p className="text-xs text-slate-500 sm:hidden">
+                                                    {paymentMethodLabels[payment.method]}{payment.reference ? ` · ${payment.reference}` : ''}
+                                                </p>
+                                            </TD>
+                                            <TD className="hidden sm:table-cell">{paymentMethodLabels[payment.method]}</TD>
+                                            <TD className="hidden text-slate-500 md:table-cell">{payment.reference ?? '—'}</TD>
+                                            <TD align="right" className="whitespace-nowrap tabular-nums font-semibold text-emerald-700">{formatCOP(payment.amount)}</TD>
+                                            <TD align="right">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setPendingAction({ type: 'deletePayment', paymentId: payment.id, amount: payment.amount })}
+                                                    aria-label="Eliminar pago"
+                                                    title="Eliminar pago"
+                                                    className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 pointer-coarse:h-11 pointer-coarse:w-11"
+                                                >
+                                                    <HiOutlineTrash className="h-5 w-5" />
+                                                </button>
+                                            </TD>
+                                        </TR>
+                                    ))}
+                                </TBody>
+                            </Table>
+                        ) : (
+                            <EmptyState
+                                icon={<HiOutlineCreditCard />}
+                                title="Sin pagos registrados"
+                                description={canPay ? "Registra un abono o el pago total con el formulario." : undefined}
+                            />
+                        )}
+                    </Panel>
                 </div>
 
-                {invoice.payments.length === 0 && (
-                    <div className="p-8 text-center">
-                        <Text className="text-gray-500">No hay pagos registrados</Text>
-                    </div>
+                {/* New payment */}
+                {canPay && (
+                    <form onSubmit={handleSubmit(onAddPayment)} noValidate className="xl:sticky xl:top-6 xl:self-start">
+                        <Panel
+                            title="Registrar abono o pago"
+                            description={`Saldo pendiente: ${formatCOP(balance)}`}
+                            footer={
+                                <Button type="submit" loading={isSubmitting} fullWidth icon={<HiOutlineCheckCircle className="h-5 w-5" />}>
+                                    Registrar pago
+                                </Button>
+                            }
+                        >
+                            <div className="space-y-5">
+                                <Field
+                                    label="Monto"
+                                    required
+                                    error={errors.amount && `Ingresa un monto entre $ 1 y ${formatCOP(balance)}`}
+                                    hint="Si es menor al saldo queda registrado como abono"
+                                >
+                                    <Controller
+                                        name="amount"
+                                        control={control}
+                                        rules={{
+                                            required: true,
+                                            validate: (value) => parseInt(value) > 0 && parseInt(value) <= balance
+                                        }}
+                                        render={({ field }) => (
+                                            <MoneyInput
+                                                value={field.value ?? ''}
+                                                onValueChange={field.onChange}
+                                                onBlur={field.onBlur}
+                                                placeholder="$ 0"
+                                                error={errors.amount != undefined}
+                                            />
+                                        )}
+                                    />
+                                </Field>
+                                <Field label="Método de pago" required>
+                                    <Segmented
+                                        label="Método de pago"
+                                        value={method}
+                                        onChange={setMethod}
+                                        className="w-full [&>button]:flex-1 [&>button]:justify-center"
+                                        options={Object.entries(paymentMethodLabels).map(([value, label]) => ({ value: value as PaymentMethod, label }))}
+                                    />
+                                </Field>
+                                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-1">
+                                    <Field label="Fecha">
+                                        <DatePicker value={date} onValueChange={setDate} locale={es} enableClear={false} />
+                                    </Field>
+                                    <Field label="Referencia" htmlFor="reference">
+                                        <TextInput id="reference" {...register('reference')} placeholder="N° de transferencia, recibo..." />
+                                    </Field>
+                                </div>
+                            </div>
+                        </Panel>
+                    </form>
                 )}
             </div>
+
+            <ConfirmDialog
+                open={pendingAction !== null}
+                onClose={() => !busy && setPendingAction(null)}
+                onConfirm={confirmPendingAction}
+                loading={busy}
+                title={pendingAction?.type === 'void' ? `¿Anular la factura #${invoice.number}?` : '¿Eliminar este pago?'}
+                description={pendingAction?.type === 'void'
+                    ? 'La factura dejará de sumar a la cartera del cliente y no podrá recibir pagos. Esta acción no se puede deshacer.'
+                    : pendingAction?.type === 'deletePayment'
+                        ? `Se eliminará el pago de ${formatCOP(pendingAction.amount)} y el saldo de la factura aumentará en ese valor.`
+                        : undefined}
+                confirmLabel={pendingAction?.type === 'void' ? 'Anular factura' : 'Eliminar pago'}
+            />
         </div>
     )
 }

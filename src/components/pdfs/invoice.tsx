@@ -1,176 +1,65 @@
 "use client";
+import { formatCOP, formatDate, formatQuantity, idTypeLabels } from "@/app/utils/clientInvoice";
 import { ProviderWithProducts } from "@/types/Provider";
-import { PDFViewer, Document, Page, Text, View, Image, StyleSheet, Font, PDFDownloadLink } from "@react-pdf/renderer"
+import { InfoGrid, PdfDocument, PdfDownloadButton, PdfTable, SectionTitle, TotalsBox } from "./theme";
 
 type Props = { provider: ProviderWithProducts, price: number }
 
-Font.register({
-    family: 'Oswald',
-    src: 'https://fonts.gstatic.com/s/oswald/v13/Y_TKV6o8WovbUd3m_X9aAA.ttf'
-});
+// payout statement ("liquidación") of the milk a provider delivered in a period
+export default function PDFView({ provider, price }: Props) {
+    const name = `${provider.firstName} ${provider.lastName}`;
+    const totalLiters = provider.products.reduce((total, product) => total + product.quantity, 0);
+    const dates = provider.products.map((product) => product.createdAt);
+    const period = dates.length ? `${formatDate(dates[0])} - ${formatDate(dates[dates.length - 1])}` : "—";
 
-const styles = StyleSheet.create({
-    body: { paddingHorizontal: 20, paddingVertical: 20 },
-    logo: { width: 120, height: 60 },
-    header: { display: 'flex', flexDirection: 'row', justifyContent: "space-between", alignItems: 'center', marginBottom: 20 },
-    title: { fontSize: 24, textAlign: 'center', marginRight: 50 },
-    date: { fontSize: 12, textAlign: 'right', marginRight: 20 },
-    fieldLabel: { fontSize: 13, fontWeight: 700, marginBottom: 4 },
-    fieldValue: { fontSize: 12, marginBottom: 10 },
-    divider: { border: '1px solid gray', marginBottom: 10 },
-    table: {
-        display: "flex",
-        flexDirection: "column",
-        width: "100%",
-        borderStyle: "solid",
-    },
-    tableRow: {
-        width: '100%',
-        display: "flex",
-        flexDirection: "row",
-        borderStyle: "solid",
-        borderWidth: 1,
-        borderLeftWidth: 1,
-        borderRightWidth: 0,
-        borderTopWidth: 0,
-        borderBottomWidth: 0
-    },
-    tableCol: {
-        fontSize: 13,
-        // fontFamily: 'Oswald',
-        fontWeight: 700,
-        verticalAlign: 'sub',
-        borderTopWidth: 1,
-    },
-    tableCell: {
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        fontSize: 9,
-        fontWeight: 'normal',
-        flex: 1,
-        textAlign: 'center',
-        borderStyle: "solid",
-        borderBottomWidth: 1,
-        borderRightWidth: 1,
-    }
-});
+    const document = (
+        <PdfDocument
+            title={`Liquidación ${name}`}
+            docLabel="Liquidación"
+            meta={[
+                { label: "Período", value: period },
+                { label: "Fecha", value: new Date().toLocaleDateString("es-CO") },
+            ]}
+        >
+            <InfoGrid
+                columns={2}
+                items={[
+                    { label: "Proveedor", value: name },
+                    { label: idTypeLabels[provider.idType], value: new Intl.NumberFormat("es-CO").format(provider.idNum) },
+                    { label: "Teléfono", value: `(+57) ${provider.phone}` },
+                    provider.email && { label: "Correo", value: provider.email },
+                ]}
+            />
 
-export default function PDFView(props: Props) {
-    const getPrice = (amount: number) => {
-        // return price format with millar separator
-        return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(amount);
-    }
+            <SectionTitle>Entregas de leche</SectionTitle>
+            <PdfTable
+                columns={[
+                    { label: "Fecha de ingreso", flex: 1.2 },
+                    { label: "Producto", flex: 1.6 },
+                    { label: "Litros", flex: 1, align: "right" },
+                    { label: "Precio por litro", flex: 1.2, align: "right" },
+                    { label: "Total", flex: 1.2, align: "right" },
+                ]}
+                rows={provider.products.map((product) => [
+                    formatDate(product.createdAt),
+                    "Leche entera",
+                    formatQuantity(product.quantity),
+                    formatCOP(price),
+                    formatCOP(product.quantity * price),
+                ])}
+                footer={["Total", "", `${formatQuantity(totalLiters)} L`, "", formatCOP(totalLiters * price)]}
+                empty="No hay entregas en este período"
+            />
 
-    const getTotalPrice = () => {
-        let total = 0;
-        props.provider.products.forEach(product => {
-            total += props.price * product.quantity;
-        });
+            <TotalsBox
+                rows={[
+                    { label: "Litros entregados", value: `${formatQuantity(totalLiters)} L` },
+                    { label: "Precio por litro", value: formatCOP(price) },
+                    { label: "Total a pagar", value: formatCOP(totalLiters * price), emphasis: true },
+                ]}
+            />
+        </PdfDocument>
+    );
 
-        return getPrice(total);
-    }
-
-    const getTotal = () => {
-        let total = 0;
-        props.provider.products.forEach(product => {
-            total += product.quantity;
-        });
-
-        return total;
-    }
-
-    const getIdNumber = (idNum: number) => {
-        //return with millar point separator
-        return new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(idNum);
-    }
-
-    const getDate = (dateString: Date) => {
-        const date = new Date(dateString);
-        return `${date.toISOString().split('T')[0].split('-').reverse().join('/')}`
-    }
-    const MyDocument = () => (
-        <Document title={`Liquidación ${props.provider.firstName} ${props.provider.lastName}`}>
-            <Page style={styles.body}>
-                <View style={styles.header}>
-                    <Image style={styles.logo} src={'/images/logo.jpg'} />
-                    <Text style={styles.title}> Lácteos La Granja </Text>
-                    <View style={styles.date}>
-                        <Text>{new Date().toLocaleDateString()}</Text>
-                    </View>
-                </View>
-
-                <View style={styles.divider}></View>
-
-                <View style={{ display: 'flex', flexDirection: 'row' }}>
-                    <View>
-                        <View>
-                            <Text style={styles.fieldLabel}>Nombre</Text>
-                            <Text style={styles.fieldValue}>{props.provider.firstName} {props.provider.lastName}</Text>
-                        </View>
-
-                        <View>
-                            <Text style={styles.fieldLabel}>Número de Identificación</Text>
-                            <Text style={styles.fieldValue}>{getIdNumber(props.provider.idNum)}</Text>
-                        </View>
-                    </View>
-
-
-                    <View style={{ marginLeft: 70 }}>
-                        <View>
-                            <Text style={styles.fieldLabel}>Número Telefónico</Text>
-                            <Text style={styles.fieldValue}>(+57) {props.provider.phone}</Text>
-                        </View>
-
-                        <View>
-                            <Text style={styles.fieldLabel}>Correo Electrónico</Text>
-                            <Text style={styles.fieldValue}>{props.provider.email}</Text>
-                        </View>
-                    </View>
-                </View>
-
-                <View style={styles.divider} />
-
-                <View style={styles.table}>
-                    <View style={styles.tableRow}>
-                        <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Producto</Text>
-                        <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Fecha de Ingreso</Text>
-                        <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Cantidad</Text>
-                        <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Precio</Text>
-                        <Text style={{ ...styles.tableCell, ...styles.tableCol }}>Total</Text>
-                    </View>
-
-                    {
-                        props.provider.products.map((product, index) => (
-                            <View style={styles.tableRow} key={index}>
-                                <Text style={styles.tableCell}>Leche entera(Lts)</Text>
-                                <Text style={styles.tableCell}>{getDate(product.createdAt)}</Text>
-                                <Text style={styles.tableCell}>{product.quantity}</Text>
-                                <Text style={styles.tableCell}>{getPrice(props.price)}</Text>
-                                <Text style={styles.tableCell}>{getPrice(product.quantity * props.price)}</Text>
-                            </View>
-                        ))
-                    }
-
-                    <View style={styles.tableRow}>
-                        <Text style={{ ...styles.tableCell }}>Total</Text>
-                        <Text style={{ ...styles.tableCell }}></Text>
-                        <Text style={{ ...styles.tableCell }}>{getTotal()}</Text>
-                        <Text style={{ ...styles.tableCell }}></Text>
-                        <Text style={{ ...styles.tableCell }}>{getTotalPrice()}</Text>
-                    </View>
-                </View>
-
-
-            </Page>
-        </Document>
-    )
-    return (
-        <PDFDownloadLink 
-            // style={{ textDecoration: 'none', color: 'white', backgroundColor: 'green', padding: 10, borderRadius: 5}}
-            className="bg-blue-500 p-2 rounded-md text-white text-center"
-            document={<MyDocument />} 
-            fileName={`Liquidación ${props.provider.firstName} ${props.provider.lastName}.pdf`}
-        >Descargar
-        </PDFDownloadLink>
-    )
+    return <PdfDownloadButton document={document} fileName={`Liquidación ${name}.pdf`} />;
 }

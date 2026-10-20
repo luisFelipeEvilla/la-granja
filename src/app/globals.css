@@ -30,10 +30,6 @@
   /* Ensure touch targets are appropriately sized for touch screens.
      Buttons are sized per component: a global min size on <button> also grows the small
      icon buttons inside Tremor inputs (clear date, remove chip) and overlaps their text */
-  a {
-    min-height: 44px;
-    min-width: 44px;
-  }
 }
 
 @layer components {
@@ -100,6 +96,11 @@
 /* Touch screen (iPad / iPhone) sizing. Kept outside @layer so Tailwind does not drop
    selectors that only appear in node_modules (Tremor) */
 @media (pointer: coarse) {
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
   input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]) {
     min-height: 44px;
   }

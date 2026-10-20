@@ -1,156 +1,127 @@
 "use client";
-import {
-  Card,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Title,
-  Text,
-  TextInput,
-  Metric,
-  Switch
-} from "@tremor/react";
-import { SearchIcon } from "@heroicons/react/outline";
 import { useEffect, useState } from "react";
+import { HiOutlineBanknotes, HiOutlinePlus, HiOutlineUserGroup, HiOutlineUsers } from "react-icons/hi2";
 import { ClientWithSummary } from "@/types/Client";
 import { formatCOP } from "@/app/utils/clientInvoice";
-import Link from "next/link";
-import axios from "axios";
-import toast from "react-hot-toast";
+import { ButtonLink } from "@/components/ui/Button";
+import EmptyState from "@/components/ui/EmptyState";
+import PageHeader from "@/components/ui/PageHeader";
+import Panel from "@/components/ui/Panel";
+import SearchInput from "@/components/ui/SearchInput";
+import Segmented from "@/components/ui/Segmented";
+import { PageSkeleton } from "@/components/ui/Skeleton";
+import StatCard from "@/components/ui/StatCard";
+import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/Table";
+import Badge from "@/components/ui/Badge";
+
+type Filter = "all" | "debt" | "inactive";
 
 export default function Clients() {
-  const [search, setSearch] = useState<string>("");
-  const [clients, setClients] = useState<ClientWithSummary[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<Filter>("all");
+  const [clients, setClients] = useState<ClientWithSummary[]>();
 
   useEffect(() => {
     fetch("/api/clients").then(async (res) => {
-      if (res.ok) setClients(await res.json());
+      setClients(res.ok ? await res.json() : []);
     });
   }, []);
 
+  if (!clients) return <PageSkeleton />;
+
+  const query = search.trim().toLocaleLowerCase();
+  const matchesFilter = (client: ClientWithSummary) =>
+    filter === "debt" ? client.summary.balance > 0 : filter === "inactive" ? !client.active : true;
+
   const filteredClients = clients.filter((client) =>
-    `${client.name} ${client.idNum}`.toLocaleLowerCase().includes(search.toLocaleLowerCase())
+    matchesFilter(client) && `${client.name} ${client.idNum}`.toLocaleLowerCase().includes(query)
   );
 
   const totalBalance = clients.reduce((acc, client) => acc + client.summary.balance, 0);
-
-  const handleChangeClientState = async (client: ClientWithSummary) => {
-    try {
-      setLoading(true);
-      await axios.patch(`/api/clients/${client.id}`, { active: !client.active });
-
-      setClients(clients.map((c) => c.id === client.id ? { ...c, active: !client.active } : c));
-      toast.success("Estado del cliente actualizado correctamente");
-    } catch (error) {
-      console.error(error);
-      toast.error("Error al actualizar el estado del cliente");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const withDebt = clients.filter((client) => client.summary.balance > 0).length;
 
   return (
-    <div className="w-full space-y-6">
-      {/* Header */}
-      <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <Title className="text-2xl sm:text-3xl font-bold text-gray-900">Clientes</Title>
-          <a
-            href="/dashboard/clients/create"
-            className="inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 sm:w-auto w-full"
-          >
-            Agregar Cliente
-          </a>
-        </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Clientes"
+        description="Cuentas por cobrar de los clientes a los que les vendes"
+        actions={<ButtonLink href="/dashboard/clients/create" icon={<HiOutlinePlus className="h-4 w-4" />}>Nuevo cliente</ButtonLink>}
+      />
+
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+        <StatCard label="Clientes" value={clients.length} icon={<HiOutlineUsers />} tone="emerald" />
+        <StatCard label="Con saldo pendiente" value={withDebt} icon={<HiOutlineUserGroup />} tone="amber" />
+        <StatCard
+          className="col-span-2 md:col-span-1"
+          label="Cartera por cobrar"
+          value={formatCOP(totalBalance)}
+          icon={<HiOutlineBanknotes />}
+          tone={totalBalance > 0 ? "red" : "default"}
+        />
       </div>
 
-      {/* Metrics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card className="p-4" decoration="top" decorationColor="green">
-          <Text className="text-sm font-medium text-gray-600">Clientes</Text>
-          <Metric className="text-2xl sm:text-3xl font-bold text-green-600 mt-2">
-            {clients.length}
-          </Metric>
-        </Card>
-        <Card className="p-4" decoration="top" decorationColor="red">
-          <Text className="text-sm font-medium text-gray-600">Cartera por cobrar</Text>
-          <Metric className="text-2xl sm:text-3xl font-bold text-red-600 mt-2">
-            {formatCOP(totalBalance)}
-          </Metric>
-        </Card>
-      </div>
-
-      {/* Search and Table Section */}
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <div className="p-4 sm:p-6 border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-            <Title className="text-lg sm:text-xl font-semibold">Lista de clientes</Title>
-            <TextInput
-              className="w-full sm:w-64"
-              icon={SearchIcon}
-              placeholder="Buscar clientes..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
+      <Panel flush>
+        <div className="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <Segmented
+            label="Filtrar clientes"
+            value={filter}
+            onChange={setFilter}
+            options={[
+              { value: "all", label: "Todos", count: clients.length },
+              { value: "debt", label: "Con saldo", count: withDebt },
+              { value: "inactive", label: "Inactivos", count: clients.filter((client) => !client.active).length },
+            ]}
+          />
+          <SearchInput value={search} onChange={setSearch} placeholder="Buscar por nombre o documento" className="sm:w-72" />
         </div>
 
-        <div className="overflow-x-auto">
-          <Table className="min-w-full">
-            <TableHead>
-              <TableRow>
-                <TableCell className="whitespace-nowrap">Nombre</TableCell>
-                <TableCell className="whitespace-nowrap hidden sm:table-cell">Identificación</TableCell>
-                <TableCell className="whitespace-nowrap hidden md:table-cell">Facturado</TableCell>
-                <TableCell className="whitespace-nowrap">Saldo</TableCell>
-                <TableCell className="whitespace-nowrap">Activo</TableCell>
-                <TableCell className="whitespace-nowrap">Acciones</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
+        {filteredClients.length > 0 ? (
+          <Table>
+            <THead>
+              <TH>Cliente</TH>
+              <TH className="hidden lg:table-cell">Contacto</TH>
+              <TH align="right" className="hidden md:table-cell">Facturado</TH>
+              <TH align="right">Saldo</TH>
+            </THead>
+            <TBody>
               {filteredClients.map((client) => (
-                <TableRow key={client.id}>
-                  <TableCell className="whitespace-nowrap font-medium">
-                    <div className="flex flex-col">
-                      <span>{client.name}</span>
-                      <span className="sm:hidden text-xs text-gray-500">{client.idType} {client.idNum}</span>
+                <TR key={client.id} href={`/dashboard/clients/${client.id}`}>
+                  <TD>
+                    <div className="flex items-center gap-3">
+                      <span className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600 sm:flex">
+                        {client.name.slice(0, 2).toUpperCase()}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="flex items-center gap-2 font-medium text-slate-900">
+                          <span className="truncate">{client.name}</span>
+                          {!client.active && <Badge tone="gray" dot={false}>Inactivo</Badge>}
+                        </p>
+                        <p className="text-xs text-slate-500">{client.idType} {client.idNum}</p>
+                      </div>
                     </div>
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap hidden sm:table-cell">{client.idType} {client.idNum}</TableCell>
-                  <TableCell className="whitespace-nowrap hidden md:table-cell">{formatCOP(client.summary.invoiced)}</TableCell>
-                  <TableCell className={`whitespace-nowrap font-medium ${client.summary.balance > 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                  </TD>
+                  <TD className="hidden lg:table-cell text-slate-500">
+                    {client.phone || client.email || "—"}
+                  </TD>
+                  <TD align="right" className="hidden md:table-cell tabular-nums">{formatCOP(client.summary.invoiced)}</TD>
+                  <TD align="right" className={`tabular-nums font-semibold ${client.summary.balance > 0 ? "text-red-600" : "text-slate-400"}`}>
                     {formatCOP(client.summary.balance)}
-                  </TableCell>
-                  <TableCell>
-                    <Switch
-                      checked={client.active}
-                      onChange={() => handleChangeClientState(client)}
-                      disabled={loading}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Link
-                      href={`/dashboard/clients/${client.id}`}
-                      className="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
-                    >
-                      Ver
-                    </Link>
-                  </TableCell>
-                </TableRow>
+                  </TD>
+                </TR>
               ))}
-            </TableBody>
+            </TBody>
           </Table>
-        </div>
-
-        {filteredClients.length === 0 && (
-          <div className="p-8 text-center">
-            <Text className="text-gray-500">No se encontraron clientes</Text>
-          </div>
+        ) : clients.length === 0 ? (
+          <EmptyState
+            icon={<HiOutlineUsers />}
+            title="Aún no tienes clientes"
+            description="Crea tu primer cliente para empezar a facturarle y llevar su cartera."
+            action={<ButtonLink href="/dashboard/clients/create" icon={<HiOutlinePlus className="h-4 w-4" />}>Nuevo cliente</ButtonLink>}
+          />
+        ) : (
+          <EmptyState icon={<HiOutlineUsers />} title="Sin resultados" description="Ningún cliente coincide con la búsqueda o el filtro." />
         )}
-      </div>
+      </Panel>
     </div>
   );
 }

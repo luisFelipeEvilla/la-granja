@@ -1,32 +1,40 @@
 "use client";
-import { formatCOP, formatDate, getAccountStatement, getInvoiceBalance, getItemsSummary, getPeriodLabel, toDateString } from "@/app/utils/clientInvoice";
+import { formatCOP, formatDate, getAccountStatement, getInvoiceBalance, getItemsSummary, getPeriodLabel, idTypeLabels, toDateString } from "@/app/utils/clientInvoice";
 import { ClientWithInvoices } from "@/types/Client";
-import {
-    Card,
-    DateRangePicker,
-    DateRangePickerValue,
-    Metric,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
-    Text,
-    Title
-} from "@tremor/react";
+import EmptyState from "@/components/ui/EmptyState";
+import PageHeader from "@/components/ui/PageHeader";
+import Panel from "@/components/ui/Panel";
+import { PageSkeleton } from "@/components/ui/Skeleton";
+import StatCard from "@/components/ui/StatCard";
+import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/Table";
+import { DateRangePicker, DateRangePickerItem, DateRangePickerValue } from "@tremor/react";
 import { es } from "date-fns/locale";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import {
+    HiOutlineArrowDownLeft,
+    HiOutlineArrowUpRight,
+    HiOutlineBanknotes,
+    HiOutlineCalendarDays,
+    HiOutlineClock,
+    HiOutlineDocumentText
+} from "react-icons/hi2";
 import toast from "react-hot-toast";
 
 const ClientStatementPDF = dynamic(() => import("@/components/pdfs/clientStatement"), {
     ssr: false
 });
 
+const today = new Date();
+const startOfMonth = (offset = 0) => new Date(today.getFullYear(), today.getMonth() + offset, 1);
+const daysAgo = (days: number) => new Date(today.getFullYear(), today.getMonth(), today.getDate() - days);
+
+// "all" keeps the whole history: no bounds are applied to the statement
+const ALL = 'all';
+
 export default function ClientStatement({ params }: { params: { id: string } }) {
     const [client, setClient] = useState<ClientWithInvoices>();
-    // empty range = the whole history
-    const [dates, setDates] = useState<DateRangePickerValue>({});
+    const [dates, setDates] = useState<DateRangePickerValue>({ selectValue: ALL });
 
     useEffect(() => {
         fetch(`/api/clients/${params.id}`).then(async (res) => {
@@ -35,154 +43,176 @@ export default function ClientStatement({ params }: { params: { id: string } }) 
         });
     }, [params.id]);
 
-    if (!client) return <Text className="text-center text-gray-500">Cargando...</Text>;
+    if (!client) return <PageSkeleton stats={4} />;
 
-    const from = dates.from && toDateString(dates.from);
-    const to = dates.to ? toDateString(dates.to) : from;
+    const isAll = dates.selectValue === ALL || (!dates.from && !dates.to);
+    const from = !isAll && dates.from ? toDateString(dates.from) : undefined;
+    const to = !isAll ? (dates.to ? toDateString(dates.to) : from) : undefined;
     const statement = getAccountStatement(client.invoices, from, to);
 
+    // first invoice date (local calendar day), shown as the start of "Todo el historial"
+    const firstIssue = client.invoices.map((invoice) => new Date(invoice.issueDate).toISOString().slice(0, 10)).sort()[0];
+    const firstDay = firstIssue ? new Date(`${firstIssue}T00:00:00`) : today;
+
     return (
-        <div className="w-full max-w-5xl mx-auto space-y-6">
-            {/* Header */}
-            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-                    <div>
-                        <Title className="text-2xl sm:text-3xl font-bold text-gray-900">Estado de cuenta</Title>
-                        <Text className="mt-1">{client.name} · {client.idType} {client.idNum}</Text>
+        <div className="space-y-6">
+            <PageHeader
+                back={{ href: `/dashboard/clients/${client.id}`, label: client.name }}
+                title="Estado de cuenta"
+                description={`${client.name} · ${idTypeLabels[client.idType]} ${client.idNum}`}
+                actions={<ClientStatementPDF client={client} from={from} to={to} />}
+            />
+
+            {/* Period filter */}
+            <Panel>
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <div className="flex items-center gap-3">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-lg text-slate-500">
+                            <HiOutlineCalendarDays />
+                        </span>
+                        <div>
+                            <p className="text-sm font-semibold text-slate-900">Período</p>
+                            <p className="text-sm text-slate-500">{getPeriodLabel(from, to)}</p>
+                        </div>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                        <a
-                            href={`/dashboard/clients/${client.id}`}
-                            className="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors duration-200"
-                        >
-                            Volver
-                        </a>
-                        <ClientStatementPDF client={client} from={from} to={to} />
-                    </div>
-                </div>
-                <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                    <label className="text-sm font-medium text-gray-700">Período</label>
                     <DateRangePicker
                         value={dates}
-                        onValueChange={setDates}
+                        onValueChange={(value) => setDates(value.selectValue === ALL ? { selectValue: ALL } : value)}
                         locale={es}
-                        placeholder="Todo el historial"
-                        selectPlaceholder="Rango"
-                        className="w-full sm:max-w-md"
-                    />
-                    <Text className="text-sm text-gray-500">{getPeriodLabel(from, to)}</Text>
+                        placeholder="Elegir fechas"
+                        selectPlaceholder="Período"
+                        enableClear={false}
+                        className="w-full max-w-none md:w-auto md:min-w-[26rem] [&>div]:min-w-0 [&_.w-48]:w-auto [&_.w-48]:shrink-0 [&_.w-48]:min-w-[8.5rem] md:[&_.w-48]:w-48"
+                    >
+                        <DateRangePickerItem value="month" from={startOfMonth()} to={today}>Este mes</DateRangePickerItem>
+                        <DateRangePickerItem value="lastMonth" from={startOfMonth(-1)} to={new Date(today.getFullYear(), today.getMonth(), 0)}>Mes anterior</DateRangePickerItem>
+                        <DateRangePickerItem value="90days" from={daysAgo(89)} to={today}>Últimos 90 días</DateRangePickerItem>
+                        <DateRangePickerItem value="year" from={new Date(today.getFullYear(), 0, 1)} to={today}>Este año</DateRangePickerItem>
+                        <DateRangePickerItem value={ALL} from={firstDay} to={today}>Todo el historial</DateRangePickerItem>
+                    </DateRangePicker>
                 </div>
-            </div>
+            </Panel>
 
             {/* Summary */}
-            <div className={`grid grid-cols-2 gap-4 ${from ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
-                {from && (
-                    <Card className="p-4" decoration="top" decorationColor="gray">
-                        <Text className="text-sm font-medium text-gray-600">Saldo anterior</Text>
-                        <Metric className="text-xl sm:text-2xl font-bold text-gray-700 mt-2">{formatCOP(statement.openingBalance)}</Metric>
-                    </Card>
-                )}
-                <Card className="p-4" decoration="top" decorationColor="blue">
-                    <Text className="text-sm font-medium text-gray-600">Facturado</Text>
-                    <Metric className="text-xl sm:text-2xl font-bold text-blue-600 mt-2">{formatCOP(statement.totalCharges)}</Metric>
-                </Card>
-                <Card className="p-4" decoration="top" decorationColor="green">
-                    <Text className="text-sm font-medium text-gray-600">Pagado</Text>
-                    <Metric className="text-xl sm:text-2xl font-bold text-green-600 mt-2">{formatCOP(statement.totalCredits)}</Metric>
-                </Card>
-                <Card className={`p-4 ${from ? '' : 'col-span-2 md:col-span-1'}`} decoration="top" decorationColor="red">
-                    <Text className="text-sm font-medium text-gray-600">Saldo{to ? ` al ${formatDate(to)}` : ''}</Text>
-                    <Metric className="text-xl sm:text-2xl font-bold text-red-600 mt-2">{formatCOP(statement.closingBalance)}</Metric>
-                </Card>
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                <StatCard
+                    label="Saldo anterior"
+                    value={from ? formatCOP(statement.openingBalance) : '—'}
+                    icon={<HiOutlineClock />}
+                    hint={from ? `Antes del ${formatDate(from)}` : 'Sin período seleccionado'}
+                />
+                <StatCard label="Facturado" value={formatCOP(statement.totalCharges)} icon={<HiOutlineArrowUpRight />} tone="blue" />
+                <StatCard label="Pagado" value={formatCOP(statement.totalCredits)} icon={<HiOutlineArrowDownLeft />} tone="emerald" />
+                <StatCard
+                    label={to ? `Saldo al ${formatDate(to)}` : 'Saldo actual'}
+                    value={formatCOP(statement.closingBalance)}
+                    icon={<HiOutlineBanknotes />}
+                    tone={statement.closingBalance > 0 ? "red" : "default"}
+                />
             </div>
 
             {/* Movements */}
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div className="p-4 sm:p-6 border-b border-gray-200">
-                    <Title className="text-lg font-semibold">Movimientos</Title>
-                </div>
-                <div className="overflow-x-auto">
-                    <Table className="min-w-full">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell className="whitespace-nowrap">Fecha</TableCell>
-                                <TableCell className="whitespace-nowrap">Descripción</TableCell>
-                                <TableCell className="whitespace-nowrap text-right hidden sm:table-cell">Cargo</TableCell>
-                                <TableCell className="whitespace-nowrap text-right hidden sm:table-cell">Abono</TableCell>
-                                <TableCell className="whitespace-nowrap text-right">Saldo</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
+            <Panel title="Movimientos" description="Facturas como cargos y pagos como abonos, con el saldo acumulado" flush>
+                {statement.movements.length > 0 || from ? (
+                    <Table>
+                        <THead>
+                            <TH className="hidden sm:table-cell">Fecha</TH>
+                            <TH>Descripción</TH>
+                            <TH align="right" className="hidden sm:table-cell">Cargo</TH>
+                            <TH align="right" className="hidden sm:table-cell">Abono</TH>
+                            <TH align="right">Saldo</TH>
+                        </THead>
+                        <TBody>
                             {from && (
-                                <TableRow>
-                                    <TableCell className="whitespace-nowrap">{formatDate(from)}</TableCell>
-                                    <TableCell className="font-medium">Saldo anterior</TableCell>
-                                    <TableCell className="hidden sm:table-cell" />
-                                    <TableCell className="hidden sm:table-cell" />
-                                    <TableCell className="whitespace-nowrap text-right font-medium">{formatCOP(statement.openingBalance)}</TableCell>
-                                </TableRow>
+                                <TR className="bg-slate-50/60">
+                                    <TD className="hidden whitespace-nowrap text-slate-500 sm:table-cell">{formatDate(from)}</TD>
+                                    <TD className="font-medium text-slate-700">
+                                        Saldo anterior
+                                        <p className="text-xs font-normal text-slate-500 sm:hidden">{formatDate(from)}</p>
+                                    </TD>
+                                    <TD className="hidden sm:table-cell" />
+                                    <TD className="hidden sm:table-cell" />
+                                    <TD align="right" className="whitespace-nowrap tabular-nums font-semibold text-slate-900">{formatCOP(statement.openingBalance)}</TD>
+                                </TR>
                             )}
                             {statement.movements.map((movement, index) => (
-                                <TableRow key={index}>
-                                    <TableCell className="whitespace-nowrap">{formatDate(movement.date)}</TableCell>
-                                    <TableCell className="whitespace-normal min-w-[12rem]">
-                                        {movement.description}
-                                        <div className={`sm:hidden text-xs ${movement.charge ? 'text-blue-600' : 'text-green-600'}`}>
-                                            {movement.charge ? `+ ${formatCOP(movement.charge)}` : `- ${formatCOP(movement.credit)}`}
+                                <TR key={index}>
+                                    <TD className="hidden whitespace-nowrap text-slate-500 sm:table-cell">{formatDate(movement.date)}</TD>
+                                    <TD className="sm:min-w-[12rem]">
+                                        <div className="flex items-start gap-2">
+                                            <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${movement.charge ? 'bg-blue-500' : 'bg-emerald-500'}`} />
+                                            <div className="min-w-0">
+                                                <p className="text-slate-800">{movement.description}</p>
+                                                <p className="text-xs tabular-nums sm:hidden">
+                                                    <span className="text-slate-500">{formatDate(movement.date)} · </span>
+                                                    <span className={`font-semibold ${movement.charge ? 'text-blue-600' : 'text-emerald-600'}`}>
+                                                        {movement.charge ? `+ ${formatCOP(movement.charge)}` : `− ${formatCOP(movement.credit)}`}
+                                                    </span>
+                                                </p>
+                                            </div>
                                         </div>
-                                    </TableCell>
-                                    <TableCell className="whitespace-nowrap text-right hidden sm:table-cell text-blue-600">
+                                    </TD>
+                                    <TD align="right" className="hidden whitespace-nowrap tabular-nums text-blue-600 sm:table-cell">
                                         {movement.charge ? formatCOP(movement.charge) : ''}
-                                    </TableCell>
-                                    <TableCell className="whitespace-nowrap text-right hidden sm:table-cell text-green-600">
+                                    </TD>
+                                    <TD align="right" className="hidden whitespace-nowrap tabular-nums text-emerald-600 sm:table-cell">
                                         {movement.credit ? formatCOP(movement.credit) : ''}
-                                    </TableCell>
-                                    <TableCell className="whitespace-nowrap text-right font-medium">{formatCOP(movement.balance)}</TableCell>
-                                </TableRow>
+                                    </TD>
+                                    <TD align="right" className="whitespace-nowrap tabular-nums font-semibold text-slate-900">{formatCOP(movement.balance)}</TD>
+                                </TR>
                             ))}
-                        </TableBody>
+                        </TBody>
                     </Table>
-                </div>
-
+                ) : null}
                 {statement.movements.length === 0 && (
-                    <div className="p-8 text-center">
-                        <Text className="text-gray-500">No hay movimientos en este período</Text>
+                    <EmptyState
+                        icon={<HiOutlineDocumentText />}
+                        title="Sin movimientos en este período"
+                        description="Elige otro rango de fechas o revisa todo el historial."
+                    />
+                )}
+                {statement.movements.length > 0 && (
+                    <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50/60 px-4 py-3 sm:px-6">
+                        <span className="text-sm font-semibold text-slate-700">{to ? `Saldo al ${formatDate(to)}` : 'Saldo actual'}</span>
+                        <span className={`text-lg font-bold tabular-nums ${statement.closingBalance > 0 ? 'text-red-600' : 'text-slate-900'}`}>
+                            {formatCOP(statement.closingBalance)}
+                        </span>
                     </div>
                 )}
-            </div>
+            </Panel>
 
             {/* Pending invoices */}
             {statement.pendingInvoices.length > 0 && (
-                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                    <div className="p-4 sm:p-6 border-b border-gray-200">
-                        <Title className="text-lg font-semibold">Facturas pendientes de pago</Title>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <Table className="min-w-full">
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell className="whitespace-nowrap">Factura</TableCell>
-                                    <TableCell className="whitespace-nowrap hidden md:table-cell">Productos</TableCell>
-                                    <TableCell className="whitespace-nowrap text-right hidden sm:table-cell">Total</TableCell>
-                                    <TableCell className="whitespace-nowrap text-right">Saldo</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {statement.pendingInvoices.map((invoice) => (
-                                    <TableRow key={invoice.number}>
-                                        <TableCell className="whitespace-nowrap font-medium">
-                                            #{invoice.number}
-                                            <div className="text-xs text-gray-500">{formatDate(invoice.issueDate)}</div>
-                                        </TableCell>
-                                        <TableCell className="hidden md:table-cell max-w-xs truncate">{getItemsSummary(invoice.items)}</TableCell>
-                                        <TableCell className="whitespace-nowrap text-right hidden sm:table-cell">{formatCOP(invoice.amount)}</TableCell>
-                                        <TableCell className="whitespace-nowrap text-right font-medium text-red-600">{formatCOP(getInvoiceBalance(invoice))}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </div>
+                <Panel title="Facturas pendientes de pago" description="De la más antigua a la más reciente" flush>
+                    <Table>
+                        <THead>
+                            <TH>Factura</TH>
+                            <TH className="hidden md:table-cell">Productos</TH>
+                            <TH align="right" className="hidden sm:table-cell">Total</TH>
+                            <TH align="right" className="hidden sm:table-cell">Pagado</TH>
+                            <TH align="right">Saldo</TH>
+                        </THead>
+                        <TBody>
+                            {statement.pendingInvoices.map((invoice) => {
+                                const invoiceId = client.invoices.find((clientInvoice) => clientInvoice.number === invoice.number)?.id;
+                                return (
+                                    <TR key={invoice.number} href={invoiceId && `/dashboard/clients/${client.id}/invoices/${invoiceId}`}>
+                                        <TD className="whitespace-nowrap">
+                                            <p className="font-semibold text-slate-900">#{invoice.number}</p>
+                                            <p className="text-xs text-slate-500">{formatDate(invoice.issueDate)}</p>
+                                        </TD>
+                                        <TD className="hidden max-w-xs md:table-cell">
+                                            <p className="truncate text-slate-600">{getItemsSummary(invoice.items)}</p>
+                                        </TD>
+                                        <TD align="right" className="hidden whitespace-nowrap tabular-nums sm:table-cell">{formatCOP(invoice.amount)}</TD>
+                                        <TD align="right" className="hidden whitespace-nowrap tabular-nums text-emerald-600 sm:table-cell">{formatCOP(invoice.paidAmount)}</TD>
+                                        <TD align="right" className="whitespace-nowrap tabular-nums font-semibold text-red-600">{formatCOP(getInvoiceBalance(invoice))}</TD>
+                                    </TR>
+                                );
+                            })}
+                        </TBody>
+                    </Table>
+                </Panel>
             )}
         </div>
     )

@@ -16,18 +16,16 @@ export default function LinkButton({ link, active, onNavigate }: Props) {
         href={link.href}
         onClick={onNavigate}
         aria-current={active ? "page" : undefined}
+        title={link.label}
         className={`
-          flex items-center rounded-lg transition-colors duration-200
-          px-4 py-3 md:flex-col md:px-1 md:py-2 lg:flex-row lg:px-4 lg:py-3
-          ${active ? "bg-slate-700 text-white" : "text-gray-100 hover:bg-slate-800 active:bg-slate-800"}
+          group relative flex items-center gap-3 rounded-lg text-sm font-medium transition-colors duration-150
+          px-3 py-2.5 md:flex-col md:gap-1 md:px-1 md:py-2 lg:flex-row lg:gap-3 lg:px-3 lg:py-2.5
+          ${active ? "bg-white/10 text-white" : "text-slate-400 hover:bg-white/5 hover:text-white"}
         `}
       >
-        <span className="flex-shrink-0">
-          {link.icon}
-        </span>
-        <span className="ml-3 text-sm font-medium md:ml-0 md:mt-1 md:text-[11px] md:leading-tight md:text-center lg:ml-3 lg:mt-0 lg:text-sm lg:text-left">
-          {link.label}
-        </span>
+        {active && <span className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-emerald-400 md:hidden lg:block" />}
+        <span className={active ? "text-emerald-400" : "text-slate-500 group-hover:text-slate-300"}>{link.icon}</span>
+        <span className="md:text-center md:text-[11px] md:leading-tight lg:text-left lg:text-sm">{link.label}</span>
       </NextLink>
     </li>
   );

@@ -1,173 +1,146 @@
 "use client";
-import {
-  Card,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Title,
-  Text,
-  TextInput,
-  Metric,
-  BarChart,
-  Badge,
-  Switch
-} from "@tremor/react";
-import { SearchIcon } from "@heroicons/react/outline";
+import { Switch } from "@tremor/react";
 import { useEffect, useState } from "react";
 import { Provider } from "@prisma/client";
-import { ProviderWithProducts } from "@/types/Provider";
-import Link from "next/link";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { HiOutlineCheckCircle, HiOutlinePauseCircle, HiOutlinePlus, HiOutlineTruck } from "react-icons/hi2";
+import { ButtonLink } from "@/components/ui/Button";
+import EmptyState from "@/components/ui/EmptyState";
+import PageHeader from "@/components/ui/PageHeader";
+import Panel from "@/components/ui/Panel";
+import SearchInput from "@/components/ui/SearchInput";
+import Segmented from "@/components/ui/Segmented";
+import { PageSkeleton } from "@/components/ui/Skeleton";
+import StatCard from "@/components/ui/StatCard";
+import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/Table";
+
+type Filter = "all" | "active" | "inactive";
 
 export default function Providers() {
-  const [search, setSearch] = useState<string>("");
-  const [providers, setProviders] = useState<Provider[]>([]);
-  const [filteredProviders, setFilteredProviders] = useState<Provider[]>([]);
-  const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<Filter>("all");
+  const [providers, setProviders] = useState<Provider[]>();
+  const [updating, setUpdating] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/providers").then(async (res) => {
-      const data = await res.json();
-      setProviders(data);
-
-      const aux = data.map((provider: ProviderWithProducts) => {
-        const cantidad = provider.products.reduce(
-          (acc, product) => acc + product.quantity,
-          0
-        );
-        return {
-          provider: `${provider.firstName} ${provider.lastName}`,
-          Cantidad: cantidad,
-        };
-      });
-
-      setProducts(aux);
+      setProviders(res.ok ? await res.json() : []);
     });
-  });
+  }, []);
 
-  useEffect(() => {
-    const filtered = providers.filter((provider) =>
-      `${provider.firstName} ${provider.lastName}`
-        .toLocaleLowerCase()
-        .includes(search)
-    );
-    setFilteredProviders(filtered);
-  }, [search, providers]);
+  if (!providers) return <PageSkeleton />;
 
   const handleChangeProviderState = async (provider: Provider) => {
+    const active = !provider.active;
     try {
-        setLoading(true);
-        provider.active = !provider.active
+      setUpdating(provider.id);
+      await axios.patch(`/api/providers/${provider.id}`, { active });
 
-        const res = await axios.patch(`/api/providers/${provider.id}`, { active: provider.active });
-
-        toast.success("Estado del Proveedor actualizado correctamente");
+      setProviders(providers.map((p) => p.id === provider.id ? { ...p, active } : p));
+      toast.success(active ? "Proveedor activado" : "Proveedor desactivado");
     } catch (error) {
-        console.error(error);
-        toast.error("Error al actualizar el estado del Proveedor");
+      console.error(error);
+      toast.error("Error al actualizar el estado del proveedor");
     } finally {
-        setLoading(false);
+      setUpdating(null);
     }
-   
   }
 
+  const activeCount = providers.filter((provider) => provider.active).length;
+  const query = search.trim().toLocaleLowerCase();
+  const filteredProviders = providers.filter((provider) =>
+    (filter === "active" ? provider.active : filter === "inactive" ? !provider.active : true) &&
+    `${provider.firstName} ${provider.lastName} ${provider.idNum} ${provider.phone}`.toLocaleLowerCase().includes(query)
+  );
+
   return (
-    <div className="w-full space-y-6">
-      {/* Header */}
-      <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <Title className="text-2xl sm:text-3xl font-bold text-gray-900">Proveedores</Title>
-          <a
-            href="/dashboard/providers/create"
-            className="inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 sm:w-auto w-full"
-          >
-            Agregar Proveedor
-          </a>
-        </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Proveedores"
+        description="Productores que entregan leche a la planta"
+        actions={<ButtonLink href="/dashboard/providers/create" icon={<HiOutlinePlus className="h-4 w-4" />}>Nuevo proveedor</ButtonLink>}
+      />
+
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+        <StatCard label="Proveedores" value={providers.length} icon={<HiOutlineTruck />} tone="emerald" />
+        <StatCard label="Activos" value={activeCount} icon={<HiOutlineCheckCircle />} tone="blue" hint="Aparecen en la planilla" />
+        <StatCard className="col-span-2 md:col-span-1" label="Inactivos" value={providers.length - activeCount} icon={<HiOutlinePauseCircle />} />
       </div>
 
-      {/* Metrics Card */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card className="p-4" decoration="top" decorationColor="green">
-          <Text className="text-sm font-medium text-gray-600">Proveedores activos</Text>
-          <Metric className="text-2xl sm:text-3xl font-bold text-green-600 mt-2">
-            {providers.length}
-          </Metric>
-        </Card>
-      </div>
-
-      {/* Search and Table Section */}
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <div className="p-4 sm:p-6 border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-            <Title className="text-lg sm:text-xl font-semibold">Lista de proveedores</Title>
-            <TextInput
-              className="w-full sm:w-64"
-              icon={SearchIcon}
-              placeholder="Buscar proveedores..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
+      <Panel flush>
+        <div className="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <Segmented
+            label="Filtrar proveedores"
+            value={filter}
+            onChange={setFilter}
+            options={[
+              { value: "all", label: "Todos", count: providers.length },
+              { value: "active", label: "Activos", count: activeCount },
+              { value: "inactive", label: "Inactivos", count: providers.length - activeCount },
+            ]}
+          />
+          <SearchInput value={search} onChange={setSearch} placeholder="Buscar por nombre, documento o teléfono" className="sm:w-80" />
         </div>
 
-        {/* Table Container with horizontal scroll */}
-        <div className="overflow-x-auto">
-          <Table className="min-w-full">
-            <TableHead>
-              <TableRow>
-                <TableCell className="whitespace-nowrap">Nombre</TableCell>
-                <TableCell className="whitespace-nowrap hidden sm:table-cell">Teléfono</TableCell>
-                <TableCell className="whitespace-nowrap hidden lg:table-cell">Correo</TableCell>
-                <TableCell className="whitespace-nowrap">Estado</TableCell>
-                <TableCell className="whitespace-nowrap">Acciones</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredProviders.map((provider, index) => (
-                <TableRow key={index}>
-                  <TableCell className="whitespace-nowrap font-medium">
-                    <div className="flex flex-col">
-                      <span>{provider.firstName} {provider.lastName}</span>
-                      <span className="lg:hidden text-xs text-gray-500">{provider.email}</span>
-                      <span className="sm:hidden text-xs text-gray-500">{provider.phone}</span>
+        {filteredProviders.length > 0 ? (
+          <Table>
+            <THead>
+              <TH>Proveedor</TH>
+              <TH className="hidden md:table-cell">Teléfono</TH>
+              <TH className="hidden lg:table-cell">Correo</TH>
+              <TH align="right">Activo</TH>
+            </THead>
+            <TBody>
+              {filteredProviders.map((provider) => (
+                <TR key={provider.id} href={`/dashboard/providers/${provider.id}`}>
+                  <TD>
+                    <div className="flex items-center gap-3">
+                      <span className={`hidden h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold sm:flex
+                        ${provider.active ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
+                        {`${provider.firstName.charAt(0)}${provider.lastName.charAt(0)}`.toUpperCase()}
+                      </span>
+                      <div className="min-w-0">
+                        <p className={`truncate font-medium ${provider.active ? "text-slate-900" : "text-slate-500"}`}>
+                          {provider.firstName} {provider.lastName}
+                        </p>
+                        <p className="truncate text-xs text-slate-500">
+                          {provider.idType} {provider.idNum}
+                          <span className="md:hidden"> · {provider.phone}</span>
+                        </p>
+                        {provider.email && <p className="truncate text-xs text-slate-500 lg:hidden">{provider.email}</p>}
+                      </div>
                     </div>
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap hidden sm:table-cell">{provider.phone}</TableCell>
-                  <TableCell className="whitespace-nowrap hidden lg:table-cell text-gray-600">
-                    {provider.email}
-                  </TableCell>
-                  <TableCell>
-                    <Switch 
-                      checked={provider.active} 
-                      onChange={() => handleChangeProviderState(provider)}
-                      disabled={loading}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Link
-                      href={`/dashboard/providers/${provider.id}`}
-                      className="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
-                    >
-                      Editar
-                    </Link>
-                  </TableCell>
-                </TableRow>
+                  </TD>
+                  <TD className="hidden md:table-cell tabular-nums">{provider.phone}</TD>
+                  <TD className="hidden lg:table-cell text-slate-500">{provider.email || "—"}</TD>
+                  <TD align="right">
+                    {/* toggling must not open the provider */}
+                    <div className="inline-flex justify-end" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+                      <Switch
+                        checked={provider.active}
+                        onChange={() => handleChangeProviderState(provider)}
+                        disabled={updating === provider.id}
+                        color="emerald"
+                        aria-label={provider.active ? "Desactivar proveedor" : "Activar proveedor"}
+                      />
+                    </div>
+                  </TD>
+                </TR>
               ))}
-            </TableBody>
+            </TBody>
           </Table>
-        </div>
-
-        {filteredProviders.length === 0 && (
-          <div className="p-8 text-center">
-            <Text className="text-gray-500">No se encontraron proveedores</Text>
-          </div>
+        ) : providers.length === 0 ? (
+          <EmptyState
+            icon={<HiOutlineTruck />}
+            title="Aún no tienes proveedores"
+            description="Registra a los productores que entregan leche para llevar su planilla."
+            action={<ButtonLink href="/dashboard/providers/create" icon={<HiOutlinePlus className="h-4 w-4" />}>Nuevo proveedor</ButtonLink>}
+          />
+        ) : (
+          <EmptyState icon={<HiOutlineTruck />} title="Sin resultados" description="Ningún proveedor coincide con la búsqueda o el filtro." />
         )}
-      </div>
+      </Panel>
     </div>
   );
 }

@@ -1,23 +1,18 @@
 "use client";
-import {
-  Card,
-  Metric,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  TextInput,
-  Text,
-  Title,
-} from "@tremor/react";
-import PrimaryButton from "../../../components/buttons/PrimaryButton";
-import { KeyboardEvent, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { MilkRouteLog, Product, ProductLog, Provider, user_role } from "@prisma/client";
 import { MilkRouteLogWithProvider } from "@/types/Product";
 import { toast } from "react-hot-toast";
 import axios from "axios";
+import { HiOutlineChartBar } from "react-icons/hi2";
 import { AuthContext } from "@/contexts/AuthContext";
+import Button from "@/components/ui/Button";
+import PageHeader from "@/components/ui/PageHeader";
+import Panel from "@/components/ui/Panel";
+import SearchInput from "@/components/ui/SearchInput";
+import StatCard from "@/components/ui/StatCard";
+import { PageSkeleton } from "@/components/ui/Skeleton";
+import MilkSheetList, { SheetProgress } from "@/components/dashboard/MilkSheetList";
 
 // today's local calendar day at UTC midnight, the format the sheets API uses
 const today = () => {
@@ -25,46 +20,32 @@ const today = () => {
   return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
 };
 
-// numeric keyboard on iPad/iPhone, select the value on tap so typing replaces the 0,
-// and the keyboard "next" key moves to the following row instead of submitting the form
-const quantityInputProps = {
-  inputMode: "numeric" as const,
-  enterKeyHint: "next" as const,
-  onFocus: (e: any) => e.target.select(),
-  onKeyDown: (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key !== "Enter") return;
-    e.preventDefault();
-
-    const inputs = Array.from(document.querySelectorAll<HTMLInputElement>("input[data-quantity]"));
-    const next = inputs[inputs.indexOf(e.currentTarget) + 1];
-    next ? next.focus() : e.currentTarget.blur();
-  },
-  "data-quantity": true,
-};
+const formatLiters = (value: number) => `${new Intl.NumberFormat("es-CO").format(value)} L`;
 
 export default function Sheet() {
   const [providers, setProviders] = useState<Provider[]>([]);
   const [milkSheet, setMilkSheet] = useState<MilkRouteLogWithProvider[]>([]);
   const [date, setDate] = useState<Date>(today);
-  const [total, setTotal] = useState<number>(0);
   const [saving, setSaving] = useState<boolean>(false);
+  const [loaded, setLoaded] = useState<boolean>(false);
+  const [search, setSearch] = useState("");
 
   const [products, setProducts] = useState<Product[]>([]);
   const [productsSheet, setProductsSheet] = useState<ProductLog[]>([]);
 
   const { user } = useContext(AuthContext);
+  const readOnly = user?.role === user_role.USER;
 
   useEffect(() => {
     fetchData();
   }, []);
 
   useEffect(() => {
-    fetchSheet();
+    if (providers.length > 0) fetchSheet();
   }, [date, providers]);
 
   async function fetchData() {
     try {
-      // fetch providers data
       const [providersRequest, products] = await Promise.all([
         axios.get("/api/providers"),
         axios.get("/api/products"),
@@ -75,87 +56,45 @@ export default function Sheet() {
       );
       setProviders(activeProviders);
 
-      const aux = activeProviders.map((provider: Provider) => {
-        return { providerId: provider.id, quantity: 0 };
-      });
-      setMilkSheet(aux);
+      setMilkSheet(activeProviders.map((provider: Provider) => ({ providerId: provider.id, quantity: 0 })));
 
       setProducts(products.data);
-
-      const auxProducts = products.data.map((product: Product) => {
-        return { productId: product.id, quantity: 0 };
-      });      
-
-      setProductsSheet(auxProducts);
+      setProductsSheet(products.data.map((product: Product) => ({ productId: product.id, quantity: 0 })));
     } catch (error) {
       console.error(error);
-      toast.error("Error al cargar los productos");
+      toast.error("Error al cargar los proveedores");
+    } finally {
+      setLoaded(true);
     }
   }
 
   const fetchSheet = async () => {
     try {
       const realDate = date.toISOString().split("T")[0];
+      const MilkLogs = await axios.get(`/api/sheets?date=${realDate}`);
 
-      const [MilkLogs] = await Promise.all([
-        axios.get(`/api/sheets?date=${realDate}`),
-        // axios.get(`/api/productLog?date=${realDate}`)
-      ]);
-  
-      // update sheet with products
-      const newSheet = milkSheet.map((product) => {
-        const newProduct = MilkLogs.data.find(
-          (p: MilkRouteLog) => p.providerId === product.providerId
-        );
-        return newProduct
-          ? { ...product, quantity: newProduct.quantity }
-          : { ...product, quantity: 0 };
-      });
-      setMilkSheet(newSheet);
-
-
-      // update product sheet
-      // const newProductSheet = productsSheet.map((product) => {
-      //   const newProduct = productsLogs.data.find(
-      //     (p: ProductLog) => p.productId === product.productId
-      //   );
-      //   return newProduct
-      //     ? { ...product, quantity: newProduct.quantity }
-      //     : { ...product, quantity: 0 };
-      // });
-
-      // setProductsSheet(newProductSheet);
+      // update sheet with the saved quantities of that day (functional update: the request may
+      // finish after the providers were loaded, so never map over a stale copy of the sheet)
+      setMilkSheet((current) => current.map((product) => {
+        const saved = MilkLogs.data.find((p: MilkRouteLog) => p.providerId === product.providerId);
+        return { ...product, quantity: saved ? saved.quantity : 0 };
+      }));
     } catch (error) {
       console.error(error);
       toast.error("Error al cargar la planilla");
     }
-    
   };
 
-  const handleDateChange = async (e: any) => {
+  const handleDateChange = (e: any) => {
     if (!e.target.value) return;
     setDate(new Date(e.target.value));
   };
 
-  const handleQuantityChange = (e: any, id: string) => {
-    const quantity = parseInt(e.target.value || "0");
-
-    const newSheet = milkSheet.map((product) =>
+  const handleQuantityChange = (id: string, quantity: number) => {
+    setMilkSheet((current) => current.map((product) =>
       product.providerId === id ? { ...product, quantity } : product
-    );
-
-    setMilkSheet(newSheet);
+    ));
   };
-
-  const handleProductQuantityChange = (e: any, id: string) => {
-    const quantity = parseInt(e.target.value || "0");
-
-    const newSheet = productsSheet.map((product) =>
-      product.productId === id ? { ...product, quantity } : product
-    );
-
-    setProductsSheet(newSheet);
-  }
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -167,17 +106,10 @@ export default function Sheet() {
     const aux = date.toISOString().split("T")[0];
 
     try {
-      const milkSheetRequest = await axios.post("/api/sheets", {
+      await axios.post("/api/sheets", {
         date: new Date(aux),
         products: milkSheet,
       });
-
-      // const productsSheetRequest = await axios.post("/api/productLog", {
-      //   date: new Date(aux),
-      //   products: productsSheet,
-      // });
-
-      // console.log(productsSheetRequest.status)
 
       toast.success("Planilla guardada con éxito");
     } catch (error) {
@@ -188,177 +120,61 @@ export default function Sheet() {
     }
   };
 
+  if (!loaded) return <PageSkeleton stats={2} rows={8} />;
+
+  const rows = milkSheet.map((product) => {
+    const provider = providers.find((provider) => provider.id === product.providerId);
+    return { id: product.providerId, name: `${provider?.firstName ?? ""} ${provider?.lastName ?? ""}`.trim(), quantity: product.quantity };
+  });
+  const totalLiters = milkSheet.reduce((acc, product) => acc + product.quantity, 0);
+
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <Title className="text-2xl sm:text-3xl font-bold text-gray-900">Planillas de Recolección</Title>
-          <div className="flex items-center gap-2">
-            <Text className="text-sm font-medium text-gray-600">Fecha:</Text>
+    <div className="space-y-6">
+      <PageHeader
+        title="Planilla de recolección"
+        description="Litros de leche recibidos de cada proveedor en el día"
+        actions={
+          <label className="flex items-center gap-2 text-sm font-medium text-slate-600">
+            Fecha
             <input
               type="date"
               value={date.toISOString().split("T")[0]}
               onChange={handleDateChange}
-              disabled={user?.role === user_role.USER}
-              className="min-h-[44px] px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={readOnly}
+              className="h-11 rounded-lg border-0 bg-white px-3 text-sm font-medium text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:bg-slate-50 disabled:text-slate-500"
             />
-          </div>
-        </div>
+          </label>
+        }
+      />
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <StatCard label="Total del día" value={formatLiters(totalLiters)} icon={<HiOutlineChartBar />} tone="emerald" />
+        <SheetProgress rows={rows} />
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* rendered as plain calls (not <MilkLogTable />) so the inputs keep focus while typing */}
-        {MilkLogTable()}
-        {/* {ProductionLogTable()} */}
+        <Panel
+          flush
+          title="Proveedores"
+          description={readOnly ? "Solo lectura" : "Toca un campo y usa “Siguiente” en el teclado para pasar al próximo proveedor"}
+          actions={<SearchInput value={search} onChange={setSearch} placeholder="Buscar proveedor" className="w-full sm:w-64" />}
+        >
+          <MilkSheetList rows={rows} onChange={handleQuantityChange} disabled={readOnly} search={search} />
+        </Panel>
 
         {/* save button stays reachable at the bottom of long sheets */}
-        <div className="sticky bottom-0 z-10 -mx-4 sm:mx-0 px-4 py-3 sm:rounded-lg bg-white/90 backdrop-blur border-t border-gray-200 shadow-[0_-2px_8px_rgba(0,0,0,0.05)] safe-bottom">
-          <div className="flex items-center justify-between gap-4 max-w-6xl mx-auto">
-            <Text className="text-sm text-gray-600">
-              Total: <span className="font-bold text-green-600">{milkSheet.reduce((acc, product) => acc + product.quantity, 0)} L</span>
-            </Text>
-            <PrimaryButton
-              text={saving ? "Guardando..." : "Guardar Planilla"}
-              disabled={saving}
-              className="sm:w-auto w-auto"
-            />
+        <div className="sticky bottom-0 z-10 -mx-4 border-t border-slate-200 bg-white/90 px-4 py-3 backdrop-blur safe-bottom sm:mx-0 sm:rounded-xl sm:border sm:shadow-lg">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Total</p>
+              <p className="text-xl font-bold tabular-nums text-slate-900">{formatLiters(totalLiters)}</p>
+            </div>
+            <Button type="submit" size="lg" loading={saving}>
+              {saving ? "Guardando..." : "Guardar planilla"}
+            </Button>
           </div>
         </div>
       </form>
     </div>
   );
-
-  function MilkLogTable() {
-    const totalLiters = milkSheet.reduce((acc, product) => acc + product.quantity, 0);
-    
-    return (
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <div className="p-4 sm:p-6 border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-            <Title className="text-lg sm:text-xl font-semibold">Planilla de recolección</Title>
-            <div className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-lg">
-              <Text className="text-sm font-medium text-gray-600">Total:</Text>
-              <Metric className="text-xl font-bold text-green-600">{totalLiters} L</Metric>
-            </div>
-          </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <Table className="min-w-full">
-            <TableHead>
-              <TableRow>
-                <TableCell className="whitespace-nowrap font-medium text-gray-900">Proveedor</TableCell>
-                <TableCell className="whitespace-nowrap font-medium text-gray-900">Litros</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody className="divide-y divide-gray-200">
-              {milkSheet.map((product, index) => {
-                const provider = providers.find(
-                  (provider) => provider.id === product.providerId
-                );
-                return (
-                  <TableRow key={product.providerId} className="hover:bg-gray-50">
-                    <TableCell className="whitespace-nowrap font-medium text-gray-900">
-                      {provider?.firstName} {provider?.lastName}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <TextInput
-                          onChange={(e) =>
-                            handleQuantityChange(e, provider?.id as string)
-                          }
-                          placeholder="0"
-                          className="w-24 sm:w-28"
-                          type="number"
-                          min="0"
-                          {...quantityInputProps}
-                          disabled={user?.role === user_role.USER}
-                          value={milkSheet
-                            .find((product) => product.providerId === provider?.id)
-                            ?.quantity.toString()}
-                        />
-                        <Text className="text-sm text-gray-500">L</Text>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
-
-        {milkSheet.length === 0 && (
-          <div className="p-8 text-center">
-            <Text className="text-gray-500">No hay proveedores activos</Text>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  function ProductionLogTable() {
-    const totalProduction = productsSheet.reduce((acc, product) => acc + product.quantity, 0);
-    
-    return (
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <div className="p-4 sm:p-6 border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-            <Title className="text-lg sm:text-xl font-semibold">Producción del día</Title>
-            <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg">
-              <Text className="text-sm font-medium text-gray-600">Total:</Text>
-              <Metric className="text-xl font-bold text-blue-600">{totalProduction}</Metric>
-            </div>
-          </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <Table className="min-w-full">
-            <TableHead>
-              <TableRow>
-                <TableCell className="whitespace-nowrap font-medium text-gray-900">Producto</TableCell>
-                <TableCell className="whitespace-nowrap font-medium text-gray-900">Producción</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody className="divide-y divide-gray-200">
-              {products.map((product) => {
-                return (
-                  <TableRow key={product.id} className="hover:bg-gray-50">
-                    <TableCell className="whitespace-nowrap font-medium text-gray-900">
-                      {product.name}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <TextInput
-                          onChange={(e) =>
-                            handleProductQuantityChange(e, product.id as string)
-                          }
-                          placeholder="0"
-                          className="w-24 sm:w-28"
-                          type="number"
-                          min="0"
-                          {...quantityInputProps}
-                          disabled={user?.role === user_role.USER}
-                          value={productsSheet
-                            .find((p) => p.productId === product.id)
-                            ?.quantity.toString()}
-                        />
-                        <Text className="text-sm text-gray-500">{product.unit}</Text>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
-
-        {products.length === 0 && (
-          <div className="p-8 text-center">
-            <Text className="text-gray-500">No hay productos registrados</Text>
-          </div>
-        )}
-      </div>
-    );
-  }
 }

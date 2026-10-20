@@ -1,24 +1,52 @@
 "use client";
 import InvoiceStatusBadge from "@/components/clients/InvoiceStatusBadge";
 import { formatCOP, formatDate, getInvoiceBalance, getItemsSummary, getPaymentStatus, idTypeLabels } from "@/app/utils/clientInvoice";
-import { ClientSummary, ClientWithInvoices } from "@/types/Client";
+import { ClientSummary, ClientWithInvoices, PaymentStatus } from "@/types/Client";
+import { ButtonLink } from "@/components/ui/Button";
+import EmptyState from "@/components/ui/EmptyState";
+import PageHeader from "@/components/ui/PageHeader";
+import Panel from "@/components/ui/Panel";
+import Segmented from "@/components/ui/Segmented";
+import { PageSkeleton } from "@/components/ui/Skeleton";
+import StatCard from "@/components/ui/StatCard";
+import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/Table";
+import Badge from "@/components/ui/Badge";
+import { ReactNode, useCallback, useEffect, useState } from "react";
 import {
-    Card,
-    Metric,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
-    Text,
-    Title
-} from "@tremor/react";
-import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+    HiOutlineBanknotes,
+    HiOutlineCheckCircle,
+    HiOutlineDocumentChartBar,
+    HiOutlineDocumentText,
+    HiOutlineEnvelope,
+    HiOutlineMapPin,
+    HiOutlinePencilSquare,
+    HiOutlinePhone,
+    HiOutlinePlus,
+    HiOutlineReceiptPercent
+} from "react-icons/hi2";
 import toast from "react-hot-toast";
+
+type Filter = "all" | "pending" | "paid" | "void";
+
+const filterStatuses: Record<Filter, PaymentStatus[]> = {
+    all: ['PENDIENTE', 'PARCIAL', 'PAGADA', 'ANULADA'],
+    pending: ['PENDIENTE', 'PARCIAL'],
+    paid: ['PAGADA'],
+    void: ['ANULADA']
+};
+
+function ContactChip({ icon, children }: { icon: ReactNode, children: ReactNode }) {
+    return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-sm text-slate-600 ring-1 ring-inset ring-slate-200">
+            <span className="text-slate-400">{icon}</span>
+            {children}
+        </span>
+    );
+}
 
 export default function ClientDetail({ params }: { params: { id: string } }) {
     const [client, setClient] = useState<ClientWithInvoices & { summary: ClientSummary }>();
+    const [filter, setFilter] = useState<Filter>("all");
 
     const loadClient = useCallback(async () => {
         const res = await fetch(`/api/clients/${params.id}`);
@@ -28,119 +56,109 @@ export default function ClientDetail({ params }: { params: { id: string } }) {
 
     useEffect(() => { loadClient() }, [loadClient]);
 
+    if (!client) return <PageSkeleton />;
 
-    if (!client) return <Text className="text-center text-gray-500">Cargando...</Text>;
+    const invoicesWithStatus = client.invoices.map((invoice) => ({ invoice, status: getPaymentStatus(invoice) }));
+    const count = (key: Filter) => invoicesWithStatus.filter(({ status }) => filterStatuses[key].includes(status)).length;
+    const visibleInvoices = invoicesWithStatus.filter(({ status }) => filterStatuses[filter].includes(status));
+    const newInvoiceHref = `/dashboard/clients/${client.id}/invoices/new`;
 
     return (
-        <div className="w-full max-w-5xl mx-auto space-y-6">
-            {/* Header */}
-            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-                    <div>
-                        <Title className="text-2xl sm:text-3xl font-bold text-gray-900">{client.name}</Title>
-                        <Text className="mt-1">{idTypeLabels[client.idType]} {client.idNum}</Text>
-                        <Text className="text-gray-500">
-                            {[client.phone, client.email, client.address].filter(Boolean).join(' · ')}
-                        </Text>
-                    </div>
+        <div className="space-y-6">
+            <PageHeader
+                back={{ href: "/dashboard/clients", label: "Clientes" }}
+                title={client.name}
+                badge={!client.active && <Badge tone="gray">Inactivo</Badge>}
+                description={`${idTypeLabels[client.idType]} ${client.idNum}`}
+                actions={<>
+                    <ButtonLink href={`/dashboard/clients/${client.id}/edit`} variant="ghost" icon={<HiOutlinePencilSquare className="h-4 w-4" />}>
+                        Editar
+                    </ButtonLink>
+                    <ButtonLink href={`/dashboard/clients/${client.id}/statement`} variant="secondary" icon={<HiOutlineDocumentChartBar className="h-4 w-4" />}>
+                        Estado de cuenta
+                    </ButtonLink>
+                    <ButtonLink href={newInvoiceHref} icon={<HiOutlinePlus className="h-4 w-4" />}>
+                        Nueva factura
+                    </ButtonLink>
+                </>}
+            >
+                {(client.phone || client.email || client.address) && (
                     <div className="flex flex-wrap gap-2">
-                        <a
-                            href="/dashboard/clients"
-                            className="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors duration-200"
-                        >
-                            Volver
-                        </a>
-                        <Link
-                            href={`/dashboard/clients/${client.id}/invoices/new`}
-                            className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200"
-                        >
-                            Nueva factura
-                        </Link>
-                        <Link
-                            href={`/dashboard/clients/${client.id}/statement`}
-                            className="inline-flex items-center px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white font-medium rounded-lg transition-colors duration-200"
-                        >
-                            Estado de cuenta
-                        </Link>
-                        <a
-                            href={`/dashboard/clients/${client.id}/edit`}
-                            className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
-                        >
-                            Editar
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            {/* Summary */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Card className="p-4" decoration="top" decorationColor="blue">
-                    <Text className="text-sm font-medium text-gray-600">Total facturado</Text>
-                    <Metric className="text-2xl font-bold text-blue-600 mt-2">{formatCOP(client.summary.invoiced)}</Metric>
-                </Card>
-                <Card className="p-4" decoration="top" decorationColor="green">
-                    <Text className="text-sm font-medium text-gray-600">Total pagado</Text>
-                    <Metric className="text-2xl font-bold text-green-600 mt-2">{formatCOP(client.summary.paid)}</Metric>
-                </Card>
-                <Card className="p-4" decoration="top" decorationColor="red">
-                    <Text className="text-sm font-medium text-gray-600">Saldo pendiente</Text>
-                    <Metric className="text-2xl font-bold text-red-600 mt-2">{formatCOP(client.summary.balance)}</Metric>
-                </Card>
-            </div>
-
-
-            {/* Invoices */}
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div className="p-4 sm:p-6 border-b border-gray-200">
-                    <Title className="text-lg font-semibold">Facturas</Title>
-                </div>
-                <div className="overflow-x-auto">
-                    <Table className="min-w-full">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell className="whitespace-nowrap">N°</TableCell>
-                                <TableCell className="whitespace-nowrap hidden lg:table-cell">Emisión</TableCell>
-                                <TableCell className="whitespace-nowrap">Productos</TableCell>
-                                <TableCell className="whitespace-nowrap hidden lg:table-cell">Monto</TableCell>
-                                <TableCell className="whitespace-nowrap">Saldo</TableCell>
-                                <TableCell className="whitespace-nowrap">Estado</TableCell>
-                                <TableCell className="whitespace-nowrap">Acciones</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {client.invoices.map((invoice) => (
-                                <TableRow key={invoice.id}>
-                                    <TableCell className="font-medium">#{invoice.number}</TableCell>
-                                    <TableCell className="whitespace-nowrap hidden lg:table-cell">{formatDate(invoice.issueDate)}</TableCell>
-                                    <TableCell className="max-w-[12rem] lg:max-w-xs">
-                                        <div className="truncate">{getItemsSummary(invoice.items)}</div>
-                                        <div className="lg:hidden text-xs text-gray-500">{formatDate(invoice.issueDate)} · {formatCOP(invoice.amount)}</div>
-                                    </TableCell>
-                                    <TableCell className="whitespace-nowrap hidden lg:table-cell">{formatCOP(invoice.amount)}</TableCell>
-                                    <TableCell className="whitespace-nowrap">
-                                        {invoice.status === 'ANULADA' ? '-' : formatCOP(getInvoiceBalance(invoice))}
-                                    </TableCell>
-                                    <TableCell><InvoiceStatusBadge status={getPaymentStatus(invoice)} /></TableCell>
-                                    <TableCell>
-                                        <Link
-                                            href={`/dashboard/clients/${client.id}/invoices/${invoice.id}`}
-                                            className="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
-                                        >
-                                            Ver
-                                        </Link>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </div>
-
-                {client.invoices.length === 0 && (
-                    <div className="p-8 text-center">
-                        <Text className="text-gray-500">Este cliente no tiene facturas</Text>
+                        {client.phone && <ContactChip icon={<HiOutlinePhone className="h-4 w-4" />}>{client.phone}</ContactChip>}
+                        {client.email && <ContactChip icon={<HiOutlineEnvelope className="h-4 w-4" />}>{client.email}</ContactChip>}
+                        {client.address && <ContactChip icon={<HiOutlineMapPin className="h-4 w-4" />}>{client.address}</ContactChip>}
                     </div>
                 )}
+            </PageHeader>
+
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+                <StatCard label="Total facturado" value={formatCOP(client.summary.invoiced)} icon={<HiOutlineReceiptPercent />} tone="blue" />
+                <StatCard label="Total pagado" value={formatCOP(client.summary.paid)} icon={<HiOutlineCheckCircle />} tone="emerald" />
+                <StatCard
+                    className="col-span-2 md:col-span-1"
+                    label="Saldo pendiente"
+                    value={formatCOP(client.summary.balance)}
+                    icon={<HiOutlineBanknotes />}
+                    tone={client.summary.balance > 0 ? "red" : "default"}
+                />
             </div>
+
+            <Panel flush>
+                <div className="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                    <h2 className="text-base font-semibold text-slate-900">Facturas</h2>
+                    <Segmented
+                        label="Filtrar facturas"
+                        value={filter}
+                        onChange={setFilter}
+                        options={[
+                            { value: "all", label: "Todas", count: count("all") },
+                            { value: "pending", label: "Pendientes", count: count("pending") },
+                            { value: "paid", label: "Pagadas", count: count("paid") },
+                            { value: "void", label: "Anuladas", count: count("void") },
+                        ]}
+                    />
+                </div>
+
+                {visibleInvoices.length > 0 ? (
+                    <Table>
+                        <THead>
+                            <TH>Factura</TH>
+                            <TH className="hidden md:table-cell">Productos</TH>
+                            <TH align="right" className="hidden sm:table-cell">Total</TH>
+                            <TH align="right">Saldo</TH>
+                            <TH align="right">Estado</TH>
+                        </THead>
+                        <TBody>
+                            {visibleInvoices.map(({ invoice, status }) => (
+                                <TR key={invoice.id} href={`/dashboard/clients/${client.id}/invoices/${invoice.id}`}>
+                                    <TD>
+                                        <p className="font-semibold text-slate-900">#{invoice.number}</p>
+                                        <p className="text-xs text-slate-500">{formatDate(invoice.issueDate)}</p>
+                                        <p className="mt-0.5 max-w-[14rem] truncate text-xs text-slate-500 md:hidden">{getItemsSummary(invoice.items)}</p>
+                                    </TD>
+                                    <TD className="hidden max-w-xs md:table-cell">
+                                        <p className="truncate text-slate-600">{getItemsSummary(invoice.items)}</p>
+                                    </TD>
+                                    <TD align="right" className="hidden tabular-nums sm:table-cell">{formatCOP(invoice.amount)}</TD>
+                                    <TD align="right" className={`tabular-nums font-semibold ${status === 'ANULADA' || getInvoiceBalance(invoice) === 0 ? 'text-slate-400' : 'text-slate-900'}`}>
+                                        {status === 'ANULADA' ? '—' : formatCOP(getInvoiceBalance(invoice))}
+                                    </TD>
+                                    <TD align="right"><InvoiceStatusBadge status={status} /></TD>
+                                </TR>
+                            ))}
+                        </TBody>
+                    </Table>
+                ) : client.invoices.length === 0 ? (
+                    <EmptyState
+                        icon={<HiOutlineDocumentText />}
+                        title="Este cliente aún no tiene facturas"
+                        description="Crea una factura de venta con los productos que le entregaste."
+                        action={<ButtonLink href={newInvoiceHref} icon={<HiOutlinePlus className="h-4 w-4" />}>Nueva factura</ButtonLink>}
+                    />
+                ) : (
+                    <EmptyState icon={<HiOutlineDocumentText />} title="Sin facturas en este filtro" description="Prueba con otro estado." />
+                )}
+            </Panel>
         </div>
     )
 }

@@ -9,7 +9,7 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="w-full min-h-[100dvh] bg-gray-50 sm:bg-white safe-top safe-bottom">
+    <div className="w-full min-h-[100dvh] bg-slate-50">
       <NextUIProvider>
         <AuthProvider>{children}</AuthProvider>
       </NextUIProvider>

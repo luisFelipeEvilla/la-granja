@@ -1,8 +1,10 @@
 "use client";
-import PrimaryButton from "@/components/buttons/PrimaryButton";
+import Button, { ButtonLink } from "@/components/ui/Button";
+import Field, { FormSection } from "@/components/ui/Field";
+import Panel from "@/components/ui/Panel";
 import { idTypeLabels } from "@/app/utils/clientInvoice";
 import { Client } from "@prisma/client";
-import { Select, SelectItem, TextInput, Title } from "@tremor/react";
+import { Select, SelectItem, TextInput } from "@tremor/react";
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
@@ -26,10 +28,14 @@ export default function ClientForm({ client }: Props) {
         }
     });
     const [idType, setIdType] = useState<string>(client?.idType ?? '');
+    const [idTypeError, setIdTypeError] = useState(false);
     const backHref = client ? `/dashboard/clients/${client.id}` : '/dashboard/clients';
 
     const onSubmit: SubmitHandler<Inputs> = async (data) => {
-        if (!idType) return toast.error('Selecciona el tipo de identificación');
+        if (!idType) {
+            setIdTypeError(true);
+            return toast.error('Selecciona el tipo de identificación');
+        }
 
         const res = await fetch(client ? `/api/clients/${client.id}` : '/api/clients', {
             method: client ? 'PATCH' : 'POST',
@@ -44,75 +50,69 @@ export default function ClientForm({ client }: Props) {
     }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div className="p-4 sm:p-6 border-b border-gray-200">
-                    <Title className="text-lg font-semibold text-gray-900">Información Básica</Title>
-                </div>
-                <div className="p-4 sm:p-6 space-y-6">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">Nombre o razón social *</label>
-                        <TextInput
-                            {...register('name', { required: true })}
-                            placeholder="Nombre o razón social"
-                            error={errors.name != undefined}
-                            errorMessage={errors.name ? "Este campo es requerido" : ''}
-                        />
+        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+            <Panel
+                footer={
+                    <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                        <ButtonLink href={backHref} variant="secondary">Cancelar</ButtonLink>
+                        <Button type="submit" loading={isSubmitting}>
+                            {client ? 'Guardar cambios' : 'Crear cliente'}
+                        </Button>
                     </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Tipo de identificación *</label>
-                            <Select value={idType} onValueChange={setIdType} placeholder="Seleccionar tipo">
-                                {Object.entries(idTypeLabels).map(([value, label]) =>
-                                    <SelectItem value={value} key={value}>{label}</SelectItem>
-                                )}
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Número de identificación *</label>
+                }
+            >
+                <div className="divide-y divide-slate-100">
+                    <FormSection title="Datos del cliente" description="Nombre e identificación con los que se emiten las facturas.">
+                        <Field label="Nombre o razón social" htmlFor="name" required error={errors.name && 'Ingresa el nombre del cliente'}>
                             <TextInput
-                                {...register('idNum', { required: true })}
-                                placeholder="Número de identificación"
-                                error={errors.idNum != undefined}
-                                errorMessage={errors.idNum ? "Este campo es requerido" : ''}
+                                id="name"
+                                {...register('name', { required: true })}
+                                placeholder="Ej: Distribuidora El Prado"
+                                error={errors.name != undefined}
+                                autoComplete="organization"
                             />
-                        </div>
-                    </div>
-                </div>
-            </div>
+                        </Field>
 
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div className="p-4 sm:p-6 border-b border-gray-200">
-                    <Title className="text-lg font-semibold text-gray-900">Información de Contacto</Title>
-                </div>
-                <div className="p-4 sm:p-6 space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Email</label>
-                            <TextInput {...register('email')} placeholder="correo@ejemplo.com" type="email" />
+                        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                            <Field label="Tipo de identificación" required error={idTypeError && !idType && 'Selecciona un tipo'}>
+                                <Select
+                                    value={idType}
+                                    onValueChange={(value) => { setIdType(value); setIdTypeError(false); }}
+                                    placeholder="Seleccionar tipo"
+                                    enableClear={false}
+                                    error={idTypeError && !idType}
+                                >
+                                    {Object.entries(idTypeLabels).map(([value, label]) =>
+                                        <SelectItem value={value} key={value}>{label}</SelectItem>
+                                    )}
+                                </Select>
+                            </Field>
+                            <Field label="Número de identificación" htmlFor="idNum" required error={errors.idNum && 'Ingresa el número'} hint="Para NIT incluye el dígito de verificación">
+                                <TextInput
+                                    id="idNum"
+                                    {...register('idNum', { required: true })}
+                                    placeholder="900123456-7"
+                                    error={errors.idNum != undefined}
+                                />
+                            </Field>
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Teléfono</label>
-                            <TextInput {...register('phone')} placeholder="Teléfono de contacto" />
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">Dirección</label>
-                        <TextInput {...register('address')} placeholder="Dirección" />
-                    </div>
-                </div>
-            </div>
+                    </FormSection>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-end">
-                <a
-                    href={backHref}
-                    className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors duration-200"
-                >
-                    Cancelar
-                </a>
-                <PrimaryButton text="Guardar Cliente" disabled={isSubmitting} />
-            </div>
+                    <FormSection title="Contacto" description="Opcional. Se muestra en la ficha y en los documentos.">
+                        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                            <Field label="Teléfono" htmlFor="phone">
+                                <TextInput id="phone" {...register('phone')} placeholder="300 123 4567" inputMode="tel" autoComplete="tel" />
+                            </Field>
+                            <Field label="Correo electrónico" htmlFor="email">
+                                <TextInput id="email" {...register('email')} placeholder="correo@ejemplo.com" type="email" autoComplete="email" />
+                            </Field>
+                        </div>
+                        <Field label="Dirección" htmlFor="address">
+                            <TextInput id="address" {...register('address')} placeholder="Calle, número, ciudad" autoComplete="street-address" />
+                        </Field>
+                    </FormSection>
+                </div>
+            </Panel>
         </form>
     )
 }

@@ -5,14 +5,9 @@ import { AuthContext } from "@/contexts/AuthContext";
 import axios from "axios";
 import Image from "next/image";
 import { FormEvent, useContext, useState } from "react";
-import { HiOutlineBanknotes, HiOutlineClipboardDocumentList, HiOutlineDocumentChartBar } from "react-icons/hi2";
 import toast from "react-hot-toast";
 
-const highlights = [
-  { icon: HiOutlineClipboardDocumentList, text: "Planillas de recolección de leche día a día" },
-  { icon: HiOutlineBanknotes, text: "Facturas de venta, abonos y pagos de clientes" },
-  { icon: HiOutlineDocumentChartBar, text: "Estados de cuenta y liquidaciones en PDF" },
-];
+const today = new Date().toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
 export default function AuthPage() {
   const [username, setUsername] = useState("");
@@ -64,41 +59,16 @@ export default function AuthPage() {
 
   return (
     <div className="flex min-h-[100dvh] bg-slate-50 lg:bg-white">
-      {/* Brand panel: iPad landscape and desktop */}
-      <aside className="relative hidden w-1/2 max-w-2xl flex-col justify-between overflow-hidden bg-gradient-to-br from-emerald-700 via-emerald-900 to-slate-950 p-12 text-white lg:flex">
+      {/* Farm identity panel (internal tool, no marketing): iPad landscape and desktop */}
+      <aside className="relative hidden w-1/2 max-w-2xl flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-700 via-emerald-900 to-slate-950 p-12 text-center text-white lg:flex">
         <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-emerald-400/20 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-32 -left-16 h-96 w-96 rounded-full bg-emerald-300/10 blur-3xl" />
 
-        <div className="relative flex items-center gap-3">
-          <Image src="/images/logo.jpg" alt="" width={96} height={96} priority className="h-12 w-12 rounded-xl object-cover ring-1 ring-white/20" />
-          <div>
-            <p className="text-lg font-semibold leading-tight">La Granja</p>
-            <p className="text-sm text-emerald-100/70">Lácteos</p>
-          </div>
-        </div>
+        <Image src="/images/logo.jpg" alt="Lácteos La Granja" width={320} height={320} priority className="relative h-40 w-40 rounded-3xl object-cover shadow-2xl ring-4 ring-white/15" />
+        <h2 className="relative mt-8 text-3xl font-bold tracking-tight">Lácteos La Granja</h2>
+        <p className="relative mt-2 text-sm font-medium uppercase tracking-widest text-emerald-100/70">Uso interno del personal</p>
 
-        <div className="relative space-y-8">
-          <div>
-            <h2 className="text-4xl font-bold leading-tight tracking-tight">
-              La operación de tu lechería,<br />en un solo lugar.
-            </h2>
-            <p className="mt-4 max-w-md text-base text-emerald-50/80">
-              Registra la leche recibida, factura a tus clientes y lleva sus cuentas sin papeles.
-            </p>
-          </div>
-          <ul className="space-y-4">
-            {highlights.map(({ icon: Icon, text }) => (
-              <li key={text} className="flex items-center gap-3 text-sm text-emerald-50/90">
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 ring-1 ring-white/15">
-                  <Icon className="h-5 w-5" />
-                </span>
-                {text}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <p className="relative text-xs text-emerald-100/50">© {new Date().getFullYear()} Lácteos La Granja</p>
+        <p suppressHydrationWarning className="absolute bottom-10 text-sm text-emerald-100/60 first-letter:uppercase">{today}</p>
       </aside>
 
       {/* Form */}
@@ -106,8 +76,8 @@ export default function AuthPage() {
         <div className="w-full max-w-sm">
           <div className="mb-8 flex flex-col items-center text-center lg:items-start lg:text-left">
             <Image src="/images/logo.jpg" alt="" width={112} height={112} priority className="mb-5 h-14 w-14 rounded-2xl object-cover shadow-sm ring-1 ring-slate-200 lg:hidden" />
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Bienvenido</h1>
-            <p className="mt-2 text-sm text-slate-500">Ingresa con tu usuario para continuar</p>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Iniciar sesión</h1>
+            <p className="mt-2 text-sm text-slate-500">Ingresa con tu usuario de La Granja</p>
           </div>
 
           <form

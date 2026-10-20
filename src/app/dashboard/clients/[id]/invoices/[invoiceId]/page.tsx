@@ -21,7 +21,8 @@ import {
 import { es } from "date-fns/locale";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import MoneyInput from "@/components/inputs/MoneyInput";
 import toast from "react-hot-toast";
 
 const ClientInvoicePDF = dynamic(() => import("@/components/pdfs/clientInvoice"), {
@@ -38,7 +39,7 @@ export default function InvoiceDetail({ params }: Params) {
     const [date, setDate] = useState<Date | undefined>(new Date());
     const [pendingDelete, setPendingDelete] = useState<string | null>(null);
     const [busy, setBusy] = useState(false);
-    const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<PaymentInputs>();
+    const { register, control, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<PaymentInputs>();
 
     const loadInvoice = useCallback(async () => {
         const res = await fetch(`/api/client-invoices/${params.invoiceId}`);
@@ -201,16 +202,22 @@ export default function InvoiceDetail({ params }: Params) {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">Monto *</label>
-                                <TextInput
-                                    {...register('amount', {
+                                <Controller
+                                    name="amount"
+                                    control={control}
+                                    rules={{
                                         required: true,
                                         validate: (value) => parseInt(value) > 0 && parseInt(value) <= balance
-                                    })}
-                                    type="number"
-                                    min="1"
-                                    max={balance}
-                                    error={errors.amount != undefined}
-                                    errorMessage={errors.amount ? `Ingresa un monto entre 1 y ${formatCOP(balance)}` : ''}
+                                    }}
+                                    render={({ field }) => (
+                                        <MoneyInput
+                                            value={field.value ?? ''}
+                                            onValueChange={field.onChange}
+                                            onBlur={field.onBlur}
+                                            error={errors.amount != undefined}
+                                            errorMessage={errors.amount ? `Ingresa un monto entre $ 1 y ${formatCOP(balance)}` : ''}
+                                        />
+                                    )}
                                 />
                             </div>
                             <div className="space-y-2">

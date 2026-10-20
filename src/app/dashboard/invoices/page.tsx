@@ -5,6 +5,7 @@ import { es } from "date-fns/locale";
 import { useEffect, useState } from "react";
 import { ProviderWithProducts } from "@/types/Provider";
 import dynamic from "next/dynamic";
+import MoneyInput from "@/components/inputs/MoneyInput";
 
 const InvoicePDF = dynamic(() => import("../../../components/pdfs/invoice"), {
     ssr: false
@@ -78,11 +79,10 @@ export default function Invoices() {
 
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">Precio por litro</label>
-                                <TextInput 
-                                    onChange={(e) => setPrice(parseInt(e.target.value) || 0)} 
+                                <MoneyInput
+                                    value={price ? String(price) : ''}
+                                    onValueChange={(digits) => setPrice(parseInt(digits) || 0)}
                                     placeholder="Precio por litro"
-                                    type="number"
-                                    min="0"
                                 />
                             </div>
                         </div>

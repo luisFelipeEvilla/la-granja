@@ -1,5 +1,6 @@
 "use client";
 import PrimaryButton from "@/components/buttons/PrimaryButton";
+import MoneyInput from "@/components/inputs/MoneyInput";
 import { formatCOP, toDateString } from "@/app/utils/clientInvoice";
 import { Client, Product } from "@prisma/client";
 import { DatePicker, Select, SelectItem, Text, TextInput, Textarea, Title } from "@tremor/react";
@@ -146,12 +147,10 @@ export default function NewInvoice({ params }: { params: { id: string } }) {
                                     </div>
                                     <div className="min-w-0 space-y-1">
                                         <label className="lg:hidden text-sm font-medium text-gray-700">Precio unitario</label>
-                                        <TextInput
+                                        <MoneyInput
                                             value={line.unitPrice}
-                                            onValueChange={(unitPrice) => updateLine(line.key, { unitPrice: unitPrice.replace(/\D/g, '') })}
+                                            onValueChange={(unitPrice) => updateLine(line.key, { unitPrice })}
                                             placeholder="$ 0"
-                                            inputMode="numeric"
-                                            onFocus={(e) => e.target.select()}
                                         />
                                     </div>
                                     <div className="min-h-[44px] flex items-center md:justify-end font-medium text-gray-900">

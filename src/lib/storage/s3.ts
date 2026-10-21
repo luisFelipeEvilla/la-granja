@@ -36,11 +36,15 @@ export function createS3Driver(): StorageDriver {
 
     return {
         async put(key, data, contentType) {
-            const res = await client.fetch(objectUrl(key), {
+            const body = new Uint8Array(data);
+            // sign only, then send the raw bytes ourselves: passing a signed Request object made the body a
+            // stream, which some runtimes (Vercel) send without Content-Length and R2 rejects (411)
+            const signed = await client.sign(objectUrl(key), {
                 method: 'PUT',
-                headers: { 'Content-Type': contentType },
-                body: new Uint8Array(data)
+                headers: { 'Content-Type': contentType, 'Content-Length': String(body.byteLength) },
+                body
             });
+            const res = await fetch(signed.url, { method: 'PUT', headers: signed.headers, body });
             if (!res.ok) await fail('upload', res);
         },
         async get(key) {

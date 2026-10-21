@@ -1,0 +1,8 @@
+[      -1ms] [LOG] PixelYourSite Free version 9.4.4 @ http://localhost:5173/index.html:67
+[    1415ms] ReferenceError: wp is not defined
+    at http://localhost:5173/index.html:2189:1
+[    1599ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/chunk-BH4GTE34.js?v=2f741cd5:21608
+[    2252ms] [ERROR] Access to XMLHttpRequest at 'https://qa.zeroq.cl/services/conversations/widget-config' from origin 'http://localhost:5173' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://localhost:5173/index.html:0
+[    2253ms] [WARNING] [BurbujaChat] No se pudo traer la config del widget; se usan defaults/embed. AxiosError @ http://localhost:5173/src/index.tsx:81
+[    2254ms] [LOG] [BurbujaChat] Widget initialized @ http://localhost:5173/src/index.tsx:98
+[    2254ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://qa.zeroq.cl/services/conversations/widget-config:0

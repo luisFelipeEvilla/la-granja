@@ -1,8 +1,10 @@
 "use client";
 import InvoiceStatusBadge from "@/components/clients/InvoiceStatusBadge";
-import { formatCOP, formatDate, getInvoiceBalance, getItemsSummary, getPaymentStatus, idTypeLabels } from "@/app/utils/clientInvoice";
-import { ClientSummary, ClientWithInvoices, PaymentStatus } from "@/types/Client";
-import { ButtonLink } from "@/components/ui/Button";
+import { formatCOP, formatDate, getInvoiceBalance, getItemsSummary, getPaymentStatus, idTypeLabels, paymentMethodLabels } from "@/app/utils/clientInvoice";
+import { ClientReceiptWithPayments, ClientSummary, ClientWithInvoices, PaymentStatus } from "@/types/Client";
+import ReceiptForm from "@/components/clients/ReceiptForm";
+import Button, { ButtonLink } from "@/components/ui/Button";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import EmptyState from "@/components/ui/EmptyState";
 import PageHeader from "@/components/ui/PageHeader";
 import Panel from "@/components/ui/Panel";
@@ -23,8 +25,10 @@ import {
     HiOutlinePencilSquare,
     HiOutlinePhone,
     HiOutlinePlus,
-    HiOutlineReceiptPercent
+    HiOutlineReceiptPercent,
+    HiOutlineTrash
 } from "react-icons/hi2";
+import NextLink from "next/link";
 import toast from "react-hot-toast";
 
 type Filter = "all" | "pending" | "paid" | "void";
@@ -49,6 +53,9 @@ export default function ClientDetail(props: { params: Promise<{ id: string }> })
     const params = use(props.params);
     const [client, setClient] = useState<ClientWithInvoices & { summary: ClientSummary }>();
     const [filter, setFilter] = useState<Filter>("all");
+    const [receiptFormOpen, setReceiptFormOpen] = useState(false);
+    const [receiptToDelete, setReceiptToDelete] = useState<ClientReceiptWithPayments | null>(null);
+    const [deleting, setDeleting] = useState(false);
 
     const loadClient = useCallback(async () => {
         const res = await fetch(`/api/clients/${params.id}`);
@@ -57,6 +64,18 @@ export default function ClientDetail(props: { params: Promise<{ id: string }> })
     }, [params.id]);
 
     useEffect(() => { loadClient() }, [loadClient]);
+
+    const deleteReceipt = async (receiptId: string) => {
+        setDeleting(true);
+        const res = await fetch(`/api/client-receipts/${receiptId}`, { method: 'DELETE' });
+        setDeleting(false);
+        setReceiptToDelete(null);
+
+        if (!res.ok) return toast.error('Error al eliminar el abono');
+
+        toast.success('Abono eliminado');
+        loadClient();
+    }
 
     if (!client) return <PageSkeleton />;
 
@@ -76,6 +95,11 @@ export default function ClientDetail(props: { params: Promise<{ id: string }> })
                     <ButtonLink href={`/dashboard/clients/${client.id}/edit`} variant="ghost" icon={<HiOutlinePencilSquare className="h-4 w-4" />}>
                         Editar
                     </ButtonLink>
+                    {client.summary.balance > 0 && (
+                        <Button variant="secondary" icon={<HiOutlineBanknotes className="h-4 w-4" />} onClick={() => setReceiptFormOpen(true)}>
+                            Registrar abono
+                        </Button>
+                    )}
                     {client.summary.balance > 0 && (
                         <ButtonLink href={`/dashboard/sales/reminders?client=${client.id}`} variant="secondary" icon={<HiOutlineChatBubbleLeftEllipsis className="h-4 w-4" />}>
                             Recordar pago
@@ -166,6 +190,70 @@ export default function ClientDetail(props: { params: Promise<{ id: string }> })
                     <EmptyState icon={<HiOutlineDocumentText />} title="Sin facturas en este filtro" description="Prueba con otro estado." />
                 )}
             </Panel>
+
+            {client.receipts.length > 0 && (
+                <Panel title="Abonos a cuenta" description={`${client.receipts.length} registrado(s)`} flush>
+                    <Table>
+                        <THead>
+                            <TH>Fecha</TH>
+                            <TH className="hidden md:table-cell">Método</TH>
+                            <TH>Aplicado a</TH>
+                            <TH align="right">Monto</TH>
+                            <TH align="right"><span className="sr-only">Acciones</span></TH>
+                        </THead>
+                        <TBody>
+                            {client.receipts.map((receipt) => (
+                                <TR key={receipt.id}>
+                                    <TD className="whitespace-nowrap">
+                                        <p className="text-slate-900">{formatDate(receipt.date)}</p>
+                                        <p className="text-xs text-slate-500 md:hidden">{paymentMethodLabels[receipt.method]}</p>
+                                        {receipt.reference && <p className="text-xs text-slate-500">{receipt.reference}</p>}
+                                    </TD>
+                                    <TD className="hidden md:table-cell">{paymentMethodLabels[receipt.method]}</TD>
+                                    <TD>
+                                        <ul className="space-y-0.5 text-sm">
+                                            {[...receipt.payments].sort((a, b) => a.invoice.number - b.invoice.number).map((payment) => (
+                                                <li key={payment.id} className="whitespace-nowrap">
+                                                    <NextLink href={`/dashboard/clients/${client.id}/invoices/${payment.invoiceId}`} className="font-medium text-slate-700 hover:text-emerald-700 hover:underline">
+                                                        #{payment.invoice.number}
+                                                    </NextLink>
+                                                    <span className="tabular-nums text-slate-500"> {formatCOP(payment.amount)}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </TD>
+                                    <TD align="right" className="whitespace-nowrap tabular-nums font-semibold text-emerald-700">{formatCOP(receipt.amount)}</TD>
+                                    <TD align="right">
+                                        <button
+                                            type="button"
+                                            onClick={() => setReceiptToDelete(receipt)}
+                                            aria-label="Eliminar abono"
+                                            title="Eliminar abono"
+                                            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 pointer-coarse:h-11 pointer-coarse:w-11"
+                                        >
+                                            <HiOutlineTrash className="h-5 w-5" />
+                                        </button>
+                                    </TD>
+                                </TR>
+                            ))}
+                        </TBody>
+                    </Table>
+                </Panel>
+            )}
+
+            <ReceiptForm client={client} isOpen={receiptFormOpen} onClose={() => setReceiptFormOpen(false)} onSaved={loadClient} />
+
+            <ConfirmDialog
+                open={receiptToDelete !== null}
+                onClose={() => !deleting && setReceiptToDelete(null)}
+                onConfirm={() => receiptToDelete && deleteReceipt(receiptToDelete.id)}
+                loading={deleting}
+                title="¿Eliminar este abono?"
+                description={receiptToDelete
+                    ? `Se eliminará el abono de ${formatCOP(receiptToDelete.amount)} y el saldo de cada factura a la que se aplicó volverá a aumentar.`
+                    : undefined}
+                confirmLabel="Eliminar abono"
+            />
         </div>
     )
 }

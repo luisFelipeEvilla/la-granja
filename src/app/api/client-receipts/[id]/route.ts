@@ -1,0 +1,11 @@
+import { deleteReceipt, handleError } from "@/controllers/clientInvoice";
+import { NextRequest, NextResponse } from "next/server";
+
+export async function DELETE(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+    const params = await props.params;
+    try {
+        return NextResponse.json(await deleteReceipt(params.id));
+    } catch (error) {
+        return handleError(error);
+    }
+}

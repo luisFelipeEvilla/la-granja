@@ -256,6 +256,7 @@ export default function InvoiceDetail(props: Params) {
                                         <TR key={payment.id}>
                                             <TD className="whitespace-nowrap">
                                                 <p className="text-slate-900">{formatDate(payment.date)}</p>
+                                                {payment.receiptId && <Badge tone="blue">Abono a cuenta</Badge>}
                                                 <p className="text-xs text-slate-500 sm:hidden">
                                                     {paymentMethodLabels[payment.method]}{payment.reference ? ` · ${payment.reference}` : ''}
                                                 </p>
@@ -264,15 +265,25 @@ export default function InvoiceDetail(props: Params) {
                                             <TD className="hidden text-slate-500 md:table-cell">{payment.reference ?? '—'}</TD>
                                             <TD align="right" className="whitespace-nowrap tabular-nums font-semibold text-emerald-700">{formatCOP(payment.amount)}</TD>
                                             <TD align="right">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setPendingAction({ type: 'deletePayment', paymentId: payment.id, amount: payment.amount })}
-                                                    aria-label="Eliminar pago"
-                                                    title="Eliminar pago"
-                                                    className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 pointer-coarse:h-11 pointer-coarse:w-11"
-                                                >
-                                                    <HiOutlineTrash className="h-5 w-5" />
-                                                </button>
+                                                {payment.receiptId ? (
+                                                    <NextLink
+                                                        href={`/dashboard/clients/${params.id}`}
+                                                        title="Este pago es parte de un abono a cuenta: se elimina desde la ficha del cliente"
+                                                        className="min-h-0 min-w-0 whitespace-nowrap text-sm font-medium text-slate-500 hover:text-emerald-700 hover:underline"
+                                                    >
+                                                        Ver abono
+                                                    </NextLink>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setPendingAction({ type: 'deletePayment', paymentId: payment.id, amount: payment.amount })}
+                                                        aria-label="Eliminar pago"
+                                                        title="Eliminar pago"
+                                                        className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 pointer-coarse:h-11 pointer-coarse:w-11"
+                                                    >
+                                                        <HiOutlineTrash className="h-5 w-5" />
+                                                    </button>
+                                                )}
                                             </TD>
                                         </TR>
                                     ))}

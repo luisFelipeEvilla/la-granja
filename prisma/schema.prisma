@@ -84,6 +84,7 @@ model Client {
   createdAt DateTime @default(now())
   invoices  ClientInvoice[]
   reminders ClientReminder[]
+  receipts  ClientReceipt[]
 
   @@unique([idType, idNum])
 }
@@ -139,6 +140,23 @@ model ClientPayment {
   date      DateTime       @default(now())
   reference String?
   createdAt DateTime       @default(now())
+  // set when the payment is the share of an account payment (abono a cuenta) applied to this invoice
+  receiptId String?        @db.ObjectId
+  receipt   ClientReceipt? @relation(fields: [receiptId], references: [id])
+}
+
+// payment a client makes against their total balance (abono a cuenta); it is split into one
+// ClientPayment per invoice it covers, so invoice balances and reports keep reading payments
+model ClientReceipt {
+  id        String         @id @default(auto()) @map("_id") @db.ObjectId
+  clientId  String         @db.ObjectId
+  client    Client         @relation(fields: [clientId], references: [id])
+  amount    Int
+  method    payment_method
+  date      DateTime       @default(now())
+  reference String?
+  createdAt DateTime       @default(now())
+  payments  ClientPayment[]
 }
 
 // sequential counters (e.g. client invoice numbers)

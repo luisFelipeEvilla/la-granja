@@ -5,8 +5,13 @@ export type ClientInvoiceWithPayments = Prisma.ClientInvoiceGetPayload<{
 }>;
 
 export type ClientWithInvoices = Prisma.ClientGetPayload<{
-    include: { invoices: { include: { payments: true } } }
+    include: {
+        invoices: { include: { payments: true } },
+        receipts: { include: { payments: { include: { invoice: { select: { number: true } } } } } }
+    }
 }>;
+
+export type ClientReceiptWithPayments = ClientWithInvoices['receipts'][number];
 
 export type InvoiceWithClient = Prisma.ClientInvoiceGetPayload<{
     include: { client: true, payments: true, attachments: true, signatureRequest: true }

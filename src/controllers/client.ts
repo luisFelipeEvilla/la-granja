@@ -52,6 +52,10 @@ export async function getClient(id: string) {
             invoices: {
                 include: { payments: { orderBy: { date: 'asc' } } },
                 orderBy: { number: 'desc' }
+            },
+            receipts: {
+                include: { payments: { include: { invoice: { select: { number: true } } } } },
+                orderBy: [{ date: 'desc' }, { createdAt: 'desc' }]
             }
         }
     });

@@ -16,6 +16,9 @@ export type InvoiceInput = { items: InvoiceItemInput[] } &
 export type PaymentInput = Pick<ClientPayment, 'amount' | 'method'> &
     Partial<Pick<ClientPayment, 'date' | 'reference'>>;
 
+// account payment (abono a cuenta) and how much of it goes to each invoice
+export type ReceiptInput = PaymentInput & { allocations: { invoiceId: string, amount: number }[] };
+
 const isPositiveInt = (value: any) => Number.isInteger(value) && value > 0;
 
 // dates are calendar days: "YYYY-MM-DD" is stored at UTC midnight
@@ -190,6 +193,9 @@ export async function deletePayment(id: string) {
     return withRetries(() => prisma.$transaction(async (tx) => {
         const payment = await tx.clientPayment.findUnique({ where: { id } });
         if (!payment) throw new HttpError(404, 'Pago no encontrado');
+        if (payment.receiptId) {
+            throw new HttpError(409, 'Este pago es parte de un abono a cuenta; elimínalo desde la ficha del cliente');
+        }
 
         await tx.clientPayment.delete({ where: { id } });
 
@@ -199,6 +205,92 @@ export async function deletePayment(id: string) {
         });
 
         return payment;
+    }));
+}
+
+// registers a payment against the client's total balance, split over the invoices in `allocations`
+export async function addClientReceipt(clientId: string, data: ReceiptInput) {
+    const amount = Number(data.amount);
+    if (!isPositiveInt(amount) || !data.method) {
+        throw new HttpError(400, 'Monto mayor a cero y método de pago son requeridos');
+    }
+
+    const allocations = (Array.isArray(data.allocations) ? data.allocations : [])
+        .map((allocation) => ({ invoiceId: String(allocation.invoiceId), amount: Number(allocation.amount) }))
+        .filter((allocation) => allocation.amount !== 0);
+
+    if (allocations.length === 0) throw new HttpError(400, 'Aplica el abono al menos a una factura');
+    if (allocations.some((allocation) => !isPositiveInt(allocation.amount))) {
+        throw new HttpError(400, 'Los montos aplicados deben ser mayores a cero');
+    }
+    if (new Set(allocations.map((allocation) => allocation.invoiceId)).size !== allocations.length) {
+        throw new HttpError(400, 'Una factura aparece más de una vez en el abono');
+    }
+    if (allocations.reduce((total, allocation) => total + allocation.amount, 0) !== amount) {
+        throw new HttpError(400, 'Lo aplicado a las facturas debe sumar el monto del abono');
+    }
+
+    const invoices = await prisma.clientInvoice.findMany({
+        where: { id: { in: allocations.map((allocation) => allocation.invoiceId) }, clientId }
+    });
+    if (invoices.length !== allocations.length) throw new HttpError(400, 'Factura no encontrada para este cliente');
+
+    const date = toCalendarDay(data.date) ?? toCalendarDay(new Date().toISOString());
+    const reference = data.reference?.trim() || null;
+
+    return withRetries(() => prisma.$transaction(async (tx) => {
+        for (const allocation of allocations) {
+            const invoice = invoices.find((invoice) => invoice.id === allocation.invoiceId)!;
+
+            // conditional increment: fails if the share is more than the invoice still owes
+            const { count } = await tx.clientInvoice.updateMany({
+                where: { id: invoice.id, status: 'ACTIVA', paidAmount: { lte: invoice.amount - allocation.amount } },
+                data: { paidAmount: { increment: allocation.amount } }
+            });
+
+            if (count === 0) {
+                throw new HttpError(409, invoice.status === 'ACTIVA'
+                    ? `El abono supera el saldo pendiente de la factura #${invoice.number}`
+                    : `La factura #${invoice.number} está anulada`);
+            }
+        }
+
+        const receipt = await tx.clientReceipt.create({
+            data: { clientId, amount, method: data.method, date, reference }
+        });
+
+        await tx.clientPayment.createMany({
+            data: allocations.map((allocation) => ({
+                invoiceId: allocation.invoiceId,
+                receiptId: receipt.id,
+                amount: allocation.amount,
+                method: data.method,
+                date,
+                reference
+            }))
+        });
+
+        return receipt;
+    }));
+}
+
+// removes an account payment and gives the invoices back what it had paid
+export async function deleteReceipt(id: string) {
+    return withRetries(() => prisma.$transaction(async (tx) => {
+        const receipt = await tx.clientReceipt.findUnique({ where: { id }, include: { payments: true } });
+        if (!receipt) throw new HttpError(404, 'Abono no encontrado');
+
+        for (const payment of receipt.payments) {
+            await tx.clientInvoice.update({
+                where: { id: payment.invoiceId },
+                data: { paidAmount: { decrement: payment.amount } }
+            });
+        }
+
+        await tx.clientPayment.deleteMany({ where: { receiptId: id } });
+        await tx.clientReceipt.delete({ where: { id } });
+
+        return receipt;
     }));
 }
 

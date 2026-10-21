@@ -69,13 +69,14 @@ export type StatementMovement = {
 type StatementInvoice = Pick<ClientInvoice, 'number' | 'amount' | 'paidAmount' | 'status'> & {
     issueDate: Date | string,
     items: Pick<InvoiceItem, 'name' | 'quantity' | 'unit'>[],
-    payments: { amount: number, date: Date | string, method: keyof typeof paymentMethodLabels }[]
+    payments: { amount: number, date: Date | string, method: keyof typeof paymentMethodLabels, receiptId?: string | null }[]
 };
 
 // calendar day of a stored date ("YYYY-MM-DD"), dates are kept at UTC midnight
 const toDay = (date: Date | string) => new Date(date).toISOString().slice(0, 10);
 
-// a payment that settles the invoice is a "Pago", any earlier partial one an "Abono"
+// a payment that settles the invoice is a "Pago", any earlier partial one an "Abono";
+// shares of an account payment are left out here and listed once by getReceiptMovements
 function getPaymentMovements(invoice: StatementInvoice) {
     let paid = 0;
 
@@ -86,6 +87,7 @@ function getPaymentMovements(invoice: StatementInvoice) {
             const kind = paid >= invoice.amount ? 'Pago' : 'Abono';
 
             return {
+                payment,
                 date: toDay(payment.date),
                 order: 1 + index,
                 number: invoice.number,
@@ -93,7 +95,56 @@ function getPaymentMovements(invoice: StatementInvoice) {
                 charge: 0,
                 credit: payment.amount
             };
-        });
+        })
+        .filter(({ payment }) => !payment.receiptId)
+        .map(({ payment, ...movement }) => movement);
+}
+
+// one movement per account payment, with the invoices it was applied to
+function getReceiptMovements(invoices: StatementInvoice[]) {
+    const receipts = new Map<string, { date: string, method: keyof typeof paymentMethodLabels, numbers: number[], amount: number }>();
+
+    invoices.forEach((invoice) => invoice.payments.forEach((payment) => {
+        if (!payment.receiptId) return;
+
+        const receipt = receipts.get(payment.receiptId) ?? { date: toDay(payment.date), method: payment.method, numbers: [], amount: 0 };
+        receipt.numbers.push(invoice.number);
+        receipt.amount += payment.amount;
+        receipts.set(payment.receiptId, receipt);
+    }));
+
+    return Array.from(receipts.values()).map((receipt) => {
+        const numbers = receipt.numbers.sort((a, b) => a - b);
+
+        return {
+            date: receipt.date,
+            // after the charges and payments of the same day
+            order: Number.MAX_SAFE_INTEGER,
+            number: numbers[numbers.length - 1],
+            description: `Abono a cuenta · ${paymentMethodLabels[receipt.method]} · aplicado a ${numbers.map((number) => `#${number}`).join(', ')}`,
+            charge: 0,
+            credit: receipt.amount
+        };
+    });
+}
+
+// invoices still owing, oldest first: the order in which they are collected
+export function getPendingInvoices<T extends Pick<ClientInvoice, 'number' | 'amount' | 'paidAmount' | 'status'> & { issueDate: Date | string }>(invoices: T[]) {
+    return invoices
+        .filter((invoice) => invoice.status === 'ACTIVA' && getInvoiceBalance(invoice) > 0)
+        .sort((a, b) => toDay(a.issueDate).localeCompare(toDay(b.issueDate)) || a.number - b.number);
+}
+
+// splits an account payment over the pending invoices, settling the oldest first
+export function allocatePayment<T extends Pick<ClientInvoice, 'id' | 'number' | 'amount' | 'paidAmount' | 'status'> & { issueDate: Date | string }>(invoices: T[], amount: number) {
+    let left = Math.max(0, amount);
+
+    return getPendingInvoices(invoices).map((invoice) => {
+        const applied = Math.min(left, getInvoiceBalance(invoice));
+        left -= applied;
+
+        return { invoiceId: invoice.id, amount: applied };
+    });
 }
 
 // account statement for a period ("YYYY-MM-DD" bounds, both optional and inclusive):
@@ -112,7 +163,7 @@ export function getAccountStatement(invoices: StatementInvoice[], from?: string,
             credit: 0
         },
         ...getPaymentMovements(invoice)
-    ]).sort((a, b) => a.date.localeCompare(b.date) || a.number - b.number || a.order - b.order);
+    ]).concat(getReceiptMovements(active)).sort((a, b) => a.date.localeCompare(b.date) || a.number - b.number || a.order - b.order);
 
     const before = all.filter((movement) => from && movement.date < from);
     const inPeriod = all.filter((movement) => (!from || movement.date >= from) && (!to || movement.date <= to));
@@ -131,10 +182,7 @@ export function getAccountStatement(invoices: StatementInvoice[], from?: string,
         totalCharges: movements.reduce((total, movement) => total + movement.charge, 0),
         totalCredits: movements.reduce((total, movement) => total + movement.credit, 0),
         closingBalance: balance,
-        // oldest first, the order in which they are collected
-        pendingInvoices: active
-            .filter((invoice) => getInvoiceBalance(invoice) > 0)
-            .sort((a, b) => toDay(a.issueDate).localeCompare(toDay(b.issueDate)) || a.number - b.number)
+        pendingInvoices: getPendingInvoices(active)
     };
 }
 

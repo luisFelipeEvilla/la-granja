@@ -49,6 +49,9 @@ type SeriesChartProps = {
     className?: string,
 };
 
+// a dot on every point: useful for few, spaced-out points (e.g. monthly totals)
+type LineChartProps = SeriesChartProps & { showDots?: boolean };
+
 function Legend({ items }: { items: { name: string, color: string }[] }) {
     return (
         <ul className="mb-2 flex flex-wrap justify-end gap-x-4 gap-y-1 text-xs text-slate-600">
@@ -102,7 +105,7 @@ export function BarChart({ data, index, categories, colors, valueFormatter = def
         <SeriesFrame className={className} legend={legend} ariaLabel={summary("barras", data, categories)}>
             <RechartsBarChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
                 <CartesianGrid vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey={index} tick={tick} axisLine={false} tickLine={false} interval="preserveStartEnd" minTickGap={16} tickMargin={8} />
+                <XAxis dataKey={index} tick={tick} axisLine={false} tickLine={false} interval="preserveEnd" minTickGap={16} tickMargin={8} />
                 <YAxis width={yAxisWidth} tick={tick} axisLine={false} tickLine={false} tickFormatter={(value) => valueFormatter(Number(value))} />
                 <Tooltip cursor={{ fill: "#f1f5f9" }} content={(props: any) => <ChartTooltip {...props} formatter={valueFormatter} />} />
                 {categories.map((category, i) => (
@@ -113,13 +116,13 @@ export function BarChart({ data, index, categories, colors, valueFormatter = def
     );
 }
 
-export function LineChart({ data, index, categories, colors, valueFormatter = defaultFormatter, yAxisWidth = 56, showLegend = true, className }: SeriesChartProps) {
+export function LineChart({ data, index, categories, colors, valueFormatter = defaultFormatter, yAxisWidth = 56, showLegend = true, showDots = false, className }: LineChartProps) {
     const legend = showLegend ? categories.map((name, i) => ({ name, color: colorOf(colors, i) })) : undefined;
     return (
         <SeriesFrame className={className} legend={legend} ariaLabel={summary("líneas", data, categories)}>
-            <RechartsLineChart data={data} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+            <RechartsLineChart data={data} margin={{ top: 4, right: 24, bottom: 0, left: 0 }}>
                 <CartesianGrid vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey={index} tick={tick} axisLine={false} tickLine={false} interval="preserveStartEnd" minTickGap={16} tickMargin={8} />
+                <XAxis dataKey={index} tick={tick} axisLine={false} tickLine={false} interval="preserveEnd" minTickGap={16} tickMargin={8} />
                 <YAxis width={yAxisWidth} tick={tick} axisLine={false} tickLine={false} tickFormatter={(value) => valueFormatter(Number(value))} />
                 <Tooltip cursor={{ stroke: "#cbd5e1" }} content={(props: any) => <ChartTooltip {...props} formatter={valueFormatter} />} />
                 {categories.map((category, i) => (
@@ -130,7 +133,7 @@ export function LineChart({ data, index, categories, colors, valueFormatter = de
                         name={category}
                         stroke={colorOf(colors, i)}
                         strokeWidth={2}
-                        dot={false}
+                        dot={showDots ? { r: 3, strokeWidth: 2, fill: "#fff" } : false}
                         activeDot={{ r: 4, strokeWidth: 2, stroke: "#fff" }}
                         isAnimationActive={false}
                     />

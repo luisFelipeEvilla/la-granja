@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { BarChart } from "@/components/ui/charts";
+import { LineChart } from "@/components/ui/charts";
 import {
     HiOutlineBanknotes,
     HiOutlineDocumentText,
@@ -131,7 +131,7 @@ export default function SalesSummary() {
             </div>
 
             <Panel title="Ventas vs cobros" description="Facturado y cobrado en los últimos 12 meses">
-                <BarChart
+                <LineChart
                     className="h-64 sm:h-72"
                     data={series}
                     index="month"
@@ -139,6 +139,7 @@ export default function SalesSummary() {
                     colors={["emerald", "blue"]}
                     valueFormatter={formatCOPCompact}
                     yAxisWidth={72}
+                    showDots
                 />
             </Panel>
 

@@ -1,12 +1,19 @@
-import { getAttachmentFile } from "@/controllers/attachments";
+import { getAttachmentDownloadUrl, getAttachmentFile } from "@/controllers/attachments";
 import { handleError } from "@/controllers/clientInvoice";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-// files are served through the app, so pages and PDFs never depend on the storage provider's URLs
+// redirects to a short-lived link on the storage provider (no Vercel size limit); `?proxy=1` or
+// providers without presigned links serve the bytes through the app (used by the PDF, which
+// fetches images from the browser and would otherwise need CORS on the bucket)
 export async function GET(req: NextRequest, props: { params: Promise<{ id: string }> }) {
-    const params = await props.params;
     try {
-        const file = await getAttachmentFile(params.id);
+        const { id } = await props.params;
+        if (req.nextUrl.searchParams.get('proxy') !== '1') {
+            const url = await getAttachmentDownloadUrl(id);
+            if (url) return NextResponse.redirect(url, { status: 302, headers: { 'Cache-Control': 'private, max-age=300' } });
+        }
+
+        const file = await getAttachmentFile(id);
         return new Response(new Uint8Array(file.data), {
             headers: { 'Content-Type': file.contentType, 'Cache-Control': 'private, max-age=86400, immutable' }
         });

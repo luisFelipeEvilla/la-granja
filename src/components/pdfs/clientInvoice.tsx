@@ -117,7 +117,7 @@ export default function ClientInvoicePDF({ invoice }: Props) {
                         {invoice.attachments.map((attachment, index) => (
                             <View key={attachment.id} style={styles.annexItem} wrap={false}>
                                 {/* eslint-disable-next-line jsx-a11y/alt-text -- react-pdf Image, not an HTML img */}
-                                <Image style={styles.annexImage} src={`${origin}/api/attachments/${attachment.id}/file`} />
+                                <Image style={styles.annexImage} src={`${origin}/api/attachments/${attachment.id}/file?proxy=1`} />
                                 <Text style={styles.annexCaption}>Evidencia {index + 1} · {formatDateTime(attachment.createdAt)}</Text>
                             </View>
                         ))}

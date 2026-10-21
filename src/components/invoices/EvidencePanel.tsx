@@ -9,19 +9,21 @@ import { Modal, ModalBody, ModalContent } from "@/components/ui/Modal";
 import { ChangeEvent, useRef, useState } from "react";
 import { HiOutlineCamera, HiOutlineChevronLeft, HiOutlineChevronRight, HiOutlineTrash } from "react-icons/hi2";
 import toast from "react-hot-toast";
+import { uploadEvidence } from "./uploadEvidence";
 
 type Props = { invoiceId: string, attachments: InvoiceAttachmentItem[], onChange: () => void };
 
-type Upload = { id: string, name: string, preview: string };
+type Upload = { id: string, name: string, preview: string, progress?: number };
 
-const MAX_SIDE = 1600;
+// photos go straight to storage, so they can keep more detail than the old 1600px / 4 MB limit
+const MAX_SIDE = 2560;
 
 export const formatDateTime = (date: Date | string) =>
     new Date(date).toLocaleString("es-CO", { dateStyle: "medium", timeStyle: "short" });
 
 const fileUrl = (id: string) => `/api/attachments/${id}/file`;
 
-// draws the photo into a canvas (max 1600px on the longest side) and exports a JPEG;
+// draws the photo into a canvas (max 2560px on the longest side) and exports a JPEG;
 // Safari decodes HEIC into the canvas, so iPad camera photos also work
 async function compressImage(file: File): Promise<Blob> {
     const url = URL.createObjectURL(file);
@@ -40,7 +42,7 @@ async function compressImage(file: File): Promise<Blob> {
         canvas.getContext("2d")!.drawImage(image, 0, 0, canvas.width, canvas.height);
 
         return await new Promise<Blob>((resolve, reject) =>
-            canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("No se pudo comprimir la imagen")), "image/jpeg", 0.8)
+            canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("No se pudo comprimir la imagen")), "image/jpeg", 0.85)
         );
     } finally {
         URL.revokeObjectURL(url);
@@ -68,11 +70,11 @@ export default function EvidencePanel({ invoiceId, attachments, onChange }: Prop
             const file = files[index];
             try {
                 const blob = await compressImage(file);
-                const form = new FormData();
-                form.append("file", new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" }));
-
-                const res = await fetch(`/api/client-invoices/${invoiceId}/attachments`, { method: "POST", body: form });
-                if (!res.ok) throw new Error((await res.json().catch(() => null))?.message ?? "Error al subir la imagen");
+                const jpeg = new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
+                const id = pending[index].id;
+                await uploadEvidence(invoiceId, jpeg, (progress) =>
+                    setUploads((current) => current.map((upload) => upload.id === id ? { ...upload, progress } : upload))
+                );
                 uploaded++;
             } catch (error: any) {
                 toast.error(`${file.name}: ${error.message}`);
@@ -153,7 +155,12 @@ export default function EvidencePanel({ invoiceId, attachments, onChange }: Prop
                             <img src={upload.preview} alt="" className="h-full w-full object-cover opacity-40" />
                             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-sm font-medium text-slate-700">
                                 <Spinner className="h-6 w-6 text-emerald-600" />
-                                Subiendo...
+                                {upload.progress !== undefined ? `Subiendo ${upload.progress} %` : "Subiendo..."}
+                                {upload.progress !== undefined && (
+                                    <span className="h-1.5 w-3/4 overflow-hidden rounded-full bg-white/80">
+                                        <span className="block h-full rounded-full bg-emerald-500 transition-[width]" style={{ width: `${upload.progress}%` }} />
+                                    </span>
+                                )}
                             </div>
                         </li>
                     ))}

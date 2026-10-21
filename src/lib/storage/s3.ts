@@ -1,6 +1,16 @@
 import { AwsClient } from "aws4fetch";
 import { StorageDriver } from "./types";
 
+function isValidEndpoint(endpoint: string) {
+    if (/[<>\s]/.test(endpoint) || endpoint.indexOf('://') !== endpoint.lastIndexOf('://')) return false;
+    try {
+        const url = new URL(endpoint);
+        return (url.protocol === 'https:' || url.protocol === 'http:') && !!url.hostname;
+    } catch {
+        return false;
+    }
+}
+
 // any S3-compatible provider: Cloudflare R2 (S3_REGION=auto), AWS S3, Backblaze B2, MinIO...
 export function createS3Driver(): StorageDriver {
     const endpoint = process.env.S3_ENDPOINT?.replace(/\/$/, '');
@@ -10,6 +20,10 @@ export function createS3Driver(): StorageDriver {
 
     if (!endpoint || !bucket || !accessKeyId || !secretAccessKey) {
         throw new Error('S3_ENDPOINT, S3_BUCKET, S3_ACCESS_KEY_ID y S3_SECRET_ACCESS_KEY son requeridos para el almacenamiento');
+    }
+    // catches pasted templates such as "https://<ACCOUNT_ID>...https://..." before any request is made
+    if (!isValidEndpoint(endpoint)) {
+        throw new Error('S3_ENDPOINT no es una URL válida (ejemplo: https://<id>.r2.cloudflarestorage.com)');
     }
 
     const client = new AwsClient({ accessKeyId, secretAccessKey, service: 's3', region: process.env.S3_REGION ?? 'auto' });

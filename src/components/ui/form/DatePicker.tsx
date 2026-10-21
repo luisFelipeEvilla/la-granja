@@ -154,7 +154,9 @@ function RangeCalendar({ value, twoMonths, onChange, close }: {
     const [start, setStart] = useState<Date>();
     const pending = useRef<Date | undefined>(undefined);
     const commit = useRef(onChange);
-    commit.current = onChange;
+    useEffect(() => {
+        commit.current = onChange;
+    }, [onChange]);
 
     useEffect(() => () => {
         if (pending.current) commit.current?.({ from: pending.current, to: pending.current });

@@ -128,3 +128,33 @@ export async function getSignatureFile(invoiceId: string) {
     if (!request?.signatureKey) throw new HttpError(404, 'La factura no está firmada');
     return getStorage().get(request.signatureKey);
 }
+
+// the admin voids the client's signature so it can be signed again: the invoice becomes editable,
+// a new link replaces the old one, and the voided signature stays in the history
+export async function revokeSignature(invoiceId: string, actor: string, reason: string | undefined, meta: RequestMeta) {
+    const request = await prisma.invoiceSignatureRequest.findUnique({ where: { invoiceId } });
+    if (!request?.signedAt) throw new HttpError(409, 'La factura no está firmada');
+
+    const note = reason?.trim().slice(0, 300) || null;
+    const now = new Date();
+
+    // conditional: two admins voiding at the same time only produce one REVOKED event
+    const { count } = await prisma.invoiceSignatureRequest.updateMany({
+        where: { id: request.id, signedAt: { not: null } },
+        data: {
+            token: newToken(),
+            signedAt: null,
+            signatureKey: null,
+            signerIp: null,
+            signerUserAgent: null,
+            openCount: 0,
+            firstOpenedAt: null,
+            lastOpenedAt: null,
+            events: { push: { type: 'REVOKED', at: now, ...meta, actor, reason: note, signatureKey: request.signatureKey } }
+        }
+    });
+    if (count === 0) throw new HttpError(409, 'La firma ya fue anulada');
+
+    await prisma.clientInvoice.update({ where: { id: invoiceId }, data: { signedAt: null } });
+    return prisma.invoiceSignatureRequest.findUniqueOrThrow({ where: { invoiceId } });
+}

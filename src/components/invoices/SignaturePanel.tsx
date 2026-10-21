@@ -9,6 +9,7 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@/comp
 import { Textarea } from "@/components/ui/form";
 import { useState } from "react";
 import {
+    HiOutlineArrowUturnLeft,
     HiOutlineChatBubbleLeftEllipsis,
     HiOutlineCheckBadge,
     HiOutlineClipboardDocument,
@@ -23,7 +24,12 @@ type Props = { invoice: InvoiceWithClient, onChange: () => void };
 
 type EventType = SignatureRequest["events"][number]["type"];
 
-const eventLabels: Record<EventType, string> = { SENT: "Enviada al cliente", OPENED: "Abierta por el cliente", SIGNED: "Firmada" };
+const eventLabels: Record<EventType, string> = {
+    SENT: "Enviada al cliente",
+    OPENED: "Abierta por el cliente",
+    SIGNED: "Firmada",
+    REVOKED: "Firma anulada",
+};
 
 // rough "iPad · Safari" summary of a user agent, enough for an audit trail
 export function describeDevice(userAgent?: string | null) {
@@ -44,10 +50,17 @@ export function describeDevice(userAgent?: string | null) {
 
 const signingLink = (token: string) => `${window.location.origin}/firmar/${token}`;
 
+// events since the signature was last voided (a voided signature starts a new round with a new link)
+const currentRound = (request: SignatureRequest | null) => {
+    const events = request?.events ?? [];
+    const lastRevoked = events.map((event) => event.type).lastIndexOf("REVOKED");
+    return events.slice(lastRevoked + 1);
+};
+
 function getStatus(request: SignatureRequest | null) {
     if (request?.signedAt) return { label: "Firmada", tone: "emerald" as const };
     if (request?.openCount) return { label: "Abierta", tone: "amber" as const };
-    if (request?.events.some((event) => event.type === "SENT")) return { label: "Enviada", tone: "blue" as const };
+    if (currentRound(request).some((event) => event.type === "SENT")) return { label: "Enviada", tone: "blue" as const };
     return { label: "Sin enviar", tone: "gray" as const };
 }
 
@@ -56,6 +69,8 @@ export default function SignaturePanel({ invoice, onChange }: Props) {
     const [dialog, setDialog] = useState<{ link: string, message: string } | null>(null);
     const [preparing, setPreparing] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [revoking, setRevoking] = useState<{ reason: string } | null>(null);
+    const [revokeLoading, setRevokeLoading] = useState(false);
 
     const status = getStatus(request);
     const canRequest = invoice.status === "ACTIVA" && !request?.signedAt;
@@ -112,6 +127,23 @@ export default function SignaturePanel({ invoice, onChange }: Props) {
         onChange();
     };
 
+    const revokeSignature = async () => {
+        if (!revoking) return;
+        setRevokeLoading(true);
+        const res = await fetch(`/api/client-invoices/${invoice.id}/signature`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ reason: revoking.reason })
+        });
+        const json = await res.json().catch(() => ({}));
+        setRevokeLoading(false);
+        if (!res.ok) return toast.error(json.message ?? "No se pudo anular la firma");
+
+        toast.success("Firma anulada. Envía el nuevo enlace para que la firme de nuevo");
+        setRevoking(null);
+        onChange();
+    };
+
     const events = [...(request?.events ?? [])].reverse();
 
     return (
@@ -138,6 +170,18 @@ export default function SignaturePanel({ invoice, onChange }: Props) {
                                 {describeDevice(request.signerUserAgent)}{request.signerIp ? ` · IP ${request.signerIp}` : ""}
                             </p>
                         </div>
+                        {invoice.status === "ACTIVA" && (
+                            <div className="mt-3 flex justify-center border-t border-slate-100 pt-3">
+                                <Button
+                                    variant="danger"
+                                    size="sm"
+                                    onClick={() => setRevoking({ reason: "" })}
+                                    icon={<HiOutlineArrowUturnLeft className="h-4 w-4" />}
+                                >
+                                    Anular firma
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -171,12 +215,20 @@ export default function SignaturePanel({ invoice, onChange }: Props) {
                             {events.map((event, index) => (
                                 <li key={index} className="relative">
                                     <span className={`absolute left-[-1.6rem] top-0.5 flex h-5 w-5 items-center justify-center rounded-full ring-4 ring-white
-                                        ${event.type === "SIGNED" ? "bg-emerald-500" : event.type === "OPENED" ? "bg-amber-400" : "bg-blue-500"}`}>
+                                        ${event.type === "SIGNED" ? "bg-emerald-500" : event.type === "OPENED" ? "bg-amber-400" : event.type === "REVOKED" ? "bg-red-500" : "bg-blue-500"}`}>
                                         {event.type === "SIGNED"
                                             ? <HiOutlineCheckBadge className="h-3 w-3 text-white" />
-                                            : event.type === "OPENED" ? <HiOutlineEye className="h-3 w-3 text-white" /> : <HiOutlinePaperAirplane className="h-3 w-3 text-white" />}
+                                            : event.type === "OPENED" ? <HiOutlineEye className="h-3 w-3 text-white" />
+                                            : event.type === "REVOKED" ? <HiOutlineArrowUturnLeft className="h-3 w-3 text-white" />
+                                            : <HiOutlinePaperAirplane className="h-3 w-3 text-white" />}
                                     </span>
-                                    <p className="text-sm font-medium text-slate-900">{eventLabels[event.type]}</p>
+                                    <p className="text-sm font-medium text-slate-900">
+                                        {eventLabels[event.type]}
+                                        {event.type === "REVOKED" && event.actor && <span className="font-normal text-slate-500"> por {event.actor}</span>}
+                                    </p>
+                                    {event.type === "REVOKED" && event.reason && (
+                                        <p className="text-sm text-slate-600 [overflow-wrap:anywhere]">Motivo: {event.reason}</p>
+                                    )}
                                     <p className="text-xs text-slate-500">
                                         {formatDateTime(event.at)} · {describeDevice(event.userAgent)}{event.ip ? ` · IP ${event.ip}` : ""}
                                     </p>
@@ -190,6 +242,45 @@ export default function SignaturePanel({ invoice, onChange }: Props) {
                     <p className="text-sm text-slate-500">Las facturas anuladas no se pueden enviar a firmar.</p>
                 )}
             </div>
+
+            <Modal isOpen={revoking !== null} onClose={() => !revokeLoading && setRevoking(null)} backdrop="blur" size="md">
+                <ModalContent>
+                    {revoking && (
+                        <>
+                            <ModalHeader className="text-lg font-semibold text-slate-900">¿Anular la firma del cliente?</ModalHeader>
+                            <ModalBody className="space-y-4">
+                                <p className="text-sm text-slate-600">
+                                    La factura #{invoice.number} quedará sin firmar y se podrá editar. Se generará un enlace nuevo
+                                    (el anterior dejará de funcionar) para que {invoice.client.name} la firme otra vez.
+                                    La firma anulada queda guardada en el registro.
+                                </p>
+                                <div className="space-y-1.5">
+                                    <label className="block text-sm font-medium text-slate-700">Motivo (opcional)</label>
+                                    <Textarea
+                                        value={revoking.reason}
+                                        onValueChange={(reason) => setRevoking({ reason })}
+                                        placeholder="Ej: El cliente firmó sin revisar las cantidades"
+                                        rows={3}
+                                        maxLength={300}
+                                    />
+                                </div>
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button variant="secondary" onClick={() => setRevoking(null)} disabled={revokeLoading}>Cancelar</Button>
+                                <Button
+                                    variant="dark"
+                                    className="bg-red-600! hover:bg-red-700!"
+                                    onClick={revokeSignature}
+                                    loading={revokeLoading}
+                                    icon={<HiOutlineArrowUturnLeft className="h-4 w-4" />}
+                                >
+                                    Anular firma
+                                </Button>
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
 
             <Modal isOpen={dialog !== null} onClose={() => !saving && setDialog(null)} placement="center" backdrop="blur" size="lg" scrollBehavior="inside">
                 <ModalContent>

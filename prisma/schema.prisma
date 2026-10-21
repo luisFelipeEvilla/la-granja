@@ -182,13 +182,18 @@ enum signature_event_type {
   SENT
   OPENED
   SIGNED
+  REVOKED
 }
 
 type SignatureEvent {
-  type      signature_event_type
-  at        DateTime
-  ip        String?
-  userAgent String?
+  type         signature_event_type
+  at           DateTime
+  ip           String?
+  userAgent    String?
+  // REVOKED: who voided the signature, why, and which signature image it was (kept for audit)
+  actor        String?
+  reason       String?
+  signatureKey String?
 }
 
 // public signing link of an invoice and its audit trail (sent, opened, signed)

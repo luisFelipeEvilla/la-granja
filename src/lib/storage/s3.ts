@@ -65,10 +65,15 @@ export function createS3Driver(): StorageDriver {
             // the browser sets Content-Length by itself; it only has to send Content-Type
             return { url: signed.url, headers: { 'Content-Type': contentType } };
         },
+        // the link is identical for a whole time window (signed with the window's start time), so the browser
+        // can cache the image itself; it stays valid for at least `expiresInSeconds` more
         async presignDownload(key, expiresInSeconds) {
+            const windowStart = Math.floor(Date.now() / 1000 / expiresInSeconds) * expiresInSeconds;
+            const datetime = new Date(windowStart * 1000).toISOString().replace(/[:-]|\.\d{3}/g, '');
             const url = new URL(objectUrl(key));
-            url.searchParams.set('X-Amz-Expires', String(expiresInSeconds));
-            const signed = await client.sign(url.toString(), { method: 'GET', aws: { signQuery: true } });
+            url.searchParams.set('X-Amz-Expires', String(expiresInSeconds * 2));
+            url.searchParams.set('response-cache-control', `private, max-age=${expiresInSeconds}`);
+            const signed = await client.sign(url.toString(), { method: 'GET', aws: { signQuery: true, datetime } });
             return signed.url;
         },
         async head(key) {

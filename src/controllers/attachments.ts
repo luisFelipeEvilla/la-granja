@@ -9,7 +9,7 @@ import { HttpError } from "./client";
 const MAX_SIZE = 4 * 1024 * 1024;
 const MAX_DIRECT_SIZE = 25 * 1024 * 1024;
 const UPLOAD_URL_TTL = 10 * 60;
-const DOWNLOAD_URL_TTL = 10 * 60;
+const DOWNLOAD_URL_TTL = 60 * 60;
 const extensions: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
 
 // magic bytes of the accepted image formats

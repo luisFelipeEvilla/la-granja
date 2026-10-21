@@ -10,7 +10,9 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
         const { id } = await props.params;
         if (req.nextUrl.searchParams.get('proxy') !== '1') {
             const url = await getAttachmentDownloadUrl(id);
-            if (url) return NextResponse.redirect(url, { status: 302, headers: { 'Cache-Control': 'private, max-age=300' } });
+            // the redirect itself is never cached (a stale one would point to an expired link); the image
+            // behind it is, because the link stays the same for an hour
+            if (url) return NextResponse.redirect(url, { status: 302, headers: { 'Cache-Control': 'no-store' } });
         }
 
         const file = await getAttachmentFile(id);

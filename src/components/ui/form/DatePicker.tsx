@@ -1,6 +1,6 @@
 "use client";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions, Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
-import { Children, isValidElement, ReactElement, ReactNode, useEffect, useMemo, useState } from "react";
+import { Children, isValidElement, ReactElement, ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { DateRange, DayPicker } from "react-day-picker";
 import { es } from "react-day-picker/locale";
 import { HiCalendarDays, HiCheck, HiChevronDown, HiXMark } from "react-icons/hi2";
@@ -143,6 +143,58 @@ function useTwoMonths() {
     return twoMonths;
 }
 
+// first tap = start date, second tap = end date (in any order). The value only changes once the range is
+// complete, so pages don't reload with half a range; closing after a single tap selects that one day
+function RangeCalendar({ value, twoMonths, onChange, close }: {
+    value: DateRangePickerValue,
+    twoMonths: boolean,
+    onChange?: (value: DateRangePickerValue) => void,
+    close: () => void,
+}) {
+    const [start, setStart] = useState<Date>();
+    const pending = useRef<Date | undefined>(undefined);
+    const commit = useRef(onChange);
+    commit.current = onChange;
+
+    useEffect(() => () => {
+        if (pending.current) commit.current?.({ from: pending.current, to: pending.current });
+    }, []);
+
+    const pick = (day: Date) => {
+        if (!start) {
+            pending.current = day;
+            return setStart(day);
+        }
+        const [from, to] = day < start ? [day, start] : [start, day];
+        pending.current = undefined;
+        setStart(undefined);
+        onChange?.({ from, to });
+        close();
+    };
+
+    const selected: DateRange | undefined = start ? { from: start, to: undefined } : value.from ? { from: value.from, to: value.to } : undefined;
+
+    return (
+        <div>
+            <p className="mb-2 text-center text-sm text-slate-500" aria-live="polite">
+                {start
+                    ? <>Desde <span className="font-semibold text-slate-900">{formatPickerDate(start)}</span> · ahora elige la fecha final</>
+                    : "Elige la fecha inicial"}
+            </p>
+            <DayPicker
+                mode="range"
+                locale={es}
+                weekStartsOn={1}
+                numberOfMonths={twoMonths ? 2 : 1}
+                selected={selected}
+                defaultMonth={value.to && twoMonths ? new Date(value.to.getFullYear(), value.to.getMonth() - 1, 1) : value.from}
+                onSelect={(_range: DateRange | undefined, day: Date) => pick(day)}
+                classNames={calendarClassNames}
+            />
+        </div>
+    );
+}
+
 export function DateRangePicker({
     value = {}, onValueChange, placeholder = "Seleccionar fechas", selectPlaceholder = "Período",
     enableSelect, enableClear = true, className = "", disabled, children,
@@ -186,16 +238,7 @@ export function DateRangePicker({
                     )}
                 </div>
                 <PopoverPanel anchor="bottom start" className={panelClass}>
-                    <DayPicker
-                        mode="range"
-                        locale={es}
-                        weekStartsOn={1}
-                        numberOfMonths={twoMonths ? 2 : 1}
-                        selected={value.from ? { from: value.from, to: value.to } : undefined}
-                        defaultMonth={value.from}
-                        onSelect={(range: DateRange | undefined) => onValueChange?.({ from: range?.from, to: range?.to })}
-                        classNames={calendarClassNames}
-                    />
+                    {({ close }) => <RangeCalendar value={value} twoMonths={twoMonths} onChange={onValueChange} close={close} />}
                 </PopoverPanel>
             </Popover>
 
